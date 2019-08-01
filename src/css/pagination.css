@@ -1,0 +1,22 @@
+[pagination] {
+  margin-bottom: 0.2rem;
+  margin-top: 0.2rem;
+  text-align: center;
+  width: 100%;
+}
+
+[pager] {
+  border: 1px solid #ababab;
+  display: inline-block;
+  margin: 0.2rem 0;
+  outline: none;
+  padding: 0.2rem 0.4rem;
+}
+
+[pager="left"] {
+  border-radius: 0.2rem;
+}
+
+[pager="right"] {
+  border-radius: 0.2rem;
+}

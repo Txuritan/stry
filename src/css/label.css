@@ -1,0 +1,51 @@
+[label] {
+  border-radius: 0.2rem;
+  color: #fafafa;
+  font-size: 1.2rem;
+  margin: 0.2rem;
+  padding: 0.2rem 0.4rem;
+}
+[label]:link, [label]:hover, [label]:link:hover {
+  color: #fafafa;
+}
+
+[label="black"] {
+  background-color: #1c1d21;
+}
+
+[label="black-light"] {
+  background-color: #555555;
+}
+
+[label="blue"] {
+  background-color: #3e92cc;
+}
+
+[label="gray"] {
+  background-color: #ababab;
+}
+
+[label="green"] {
+  background-color: #50a14f;
+}
+
+[label="orange"] {
+  background-color: #d67526;
+}
+
+[label="purple"] {
+  background-color: #454372;
+}
+
+[label="red"] {
+  background-color: #e45649;
+}
+
+[label-list] {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+[label-list] > [label]:first-child {
+  margin-left: 0;
+}

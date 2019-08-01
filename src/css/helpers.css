@@ -1,0 +1,77 @@
+[bg="black"] {
+  background-color: #1c1d21;
+}
+
+[bg="black-light"] {
+  background-color: #555555;
+}
+
+[bg="blue"] {
+  background-color: #3e92cc;
+}
+
+[bg="gray"] {
+  background-color: #ababab;
+}
+
+[bg="green"] {
+  background-color: #50a14f;
+}
+
+[bg="green-dark"] {
+  background-color: #427553;
+}
+
+[bg="orange"] {
+  background-color: #d67526;
+}
+
+[bg="purple"] {
+  background-color: #454372;
+}
+
+[bg="red"] {
+  background-color: #e45649;
+}
+
+[bg="white"] {
+  background-color: #fafafa;
+}
+
+[pad="body"] {
+  padding: 0.8rem 0;
+}
+@media all and (max-width: 1048px) {
+  [pad="body"] {
+    padding: 0;
+  }
+}
+
+[pad="content"] {
+  padding: 0.4rem 0.8rem;
+}
+
+[mar-right="small"] {
+  margin-right: 0.2rem;
+}
+
+[mar-right="normal"] {
+  margin-right: 0.4rem;
+}
+
+[mar-right="large"] {
+  margin-right: 0.6rem;
+}
+
+[mar-right="extra"] {
+  margin-right: 0.8rem;
+}
+
+[text~="small"] {
+  font-size: 1.2rem;
+  line-height: 1.4rem;
+}
+
+[text~="right"] {
+  text-align: right;
+}

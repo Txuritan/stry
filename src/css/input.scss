@@ -1,0 +1,26 @@
+@import "_variables.scss";
+
+button, input, select, textarea {
+    border: 1px solid $color--black;
+    display: block;
+    margin: $padding--small 0;
+    outline: none;
+    padding: $padding--small $padding--normal;
+    width: 100%;
+
+    &:focus, &:hover {
+        border-color: $color--blue;
+    }
+
+    &[error] {
+        border-color: $color--red;
+    }
+
+    &[success] {
+        border-color: $color--green;
+    }
+}
+
+button[type="button"], input[type="button"] {
+    border-radius: $padding--small;
+}

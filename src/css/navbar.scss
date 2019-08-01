@@ -1,0 +1,62 @@
+@import "_variables.scss";
+
+[nav] {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+[nav~="primary"] {
+    background-color: $color--black;
+    line-height: $height--large;
+
+    > [nav-section] > [nav-item] > * {
+        line-height: $height--large;
+    }
+}
+
+[nav~="primary"] > [nav-section] {
+    > input[nav-item],
+    > select[nav-item] {
+        color: $color--black;
+        line-height: 2rem;
+        margin: (($height--normal - 2.4rem + 0.2rem) / 2 + 0.1rem) $padding--large;
+    }
+}
+
+[nav~="secondary"] {
+    line-height: $height--normal;
+
+    > [nav-section] > [nav-item] > * {
+        line-height: $height--normal;
+    }
+}
+
+[nav-section] {
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: nowrap;
+}
+
+[nav-section~="grow"] {
+    flex: 1 1 auto;
+}
+
+[nav-item] {
+    color: $color--white;
+    flex: 0 1 auto;
+
+    > * {
+        color: $color--white;
+        display: block;
+        padding: 0 $padding--large;
+    }
+
+    > a, > a:link {
+        color: $color--white;
+        white-space: nowrap;
+    }
+}
+
+[nav-item~="brand"] {
+    font-weight: bold;
+}

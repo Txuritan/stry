@@ -1,0 +1,55 @@
+@import "_variables.scss";
+
+[label] {
+    border-radius: $padding--small;
+    color: $color--white;
+    font-size: 1.2rem;
+    margin: $padding--small;
+    padding: $padding--small $padding--normal;
+
+    &:link, &:hover, &:link:hover {
+        color: $color--white;
+    }
+}
+
+[label="black"] {
+    background-color: $color--black;
+}
+
+[label="black-light"] {
+    background-color: $color--black--light;
+}
+
+[label="blue"] {
+    background-color: $color--blue;
+}
+
+[label="gray"] {
+    background-color: $color--gray;
+}
+
+[label="green"] {
+    background-color: $color--green;
+}
+
+[label="orange"] {
+    background-color: $color--orange;
+}
+
+[label="purple"] {
+    background-color: $color--purple;
+}
+
+[label="red"] {
+    background-color: $color--red;
+}
+
+[label-list] {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: $padding--normal;
+
+    > [label]:first-child {
+        margin-left: 0;
+    }
+}

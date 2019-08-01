@@ -1,0 +1,36 @@
+@import "_variables.scss";
+
+[panel] {
+    display: block;
+    margin: $padding--extra-large 0;
+    position: relative;
+    
+    > [body] {
+        color: $color--black--light;
+        font-size: 1.4rem;
+    }
+
+    > [foot] {
+        color: $color--black--light;
+        font-size: 1.4rem;
+    }
+}
+
+[panel] > [head] {
+    color: $color--black--light;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    h3 {
+        font-size: 1.6rem;
+        font-weight: normal;
+        font-style: normal;
+        margin-bottom: 0.2rem;
+    }
+
+    p, > * {
+        font-size: 1.4rem;
+        line-height: 1.6rem;
+    }
+}

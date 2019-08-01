@@ -1,0 +1,24 @@
+@import "_variables.scss";
+
+[pagination] {
+    margin-bottom: $padding--small;
+    margin-top: $padding--small;
+    text-align: center;
+    width: 100%;
+}
+
+[pager] {
+    border: 1px solid $color--gray;
+    display: inline-block;
+    margin: $padding--small 0;
+    outline: none;
+    padding: $padding--small $padding--normal;
+}
+
+[pager="left"] {
+    border-radius: $padding--small;
+}
+
+[pager="right"] {
+    border-radius: $padding--small;
+}

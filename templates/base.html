@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ title }} | Stry2</title>
+    <style>{{ css|safe }}</style>
+</head>
+
+<body pad="body">
+    <div grid="auto">
+        <div grid-column="1"></div>
+        <div grid-column="10 max">
+            <div nav="primary" flex="grow">
+                <div nav-section="grow">
+                    <div nav-item="brand">
+                        <a href="/">stry</a>
+                    </div>
+                </div>
+                <div nav-section>
+                    <input nav-item type="search" placeholder="search" {% if search.is_some() %}value="{{ search.as_ref().unwrap() }}"{% endif %} />
+                </div>
+            </div>
+            <div nav="secondary" bg="blue" flex="grow">
+                <div nav-section="grow">
+                    <div nav-item>
+                        <a href="/">authors</a>
+                    </div>
+                    <div nav-item>
+                        <a href="/">origins</a>
+                    </div>
+                    <div nav-item>
+                        <a href="/">characters</a>
+                    </div>
+                    <div nav-item>
+                        <a href="/">pairings</a>
+                    </div>
+                    <div nav-item>
+                        <a href="/">tags</a>
+                    </div>
+                    <div nav-item>
+                        <a href="/">warnings</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div grid-column="1"></div>
+    </div>
+
+    <div grid="auto">
+        <div grid-column="1"></div>
+        <div grid-column="10 max" bg="white" pad="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div grid-column="1"></div>
+    </div>
+
+    <div grid="auto">
+        <div grid-column="1"></div>
+        <div grid-column="10 max">
+            <div nav="primary" flex="grow">
+                <div nav-section="grow">
+                    <div nav-item>
+                        <a href="#">rendered in: {% match duration.num_microseconds() %}{% when Some with (val) %}{{ val }}μs{% when None %}{{ duration.num_milliseconds() }}ms{% endmatch %}</a>
+                    </div>
+                </div>
+                <div nav-section>
+                    <div nav-item>
+                        <a href="#">v{{ version }}-{{ git }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div grid-column="1"></div>
+    </div>
+</body>
+
+</html>

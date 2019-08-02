@@ -1,0 +1,32 @@
+{%- macro story(s) -%}
+<div panel>
+    <div head flex>
+        <div flex flex-item="grow">
+            <div square mar-right="normal">
+                <div part="top left" bg="{{ s.square.rating }}"></div>
+                <div part="top right" bg="{{ s.square.warnings }}"></div>
+                <div part="bottom center" bg="{{ s.square.state }}"></div>
+            </div>
+            <div>
+                <h3><a href="/story/{{ s.id }}/1">{{ s.name }}</a> by {{ s.authors|join(", ")|safe }} <a text="small" href="/story/{{ s.id }}/reviews/1">[reviews]</a></h3>
+                <p>{{ s.origins|join(", ")|safe }}</p>
+            </div>
+        </div>
+        <p flex-item="grow" text="right">{{ s.updated }}</p>
+    </div>
+    <div body>
+        <p>{{ s.summary }}</p>
+        <div label-list>
+        {% for tag in s.tags %}
+            {{ tag|safe }}
+        {% endfor %}
+        </div>
+    </div>
+    <div foot>
+        <div flex>
+            <p flex-item="grow" text="small">{% match s.series %}{% when Some with (ss) %}{% match ss.place %}{% when Some with (place) %}book {{ place }} in <a href="/series/{{ ss.id }}">{{ ss.name }}{% when None %}{% endmatch  %}{% when None %}{% endmatch  %}</a></p>
+            <p flex-item="grow" text="small right">{{ s.language }} | {{ hum_num!(s.words) }} words | {{ hum_num!(s.chapters) }} chapters</p>
+        </div>
+    </div>
+</div>
+{%- endmacro -%}

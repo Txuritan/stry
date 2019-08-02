@@ -6,61 +6,73 @@ use {
 
 const TABLE: &str = "CREATE TABLE
 IF NOT EXISTS
-    Author (
+    Series (
         Id          TEXT    PRIMARY KEY                         NOT NULL,
         Name        TEXT                                        NOT NULL,
+        Summary     TEXT                                        NOT NULL,
         Created     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL,
         Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL
     );";
 
 const TABLE_BRIDGE: &str = "CREATE TABLE
 IF NOT EXISTS
-    StoryAuthor (
-        StoryId     TEXT    REFERENCES Story(Id)                NOT NULL,
-        AuthorId    TEXT    REFERENCES Author(Id)               NOT NULL,
-        Created     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL,
-        Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL
+    StorySeries (
+        StoryId     TEXT        REFERENCES Story(Id)                NOT NULL,
+        SeriesId    TEXT        REFERENCES Series(Id)               NOT NULL,
+        Place       INTEGER     REFERENCES Series(Id)               NOT NULL,
+        Created     TEXT        DEFAULT (DATETIME('now', 'utc'))    NOT NULL,
+        Updated     TEXT        DEFAULT (DATETIME('now', 'utc'))    NOT NULL
     );";
 
 #[cfg_attr(debug_assertions, derive(Debug))]
-pub struct Author {
+pub struct Series {
     pub id: String,
 
     pub name: String,
+
+    pub summary: String,
+
+    pub place: Option<i32>,
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
 }
 
-impl Author {
+impl Series {
     pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
         let conn = pool.get()?;
 
         let mut stmt = conn.prepare(
-            "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
+            "SELECT A.Id, A.Name, A.Summary, A.Created, A.Updated FROM StorySeries SA LEFT JOIN Series A ON SA.SeriesId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
         )?;
 
-        let authors =
+        let series =
             stmt.query_map(rusqlite::params![&story], |row| -> rusqlite::Result<Self> {
                 Ok(Self {
                     id: row.get("Id")?,
                     name: row.get("Name")?,
+                    summary: row.get("Summary")?,
                     created: row.get("Created")?,
                     updated: row.get("Updated")?,
+                    place: None,
                 })
             })?;
 
-        authors.map(|a| a.map_err(Error::from)).collect()
+        series.map(|a| a.map_err(Error::from)).collect()
     }
 }
 
-impl fmt::Display for Author {
+impl fmt::Display for Series {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<a href=\"/author/{}\">{}</a>", self.id, self.name)
+        write!(
+            f,
+            "<a class=\"title\" href=\"/series/{}\">{}</a>",
+            self.id, self.name
+        )
     }
 }
 
-impl Schema for Author {
+impl Schema for Series {
     fn schema(m: &mut impl fmt::Write) -> fmt::Result {
         writeln!(m, "{}", TABLE)?;
         writeln!(m, "{}", TABLE_BRIDGE)?;

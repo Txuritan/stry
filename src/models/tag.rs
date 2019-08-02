@@ -42,10 +42,10 @@ impl fmt::Display for TagType {
             f,
             "{}",
             match self {
-                TagType::Warning => "warning",
-                TagType::Pairing => "paring",
-                TagType::Character => "character",
-                TagType::General => "general",
+                TagType::Warning => "red",
+                TagType::Pairing => "orange",
+                TagType::Character => "purple",
+                TagType::General => "black-light",
             }
         )
     }
@@ -65,7 +65,13 @@ impl FromSql for TagType {
 
 impl ToSql for TagType {
     fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
-        Ok(self.to_string().into())
+        Ok(match self {
+            TagType::Warning => "warning",
+            TagType::Pairing => "paring",
+            TagType::Character => "character",
+            TagType::General => "general",
+        }
+        .into())
     }
 }
 
@@ -88,8 +94,7 @@ impl Tag {
             "SELECT T.Id, T.Name, T.Type, T.Created, T.Updated FROM StoryTag ST LEFT JOIN Tag T ON ST.TagId = T.Id WHERE ST.StoryId = ? ORDER BY T.Name;"
         )?;
 
-        let tag_rows =
-            stmt.query_map(rusqlite::params![&story], |row| Self::row(row))?;
+        let tag_rows = stmt.query_map(rusqlite::params![&story], |row| Self::row(row))?;
 
         let mut tags = Vec::new();
 
@@ -117,7 +122,7 @@ impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "<a tag {} href=\"/tag/{}\">{}</a>",
+            "<a label=\"{}\" href=\"/tag/{}\">{}</a>",
             self.typ, self.id, self.name
         )
     }

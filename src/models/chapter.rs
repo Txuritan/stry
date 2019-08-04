@@ -11,6 +11,7 @@ IF NOT EXISTS
         Name        TEXT                                        NOT NULL,
         Raw         TEXT                                        NOT NULL,
         Rendered    TEXT                                        NOT NULL,
+        Words       INTEGER                                     NOT NULL,
         Created     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL,
         Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL
     );";
@@ -31,6 +32,7 @@ pub struct Chapter {
 
     pub name: String,
 
+    pub raw: String,
     pub rendered: String,
 
     pub created: DateTime<Utc>,
@@ -42,11 +44,12 @@ impl Chapter {
         let conn = pool.get()?;
 
         let chapter = conn.query_row(
-            "SELECT C.Id, C.Name, C.Rendered, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
+            "SELECT C.Id, C.Name, C.Raw, C.Rendered, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
             rusqlite::params![&story, &place], |row| -> rusqlite::Result<Self> {
                 Ok(Self {
                     id: row.get("Id")?,
                     name: row.get("Name")?,
+                    raw: row.get("Raw")?,
                     rendered: row.get("Rendered")?,
                     created: row.get("Created")?,
                     updated: row.get("Updated")?,

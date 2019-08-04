@@ -2,3 +2,4 @@
 **/*.rs.bk
 rls*.log
 *.db
+/node_modules/

@@ -3,9 +3,10 @@ use {
     chrono::{DateTime, Utc},
     rusqlite::{
         types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
-        Result as RusqliteResult,
+        OptionalExtension, Result as RusqliteResult,
     },
     std::fmt,
+    uuid::Uuid,
 };
 
 const TABLE: &str = "CREATE TABLE
@@ -27,12 +28,19 @@ IF NOT EXISTS
         Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL
     );";
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize)]
 #[cfg_attr(debug_assertions, derive(Debug))]
 pub enum TagType {
+    #[serde(rename = "warning")]
     Warning,
+
+    #[serde(rename = "pairing")]
     Pairing,
+
+    #[serde(rename = "character")]
     Character,
+
+    #[serde(rename = "general")]
     General,
 }
 
@@ -87,6 +95,36 @@ pub struct Tag {
 }
 
 impl Tag {
+    pub fn find_or_create(pool: Pool, name: &str, typ: TagType) -> Result<Uuid, Error> {
+        let mut conn = pool.get()?;
+
+        if let Some(id) = conn
+            .query_row(
+                "SELECT Id FROM Tag WHERE Name = ? AND Type = ?;",
+                rusqlite::params![name, typ],
+                |row| row.get("Id"),
+            )
+            .optional()?
+        {
+            Ok(id)
+        } else {
+            let id = Uuid::new_v4();
+
+            let trans = conn.transaction()?;
+
+            {
+                trans.execute(
+                    "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
+                    rusqlite::params![id, name, typ],
+                )?;
+            }
+
+            trans.commit()?;
+
+            Ok(id)
+        }
+    }
+
     pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
         let conn = pool.get()?;
 

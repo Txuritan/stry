@@ -1,3 +1,4 @@
+mod archiver;
 mod models;
 mod pages;
 
@@ -35,6 +36,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     pool.get()?.execute_batch(&sch)?;
 
+    crate::archiver::begin(pool.clone())?;
+
     let sys = actix_rt::System::new("stry2");
 
     HttpServer::new(move || {
@@ -50,4 +53,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sys.run()?;
 
     Ok(())
+}
+
+fn word_count(str: &str) -> u32 {
+    str.split_whitespace()
+        .filter(|s| match *s {
+            "---" => false,
+            "#" | "##" | "###" | "####" | "#####" | "######" => false,
+            "*" | "**" => false,
+            _ => true,
+        })
+        .count() as u32
 }

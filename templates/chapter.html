@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% import "macros.html" as m %}
+
+{% block content %}
+<div grid="auto">
+    <div grid-column="12">
+        {% call m::story(story) %}
+    </div>
+    <div grid-column="12"><hr /></div>
+    <div grid-column="12">
+        {{ chapter.rendered|safe }}
+    </div>
+</div>
+{% endblock content %}

@@ -4,7 +4,7 @@
 {% block content %}
     {% for story in stories %}
         {% call m::story(story) %}
-        {% if (loop.index0 % 2) == 1 %}
+        {% if loop.index0 != stories.len() - 1 %}
         <hr />
         {% endif %}
     {% endfor %}

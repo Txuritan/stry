@@ -1,11 +1,12 @@
 use {
     crate::{
+        archiver::sleep,
         story::{Language, Rating, State},
         word_count, Error, Pool,
     },
     chrono::prelude::*,
     comrak::{markdown_to_html, ComrakOptions},
-    rusqlite::{OptionalExtension, Savepoint},
+    rusqlite::{OptionalExtension, Transaction},
     scraper::{Html, Selector},
     uuid::Uuid,
 };
@@ -34,7 +35,6 @@ lazy_static::lazy_static! {
 #[cfg_attr(debug_assertions, derive(Debug))]
 pub struct FanFiction {}
 
-#[allow(dead_code)]
 impl FanFiction {
     pub fn scrape(
         pool: Pool,
@@ -42,169 +42,210 @@ impl FanFiction {
         origins: &[String],
         tags: &[crate::archiver::list::Tag],
     ) -> Result<(), Error> {
+        log::info!("[{}] Importing", id);
+
         let mut conn = pool.get()?;
 
-        let mut point = conn.savepoint_with_name("scrape")?;
+        let mut trans = conn.transaction()?;
 
         let (ch1, de) = Self::chapter(id, 1)?;
 
         // always some
         if let Some(details) = de {
-            let story_id = Self::commit_story(&mut point, &details, origins, tags)?;
-            Self::commit_chapter(&mut point, &story_id, ch1, 1)?;
+            let story_id = Self::commit_story(&mut trans, &details, origins, tags)?;
+            Self::commit_chapter(&mut trans, &story_id, ch1, 1)?;
+
+            log::info!("[{}] Chapters: {}", id, details.chapters);
 
             // only run if there are more than one chapter
             if details.chapters != 1 {
                 // if there are only two chapters, get the next
                 if details.chapters == 2 {
+                    sleep();
+
                     let (ch2, _) = Self::chapter(id, 1)?;
-                    Self::commit_chapter(&mut point, &story_id, ch2, 2)?;
+                    Self::commit_chapter(&mut trans, &story_id, ch2, 2)?;
                 } else {
                     // more than two, start loop
-                    for c in 2..details.chapters {
+                    for c in 2..=details.chapters {
+                        sleep();
+
                         let (ch_, _) = Self::chapter(id, c)?;
-                        Self::commit_chapter(&mut point, &story_id, ch_, c)?;
+                        Self::commit_chapter(&mut trans, &story_id, ch_, c)?;
                     }
                 }
             }
         }
 
-        point.finish()?;
+        trans.commit()?;
+
+        log::info!("[{}] Imported", id);
 
         Ok(())
     }
 
     fn commit_story(
-        conn: &mut Savepoint,
+        conn: &mut Transaction,
         details: &Details,
         origins: &[String],
         tags: &[crate::archiver::list::Tag],
-    ) -> Result<Uuid, Error> {
-        let mut point = conn.savepoint_with_name("story")?;
+    ) -> Result<String, Error> {
+        log::info!("[{}] Committing", details.name);
 
-        let id = Uuid::new_v4();
+        let id = Uuid::new_v4().to_string();
 
+        conn.execute(
+            "INSERT INTO Story(Id, Name, Summary, Language, Rating, State, Created, Updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
+            rusqlite::params![
+                id,
+                details.name,
+                details.summary,
+                details.language,
+                details.rating,
+                details.state,
+                details.created,
+                details.updated,
+            ],
+        )?;
+
+        let author_id = if let Some(existing_id) = conn
+            .query_row(
+                "SELECT Id FROM Author WHERE Name = ?;",
+                rusqlite::params![details.author],
+                |row| row.get::<_, String>("Id"),
+            )
+            .optional()?
         {
-            point.execute(
-                "INSERT INTO Story(Id, Name, Summary, Language, Rating, State, Created, Updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-                rusqlite::params![
-                    id,
-                    details.name,
-                    details.summary,
-                    details.language,
-                    details.rating,
-                    details.state,
-                    details.created,
-                    details.updated,
-                ],
+            log::info!("[author/{}] Existing", details.author);
+
+            existing_id
+        } else {
+            log::info!("[author/{}] New", details.author);
+
+            let new_id = Uuid::new_v4().to_string();
+
+            conn.execute(
+                "INSERT INTO Author(Id, Name) VALUES (?, ?);",
+                rusqlite::params![new_id, details.author],
             )?;
 
-            for origin in origins {
-                let origin_id = if let Some(id) = point
-                    .query_row(
-                        "SELECT Id FROM Origin WHERE Name = ?;",
-                        rusqlite::params![origin],
-                        |row| row.get("Id"),
-                    )
-                    .optional()?
-                {
-                    id
-                } else {
-                    let id = Uuid::new_v4();
+            new_id
+        };
 
-                    let tag_point = point.savepoint_with_name("origin")?;
+        conn.execute(
+            "INSERT INTO StoryAuthor(StoryId, AuthorId) VALUES (?, ?);",
+            rusqlite::params![id, author_id],
+        )?;
 
-                    {
-                        tag_point.execute(
-                            "INSERT INTO Origin(Id, Name) VALUES (?, ?);",
-                            rusqlite::params![id, origin],
-                        )?;
-                    }
+        for origin in origins {
+            log::info!("[origin/{}] Committing", origin);
 
-                    tag_point.finish()?;
+            let origin_id = if let Some(existing_id) = conn
+                .query_row(
+                    "SELECT Id FROM Origin WHERE Name = ?;",
+                    rusqlite::params![origin],
+                    |row| row.get::<_, String>("Id"),
+                )
+                .optional()?
+            {
+                log::info!("[origin/{}] Existing", origin);
 
-                    id
-                };
+                existing_id
+            } else {
+                log::info!("[origin/{}] New", origin);
 
-                point.execute(
-                    "INSERT INTO StoryOrigin(StoryId, OriginId) VALUES (?, ?);",
-                    rusqlite::params![id, origin_id],
+                let new_id = Uuid::new_v4().to_string();
+
+                conn.execute(
+                    "INSERT INTO Origin(Id, Name) VALUES (?, ?);",
+                    rusqlite::params![new_id, origin],
                 )?;
-            }
 
-            for tag in tags {
-                let tag_id = if let Some(id) = point
-                    .query_row(
-                        "SELECT Id FROM Tag WHERE Name = ? AND Type = ?;",
-                        rusqlite::params![tag.name, tag.tag_type],
-                        |row| row.get("Id"),
-                    )
-                    .optional()?
-                {
-                    id
-                } else {
-                    let id = Uuid::new_v4();
+                new_id
+            };
 
-                    let tag_point = point.savepoint_with_name("tag")?;
+            conn.execute(
+                "INSERT INTO StoryOrigin(StoryId, OriginId) VALUES (?, ?);",
+                rusqlite::params![id, origin_id],
+            )?;
 
-                    {
-                        tag_point.execute(
-                            "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
-                            rusqlite::params![id, tag.name, tag.tag_type],
-                        )?;
-                    }
-
-                    tag_point.finish()?;
-
-                    id
-                };
-
-                point.execute(
-                    "INSERT INTO StoryTag(StoryId, TagId) VALUES (?, ?);",
-                    rusqlite::params![id, tag_id],
-                )?;
-            }
+            log::info!("[origin/{}] Committed", origin);
         }
 
-        point.finish()?;
+        for tag in tags {
+            log::info!("[tag/{}] Committing", tag.name);
+
+            let tag_id = if let Some(existing_id) = conn
+                .query_row(
+                    "SELECT Id FROM Tag WHERE Name = ? AND Type = ?;",
+                    rusqlite::params![tag.name, tag.tag_type],
+                    |row| row.get::<_, String>("Id"),
+                )
+                .optional()?
+            {
+                log::info!("[tag/{}] Existing", tag.name);
+
+                existing_id
+            } else {
+                log::info!("[tag/{}] New", tag.name);
+
+                let new_id = Uuid::new_v4().to_string();
+
+                conn.execute(
+                    "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
+                    rusqlite::params![new_id, tag.name, tag.tag_type],
+                )?;
+
+                new_id
+            };
+
+            conn.execute(
+                "INSERT INTO StoryTag(StoryId, TagId) VALUES (?, ?);",
+                rusqlite::params![id, tag_id],
+            )?;
+
+            log::info!("[tag/{}] Committed", tag.name);
+        }
+
+        log::info!("[{}] Committed", details.name);
 
         Ok(id)
     }
 
     fn commit_chapter(
-        conn: &mut Savepoint,
-        story: &Uuid,
+        conn: &mut Transaction,
+        story: &str,
         chapter: Chapter,
         place: u32,
     ) -> Result<(), Error> {
-        let point = conn.savepoint_with_name("chapter")?;
+        log::info!("[chapter/{}] Committing", place);
 
-        let chapter_id = Uuid::new_v4();
+        let chapter_id = Uuid::new_v4().to_string();
 
-        {
-            point.execute(
-                "INSERT INTO Chapter(Id, Name, Raw, Rendered, Words) VALUES (?, ?, ?, ?, ?);",
-                rusqlite::params![
-                    chapter_id,
-                    chapter.name,
-                    chapter.text,
-                    ammonia::clean(&markdown_to_html(&chapter.text, &ComrakOptions::default())),
-                    word_count(&chapter.text),
-                ],
-            )?;
+        conn.execute(
+            "INSERT INTO Chapter(Id, Name, Raw, Rendered, Words) VALUES (?, ?, ?, ?, ?);",
+            rusqlite::params![
+                chapter_id,
+                chapter.name,
+                chapter.text,
+                ammonia::clean(&markdown_to_html(&chapter.text, &ComrakOptions::default())),
+                word_count(&chapter.text),
+            ],
+        )?;
 
-            point.execute(
-                "INSERT INTO StoryChapter(StoryId, ChapterId, Place) VALUES (?, ?, ?);",
-                rusqlite::params![story, chapter_id, place],
-            )?;
-        }
+        conn.execute(
+            "INSERT INTO StoryChapter(StoryId, ChapterId, Place) VALUES (?, ?, ?);",
+            rusqlite::params![story, chapter_id, place],
+        )?;
 
-        point.finish()?;
+        log::info!("[chapter/{}] Committed", place);
 
         Ok(())
     }
 
     fn chapter(id: &str, chapter: u32) -> Result<(Chapter, Option<Details>), Error> {
+        log::info!("[chapter/{}] Scraping", chapter);
+
         let mut res = CLIENT
             .get(&format!("https://www.fanfiction.net/s/{}/{}/", id, chapter))
             .send()?;
@@ -225,6 +266,8 @@ impl FanFiction {
                 .send()?;
 
             if chapter_text.status().is_success() {
+                log::info!("[chapter/{}] Scrapped", chapter);
+
                 Ok((
                     Chapter {
                         name: html
@@ -232,8 +275,12 @@ impl FanFiction {
                             .next()
                             .expect("[CHAPTER_NAME_SELECTOR] HTML is missing the chapter name node, did the html change?")
                             .text()
+                            .next()
+                            .expect("[CHAPTER_NAME_SELECTOR] No text in selected element")
+                            .split(' ')
+                            .skip(1)
                             .collect::<Vec<_>>()
-                            .join(""),
+                            .join(" "),
                         text: chapter_text.text()?,
                     },
                     if chapter == 1 {
@@ -274,9 +321,19 @@ impl FanFiction {
                     },
                 ))
             } else {
+                log::error!(
+                    "[chapter/{}] Non OK response from localhost: {}",
+                    chapter,
+                    chapter_text.status()
+                );
                 Err(Error::custom("Non OK response from localhost"))
             }
         } else {
+            log::error!(
+                "[chapter/{}] Non OK response fanfiction.net: {}",
+                chapter,
+                res.status()
+            );
             Err(Error::custom("Non OK response from fanfiction.net"))
         }
     }
@@ -302,11 +359,9 @@ pub struct Details {
 
 impl Details {
     fn parse(author: String, name: String, summary: String, details: String) -> Self {
-        println!("{}", details);
+        log::info!("[details] Parsing");
 
         let chunks = details.split(" - ").collect::<Vec<&str>>();
-
-        println!("{:?}", chunks);
 
         let mut builder = DetailsBuilder::new();
 
@@ -316,7 +371,6 @@ impl Details {
 
         builder.rating(Self::parse_rating(chunks[0].trim()));
         builder.language(Self::parse_language(chunks[1].trim()));
-        builder.chapters(Self::parse_chapters(chunks[4].trim()));
 
         for chunk in chunks {
             let chunk = chunk.trim();
@@ -327,16 +381,18 @@ impl Details {
                 builder.created(Self::parse_time(chunk));
             } else if chunk.starts_with("Status") {
                 builder.state(Self::parse_state(chunk));
+            } else if chunk.starts_with("Chapters") {
+                builder.chapters(Self::parse_chapters(chunk));
             }
         }
+
+        log::info!("[details] Parsed");
 
         builder.build()
     }
 
     fn parse_rating(chunk: &str) -> Rating {
         let chunks = chunk.split(": ").collect::<Vec<&str>>();
-
-        println!("{:?}", chunks);
 
         match chunks[1].to_lowercase().as_str() {
             "fiction ma" | "fiction  ma" => Rating::Explicit,
@@ -357,8 +413,6 @@ impl Details {
     fn parse_chapters(chunk: &str) -> u32 {
         let chunks = chunk.split(": ").collect::<Vec<&str>>();
 
-        println!("{:?}", chunks);
-
         chunks[1]
             .trim()
             .parse()
@@ -368,8 +422,6 @@ impl Details {
     fn parse_state(chunk: &str) -> State {
         let chunks = chunk.split(": ").collect::<Vec<&str>>();
 
-        println!("{:?}", chunks);
-
         match chunks[1].trim().to_lowercase().as_str() {
             "complete" => State::Completed,
             _ => State::InProgress,
@@ -378,8 +430,6 @@ impl Details {
 
     fn parse_time(chunk: &str) -> DateTime<Utc> {
         let chunks = chunk.split(": ").collect::<Vec<&str>>();
-
-        println!("{:?}", chunks);
 
         let date = chunks[1].trim();
 
@@ -432,7 +482,7 @@ impl DetailsBuilder {
             summary: self.summary.unwrap(),
             rating: self.rating.unwrap(),
             language: self.language.unwrap(),
-            chapters: self.chapters.unwrap(),
+            chapters: self.chapters.unwrap_or(1),
             state: self.state.unwrap_or(State::InProgress),
             created: self.created.unwrap(),
             updated: self.updated.unwrap(),

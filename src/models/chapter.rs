@@ -35,6 +35,8 @@ pub struct Chapter {
     pub raw: String,
     pub rendered: String,
 
+    pub words: u32,
+
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
 }
@@ -44,13 +46,14 @@ impl Chapter {
         let conn = pool.get()?;
 
         let chapter = conn.query_row(
-            "SELECT C.Id, C.Name, C.Raw, C.Rendered, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
+            "SELECT C.Id, C.Name, C.Raw, C.Rendered, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
             rusqlite::params![&story, &place], |row| -> rusqlite::Result<Self> {
                 Ok(Self {
                     id: row.get("Id")?,
                     name: row.get("Name")?,
                     raw: row.get("Raw")?,
                     rendered: row.get("Rendered")?,
+                    words: row.get("Words")?,
                     created: row.get("Created")?,
                     updated: row.get("Updated")?,
                 })

@@ -12,7 +12,7 @@
                 <p>{{ s.origins|join(", ")|safe }}</p>
             </div>
         </div>
-        <p flex-item="grow" text="right">{{ s.updated }}</p>
+        <p flex-item="grow" text="right">{{ hum_time!(s.updated) }}</p>
     </div>
     <div body>
         <p>{{ s.summary }}</p>

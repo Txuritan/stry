@@ -45,6 +45,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .data(pool.clone())
             .wrap(middleware::Logger::default())
             .route("/", web::get().to(Index::home))
+            .route(
+                "/story/{id}/{chapter}",
+                web::get().to_async(ChapterPage::index),
+            )
     })
     .keep_alive(KeepAlive::Timeout(60))
     .bind(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 8901))?

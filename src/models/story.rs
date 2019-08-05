@@ -37,8 +37,8 @@ pub struct Story {
     pub language: Language,
     pub square: Square,
 
-    pub chapters: i32,
-    pub words: i32,
+    pub chapters: u32,
+    pub words: u32,
 
     pub authors: Vec<Author>,
     pub origins: Vec<Origin>,
@@ -59,9 +59,6 @@ struct StoryRow {
 
     pub language: Language,
 
-    pub chapters: i32,
-    pub words: i32,
-
     pub series: Option<Series>,
 
     pub created: DateTime<Utc>,
@@ -75,7 +72,9 @@ impl Story {
     pub fn all(pool: Pool) -> Result<Vec<Self>, Error> {
         let conn = pool.get()?;
 
-        let mut stmt = conn.prepare("SELECT Id, Name, Summary, Language, Rating, State, (SELECT ChapterId FROM StoryChapter WHERE StoryId = Id) AS Chapters, Created, Updated FROM Story;")?;
+        let mut stmt = conn.prepare(
+            "SELECT Id, Name, Summary, Language, Rating, State, Created, Updated FROM Story;",
+        )?;
 
         let story_rows = stmt.query_map(rusqlite::params![], |row| {
             Ok(StoryRow {
@@ -83,8 +82,6 @@ impl Story {
                 name: row.get("Name")?,
                 summary: row.get("Summary")?,
                 language: row.get("Language")?,
-                chapters: row.get("Chapters")?,
-                words: row.get("Words")?,
                 created: row.get("Created")?,
                 updated: row.get("Updated")?,
                 rating: row.get("Rating")?,
@@ -105,12 +102,20 @@ impl Story {
             let warn = tags.iter().any(|t| t.typ == TagType::Warning);
 
             stories.push(Self {
-                id: story.id,
                 name: story.name,
                 summary: story.summary,
                 language: story.language,
-                chapters: story.chapters,
-                words: story.words,
+                chapters: conn.query_row(
+                    "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = ?;",
+                    rusqlite::params![story.id],
+                    |row| row.get("Chapters")
+                )?,
+                words: conn.query_row(
+                    "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = ?;",
+                    rusqlite::params![story.id],
+                    |row| row.get("Words")
+                )?,
+                id: story.id,
                 created: story.created,
                 updated: story.updated,
                 square: Square {
@@ -138,16 +143,24 @@ impl Story {
         let warn = tags.iter().any(|t| t.typ == TagType::Warning);
 
         let story = conn.query_row(
-            "SELECT Id, Name, Summary, Language, Rating, State, (SELECT ChapterId FROM StoryChapter WHERE StoryId = ?) AS Chapters, Created, Updated FROM Story WHERE Id = ?;",
-            rusqlite::params![],
+            "SELECT Id, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = ?;",
+            rusqlite::params![id],
             |row| -> rusqlite::Result<Self> {
                 Ok(Self {
                     id: row.get("Id")?,
                     name: row.get("Name")?,
                     summary: row.get("Summary")?,
                     language: row.get("Language")?,
-                    chapters: row.get("Chapters")?,
-                    words: row.get("Words")?,
+                    chapters: conn.query_row(
+                        "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = ?;",
+                        rusqlite::params![id],
+                        |row| row.get("Chapters")
+                    )?,
+                    words: conn.query_row(
+                        "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = ?;",
+                        rusqlite::params![id],
+                        |row| row.get("Words")
+                    )?,
                     created: row.get("Created")?,
                     updated: row.get("Updated")?,
                     square: Square {

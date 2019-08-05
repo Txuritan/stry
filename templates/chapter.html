@@ -5,10 +5,13 @@
 <div grid="auto">
     <div grid-column="12">
         {% call m::story(story) %}
-    </div>
-    <div grid-column="12"><hr /></div>
-    <div grid-column="12">
-        {{ chapter.rendered|safe }}
+        <hr />
+        <div chapter>{{ chapter.rendered|safe }}</div>
+        <hr />
+        <div pagination>
+            <a pager="left" href="/story/{{ story.id }}/{{ prev }}">prev</a>
+            <a pager="right" href="/story/{{ story.id }}/{{ next }}">next</a>
+        </div>
     </div>
 </div>
 {% endblock content %}

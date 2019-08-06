@@ -73,7 +73,7 @@ impl Story {
         let conn = pool.get()?;
 
         let mut stmt = conn.prepare(
-            "SELECT Id, Name, Summary, Language, Rating, State, Created, Updated FROM Story;",
+            "SELECT Id, Name, Summary, Language, Rating, State, Created, Updated FROM Story ORDER BY Updated DESC;",
         )?;
 
         let story_rows = stmt.query_map(rusqlite::params![], |row| {

@@ -25,16 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let pool = r2d2::Pool::new(r2d2_sqlite::SqliteConnectionManager::file("stry2.db"))?;
 
-    let mut sch = String::new();
-
-    models::Story::schema(&mut sch)?;
-
-    models::Author::schema(&mut sch)?;
-    models::Chapter::schema(&mut sch)?;
-    models::Origin::schema(&mut sch)?;
-    models::Tag::schema(&mut sch)?;
-
-    pool.get()?.execute_batch(&sch)?;
+    pool.get()?.execute_batch(&schema()?)?;
 
     crate::archiver::begin(pool.clone())?;
 
@@ -49,6 +40,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "/story/{id}/{chapter}",
                 web::get().to_async(ChapterPage::index),
             )
+            .route("/author/{author_id}", web::get().to_async(Index::author))
+            .route("/origin/{origin_id}", web::get().to_async(Index::origin))
+            .route("/tag/{tag_id}", web::get().to_async(Index::tag))
     })
     .keep_alive(KeepAlive::Timeout(60))
     .bind(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 8901))?
@@ -57,6 +51,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sys.run()?;
 
     Ok(())
+}
+
+fn schema() -> Result<String, Box<dyn std::error::Error>> {
+    let mut sch = String::new();
+
+    Story::schema(&mut sch)?;
+
+    Author::schema(&mut sch)?;
+    Chapter::schema(&mut sch)?;
+    Origin::schema(&mut sch)?;
+    Tag::schema(&mut sch)?;
+
+    Ok(sch)
 }
 
 fn word_count(str: &str) -> u32 {

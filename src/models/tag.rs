@@ -1,5 +1,5 @@
 use {
-    crate::{Error, Pool, Schema},
+    crate::{Error, Pool, Schema, Story},
     chrono::{DateTime, Utc},
     rusqlite::{
         types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
@@ -95,6 +95,23 @@ pub struct Tag {
 }
 
 impl Tag {
+    pub fn all(pool: Pool, id: &str) -> Result<Vec<Story>, Error> {
+        let conn = pool.get()?;
+
+        let mut stmt = conn.prepare("SELECT StoryId FROM StoryTag WHERE TagId = ?;")?;
+
+        let story_rows =
+            stmt.query_map(rusqlite::params![id], |row| row.get::<_, String>("StoryId"))?;
+
+        let mut stories = Vec::new();
+
+        for story in story_rows {
+            stories.push(Story::get(pool.clone(), &story?)?);
+        }
+
+        Ok(stories)
+    }
+
     pub fn find_or_create(pool: Pool, name: &str, typ: TagType) -> Result<Uuid, Error> {
         let mut conn = pool.get()?;
 
@@ -112,12 +129,10 @@ impl Tag {
 
             let trans = conn.transaction()?;
 
-            {
-                trans.execute(
-                    "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
-                    rusqlite::params![id, name, typ],
-                )?;
-            }
+            trans.execute(
+                "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
+                rusqlite::params![id, name, typ],
+            )?;
 
             trans.commit()?;
 

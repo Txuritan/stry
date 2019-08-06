@@ -1,5 +1,5 @@
 use {
-    crate::{Error, Pool, Schema},
+    crate::{Error, Pool, Schema, Story},
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -33,6 +33,23 @@ pub struct Origin {
 }
 
 impl Origin {
+    pub fn all(pool: Pool, id: &str) -> Result<Vec<Story>, Error> {
+        let conn = pool.get()?;
+
+        let mut stmt = conn.prepare("SELECT StoryId FROM StoryOrigin WHERE OriginId = ?;")?;
+
+        let story_rows =
+            stmt.query_map(rusqlite::params![id], |row| row.get::<_, String>("StoryId"))?;
+
+        let mut stories = Vec::new();
+
+        for story in story_rows {
+            stories.push(Story::get(pool.clone(), &story?)?);
+        }
+
+        Ok(stories)
+    }
+
     pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
         let conn = pool.get()?;
 

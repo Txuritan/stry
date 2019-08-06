@@ -1,5 +1,5 @@
 use {
-    crate::{Chapter, Error, Pool, Story, CSS, GIT, VERSION},
+    crate::{Author, Chapter, Error, Origin, Pool, Story, Tag, CSS, GIT, VERSION},
     actix_web::{
         http,
         web::{self, Data, Path, Query},
@@ -61,6 +61,30 @@ impl Index {
         let stories = Story::all(pool.get_ref().clone())?;
 
         Index::render(now, "Home", stories, None)
+    }
+
+    pub fn author((pool, author_id): (Data<Pool>, Path<String>)) -> Result<HttpResponse, Error> {
+        let now = Utc::now();
+
+        let stories = Author::all(pool.get_ref().clone(), author_id.into_inner().as_ref())?;
+
+        Index::render(now, "Author", stories, None)
+    }
+
+    pub fn origin((pool, origin_id): (Data<Pool>, Path<String>)) -> Result<HttpResponse, Error> {
+        let now = Utc::now();
+
+        let stories = Origin::all(pool.get_ref().clone(), origin_id.into_inner().as_ref())?;
+
+        Index::render(now, "Origin", stories, None)
+    }
+
+    pub fn tag((pool, tag_id): (Data<Pool>, Path<String>)) -> Result<HttpResponse, Error> {
+        let now = Utc::now();
+
+        let stories = Tag::all(pool.get_ref().clone(), tag_id.into_inner().as_ref())?;
+
+        Index::render(now, "Tag", stories, None)
     }
 }
 

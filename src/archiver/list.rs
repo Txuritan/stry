@@ -8,6 +8,7 @@ pub struct Archiver {
 
 impl Archiver {
     pub fn read() -> Self {
+        log::info!("Reading import archive file");
         serde_json::from_slice(&std::fs::read("./import.json").expect("Import file is either missing or unreadable")[..]).expect("Import file is not valid JSON")
     }
 }

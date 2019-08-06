@@ -1,4 +1,4 @@
-use crate::models::tag::TagType;
+use crate::{tag::TagType, Error};
 
 #[derive(serde::Deserialize)]
 #[cfg_attr(debug_assertions, derive(Debug))]
@@ -7,9 +7,11 @@ pub struct Archiver {
 }
 
 impl Archiver {
-    pub fn read() -> Self {
+    pub fn read() -> Result<Self, Error> {
         log::info!("Reading import archive file");
-        serde_json::from_slice(&std::fs::read("./import.json").expect("Import file is either missing or unreadable")[..]).expect("Import file is not valid JSON")
+        Ok(serde_json::from_slice(
+            &std::fs::read("./import.json")?[..],
+        )?)
     }
 }
 

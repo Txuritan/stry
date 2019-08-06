@@ -1,8 +1,8 @@
 #[derive(Debug, derive_more::Display)]
 #[display(fmt = "{}: {}", code, kind)]
 pub struct Error {
-    kind: ErrorKind,
-    code: ErrorCode,
+    pub kind: ErrorKind,
+    pub code: ErrorCode,
 }
 
 impl Error {
@@ -18,6 +18,10 @@ impl Error {
 pub enum ErrorKind {
     #[display(fmt = "(Askama) {}", err)]
     Askama { err: askama::Error },
+    #[display(fmt = "(IO) {}", err)]
+    IO { err: std::io::Error },
+    #[display(fmt = "(Json) {}", err)]
+    Json { err: serde_json::Error },
     #[display(fmt = "(Pool) {}", err)]
     Pool { err: r2d2::Error },
     #[display(fmt = "(Reqwest) {}", err)]
@@ -43,6 +47,24 @@ impl From<askama::Error> for Error {
     fn from(err: askama::Error) -> Error {
         Error {
             kind: ErrorKind::Askama { err },
+            code: ErrorCode::ThirdParty,
+        }
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Error {
+        Error {
+            kind: ErrorKind::IO { err },
+            code: ErrorCode::ThirdParty,
+        }
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
+        Error {
+            kind: ErrorKind::Json { err },
             code: ErrorCode::ThirdParty,
         }
     }
@@ -94,6 +116,8 @@ impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self.kind {
             ErrorKind::Askama { ref err } => Some(err),
+            ErrorKind::IO { ref err } => Some(err),
+            ErrorKind::Json { ref err } => Some(err),
             ErrorKind::Pool { ref err } => Some(err),
             ErrorKind::Reqwest { ref err } => Some(err),
             ErrorKind::SQLite { ref err } => Some(err),

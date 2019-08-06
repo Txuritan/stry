@@ -4,26 +4,32 @@ pub mod list;
 
 use {
     self::{list::Site, sites::FanFiction},
-    crate::{Error, Pool},
+    crate::{Error, ErrorKind, Pool},
     rand::Rng,
     std::{thread, time},
 };
 
 pub fn begin(pool: Pool) -> Result<(), Error> {
-    let archive = self::list::Archiver::read();
+    match self::list::Archiver::read() {
+        Ok(archive) => {
+            for story in archive.imports {
+                match story.site {
+                    Site::ArchiveOfOurOwn => {}
+                    Site::FanFiction => {
+                        FanFiction::scrape(pool.clone(), &story.id, &story.origins, &story.tags)?;
+                    }
+                }
 
-    for story in archive.imports {
-        match story.site {
-            Site::ArchiveOfOurOwn => {}
-            Site::FanFiction => {
-                FanFiction::scrape(pool.clone(), &story.id, &story.origins, &story.tags)?;
+                sleep();
             }
+
+            Ok(())
         }
-
-        sleep();
+        Err(err) => match err.kind {
+            ErrorKind::Json { .. } => Err(err),
+            _ => Ok(()),
+        },
     }
-
-    Ok(())
 }
 
 pub fn sleep() {

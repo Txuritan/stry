@@ -1,5 +1,6 @@
 /target
 **/*.rs.bk
-rls*.log
+*.log
 *.db
-/node_modules/
+*.sql
+**/node_modules/

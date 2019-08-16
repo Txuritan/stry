@@ -1,16 +1,19 @@
-mod archiver;
+mod http;
+mod logger;
 mod models;
 mod pages;
+mod server;
 
 mod error;
+mod nanoid;
 mod schema;
+mod typemap;
 
 pub const CSS: &str = include_str!("./css/anatu.css");
-pub const GIT: &str = git_version::git_version!();
+pub const GIT: &str = env!("GIT_VERSION");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub type Conn = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
-pub type Pool = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
 
 pub use crate::{
     error::{Error, ErrorKind},
@@ -20,42 +23,57 @@ pub use crate::{
 };
 
 use {
-    actix_http::KeepAlive,
-    actix_web::{middleware, web, App, HttpServer},
-    std::net::{IpAddr, Ipv4Addr, SocketAddr},
+    crate::{
+        logger::init_with_level,
+        server::{Router, Server},
+    },
+    log::Level,
+    std::path::Path,
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    simple_logger::init_with_level(log::Level::Info)?;
+    init_with_level(Level::Info, Path::new("stry.log"))?;
 
-    let pool = r2d2::Pool::new(r2d2_sqlite::SqliteConnectionManager::file("stry2.db"))?;
+    let pool = Pool {
+        inner: r2d2::Pool::new(r2d2_sqlite::SqliteConnectionManager::file("stry2.db"))?,
+    };
 
     pool.get()?.execute_batch(&schema()?)?;
 
-    crate::archiver::begin(pool.clone())?;
+    let mut state = typemap::TypeMap::custom();
 
-    let sys = actix_rt::System::new("stry2");
+    let _ = state.insert::<Pool>(pool.clone());
 
-    HttpServer::new(move || {
-        App::new()
-            .data(pool.clone())
-            .wrap(middleware::Logger::default())
-            .route("/", web::get().to(Index::home))
-            .route(
-                "/story/{id}/{chapter}",
-                web::get().to_async(ChapterPage::index),
-            )
-            .route("/author/{author_id}", web::get().to_async(Index::author))
-            .route("/origin/{origin_id}", web::get().to_async(Index::origin))
-            .route("/tag/{tag_id}", web::get().to_async(Index::tag))
-    })
-    .keep_alive(KeepAlive::Timeout(60))
-    .bind(SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 8901))?
-    .start();
-
-    sys.run()?;
+    Server::new(
+        "0.0.0.0:8901",
+        state,
+        Router::new()
+            .get("/", Index::home)
+            .get("/story/:story/:chapter", ChapterPage::index)
+            .get("/author/:author", Index::author)
+            .get("/origin/:origin", Index::origin)
+            .get("/tag/:tag", Index::tag),
+    )?
+    .run();
 
     Ok(())
+}
+
+#[derive(Clone)]
+pub struct Pool {
+    inner: r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>,
+}
+
+impl std::ops::Deref for Pool {
+    type Target = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl typemap::Key for Pool {
+    type Value = Self;
 }
 
 fn schema() -> Result<String, Box<dyn std::error::Error>> {
@@ -71,13 +89,28 @@ fn schema() -> Result<String, Box<dyn std::error::Error>> {
     Ok(sch)
 }
 
-fn word_count(str: &str) -> u32 {
-    str.split_whitespace()
-        .filter(|s| match *s {
-            "---" => false,
-            "#" | "##" | "###" | "####" | "#####" | "######" => false,
-            "*" | "**" => false,
-            _ => true,
-        })
-        .count() as u32
+fn readable(num: u32) -> String {
+    let mut num_str = num.to_string();
+    let mut s = String::new();
+    let mut negative = false;
+
+    let values: Vec<char> = num_str.chars().collect();
+
+    if values[0] == '-' {
+        num_str.remove(0);
+        negative = true;
+    }
+
+    for (i, char) in num_str.chars().rev().enumerate() {
+        if i % 3 == 0 && i != 0 {
+            s.insert(0, ',');
+        }
+        s.insert(0, char);
+    }
+
+    if negative {
+        s.insert(0, '-');
+    }
+
+    s
 }

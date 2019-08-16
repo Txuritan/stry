@@ -25,6 +25,7 @@
 
 [nav~="secondary"] {
     line-height: $height--normal;
+    overflow-y: auto;
 
     > [nav-section] > [nav-item] > * {
         line-height: $height--normal;

@@ -1,31 +1,28 @@
 [package]
 name = "stry2"
-version = "2.0.0"
+version = "2.1.0"
 authors = ["Txuritan"]
 edition = "2018"
 
+[features]
+default = []
+ssl = ["openssl"]
+
 [dependencies]
-actix-http = { version="0.2", default-features = false }
-actix-rt = "0.2"
-actix-web = { version = "1.0", features = ["brotli", "flate2-zlib", "client"] }
-ammonia = "3.0"
+ascii = "0.9"
 askama = { version = "0.8" }
 chrono = "0.4"
-comrak = "0.6"
-derive_more = "0.15"
-futures = "0.1"
-git-version = "0.3"
+chunked_transfer = "1.0"
 lazy_static = "1.3"
-log = "0.4"
-maplit = "1.0"
-num-format = "0.4"
-r2d2 = "0.8"
+log = { version = "0.4", features = ["std"] }
+openssl = { version = "0.10", optional = true }
+r2d2 = { git = "https://github.com/sfackler/r2d2", rev = "3b10dda1ed31091a363a23279cff90cf56063bb9" }
 r2d2_sqlite = "0.12"
-rand = "0.7"
-reqwest = "0.9"
-scraper = "0.10"
+rand = "0.6"
+rusqlite = { version = "0.20", features = ["bundled", "chrono"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-simple_logger = "1.3"
-rusqlite = { version = "0.20", features = ["bundled", "chrono", "uuid"] }
-uuid = { version = "0.7", features = ["v4"] }
+unsafe-any = "0.4"
+
+[patch.crates-io]
+r2d2 = { git = "https://github.com/sfackler/r2d2", rev = "3b10dda1ed31091a363a23279cff90cf56063bb9" }

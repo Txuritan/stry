@@ -6,9 +6,9 @@ use {
     },
     chrono::prelude::*,
     comrak::{markdown_to_html, ComrakOptions},
+    isahc::prelude::*,
     rusqlite::{OptionalExtension, Transaction},
     scraper::{Html, Selector},
-    uuid::Uuid,
 };
 
 lazy_static::lazy_static! {
@@ -18,18 +18,6 @@ lazy_static::lazy_static! {
     static ref STORY_DETAILS_SELECTOR: Selector = Selector::parse("#profile_top > span.xgray.xcontrast_txt").unwrap();
     static ref STORY_SUMMARY_SELECTOR: Selector = Selector::parse("#profile_top > div.xcontrast_txt").unwrap();
     static ref STORY_NAME_SELECTOR: Selector = Selector::parse("#profile_top > b.xcontrast_txt").unwrap();
-
-    static ref CLIENT: reqwest::Client = reqwest::Client::builder()
-    .default_headers({
-        use reqwest::header;
-        let mut map = header::HeaderMap::new();
-        map.insert(header::ACCEPT, header::HeaderValue::from_static("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"));
-        map.insert(header::ACCEPT_ENCODING, header::HeaderValue::from_static("gzip, deflate"));
-        map.insert(header::ACCEPT_LANGUAGE, header::HeaderValue::from_static("en-US,en;q=0.5"));
-        map.insert(header::USER_AGENT, header::HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0"));
-        map
-    })
-    .build().expect("Unable to create reqwest client");
 }
 
 #[cfg_attr(debug_assertions, derive(Debug))]
@@ -92,7 +80,7 @@ impl FanFiction {
     ) -> Result<String, Error> {
         log::info!("[{}] Committing", details.name);
 
-        let id = Uuid::new_v4().to_string();
+        let id = crate::nanoid!();
 
         conn.execute(
             "INSERT INTO Story(Id, Name, Summary, Language, Rating, State, Created, Updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
@@ -122,7 +110,7 @@ impl FanFiction {
         } else {
             log::info!("[author/{}] New", details.author);
 
-            let new_id = Uuid::new_v4().to_string();
+            let new_id = crate::nanoid!();
 
             conn.execute(
                 "INSERT INTO Author(Id, Name) VALUES (?, ?);",
@@ -154,7 +142,7 @@ impl FanFiction {
             } else {
                 log::info!("[origin/{}] New", origin);
 
-                let new_id = Uuid::new_v4().to_string();
+                let new_id = crate::nanoid!();
 
                 conn.execute(
                     "INSERT INTO Origin(Id, Name) VALUES (?, ?);",
@@ -189,7 +177,7 @@ impl FanFiction {
             } else {
                 log::info!("[tag/{}] New", tag.name);
 
-                let new_id = Uuid::new_v4().to_string();
+                let new_id = crate::nanoid!();
 
                 conn.execute(
                     "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
@@ -220,7 +208,7 @@ impl FanFiction {
     ) -> Result<(), Error> {
         log::info!("[chapter/{}] Committing", place);
 
-        let chapter_id = Uuid::new_v4().to_string();
+        let chapter_id = crate::nanoid!();
 
         conn.execute(
             "INSERT INTO Chapter(Id, Name, Raw, Rendered, Words) VALUES (?, ?, ?, ?, ?);",
@@ -246,8 +234,18 @@ impl FanFiction {
     fn chapter(id: &str, chapter: u32) -> Result<(Chapter, Option<Details>), Error> {
         log::info!("[chapter/{}] Scraping", chapter);
 
-        let mut res = CLIENT
-            .get(&format!("https://www.fanfiction.net/s/{}/{}/", id, chapter))
+        let mut res = Request::get(format!("https://www.fanfiction.net/s/{}/{}/", id, chapter))
+            .header(
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            )
+            .header("Accept-Encoding", "gzip, deflate")
+            .header("Accept-Language", "en-US,en;q=0.5")
+            .header(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0",
+            )
+            .body("")?
             .send()?;
 
         if res.status().is_success() {
@@ -259,10 +257,9 @@ impl FanFiction {
                 .expect("[CHAPTER_TEXT_SELECTOR] HTML is missing the chapter text node, did the html change?")
                 .inner_html();
 
-            let mut chapter_text = CLIENT
-                .post("http://localhost:8902/")
+            let mut chapter_text = Request::post("http://localhost:8902/")
                 .header("Content-Type", "text/plain")
-                .body(chapter_html)
+                .body(chapter_html)?
                 .send()?;
 
             if chapter_text.status().is_success() {

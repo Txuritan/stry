@@ -2,6 +2,7 @@
 
 button, input, select, textarea {
     border: 1px solid $color--black;
+    border-radius: $padding--small;
     display: block;
     margin: $padding--small 0;
     outline: none;

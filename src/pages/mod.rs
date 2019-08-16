@@ -1,9 +1,8 @@
 use {
-    crate::{Author, Chapter, Error, Origin, Pool, Story, Tag, CSS, GIT, VERSION},
-    actix_web::{
-        http,
-        web::{self, Data, Path, Query},
-        HttpResponse,
+    crate::{
+        readable,
+        server::{Request, Response},
+        Author, Chapter, Error, Origin, Pool, Story, Tag, CSS, GIT, VERSION,
     },
     askama::Template,
     chrono::{DateTime, Duration, Utc},
@@ -11,8 +10,7 @@ use {
 
 macro_rules! hum_num {
     ($num:expr) => {{
-        use num_format::ToFormattedString;
-        $num.to_formatted_string(&num_format::Locale::en)
+        readable($num)
     }};
 }
 
@@ -20,6 +18,12 @@ macro_rules! hum_time {
     ($time:expr) => {{
         $time.format("%b %e, %Y")
     }};
+}
+
+fn no_pool() -> Result<Response, Error> {
+    Ok(Response::InternalError()
+        .header("Content-Type", "text/plain")
+        .body(""))
 }
 
 #[derive(Template)]
@@ -40,8 +44,8 @@ impl Index {
         title: &'static str,
         stories: Vec<Story>,
         search: Option<String>,
-    ) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::Ok().content_type("text/html").body(
+    ) -> Result<Response, Error> {
+        Ok(Response::Ok().html(
             Self {
                 css: CSS,
                 git: GIT,
@@ -55,36 +59,62 @@ impl Index {
         ))
     }
 
-    pub fn home(pool: Data<Pool>) -> Result<HttpResponse, Error> {
+    pub fn home(req: Request) -> Result<Response, Error> {
         let now = Utc::now();
 
-        let stories = Story::all(pool.get_ref().clone())?;
+        match req.state().get::<Pool>() {
+            Some(pool) => {
+                let stories = Story::all(pool.clone())?;
 
-        Index::render(now, "Home", stories, None)
+                Index::render(now, "Home", stories, None)
+            }
+            None => no_pool(),
+        }
     }
 
-    pub fn author((pool, author_id): (Data<Pool>, Path<String>)) -> Result<HttpResponse, Error> {
+    pub fn author(req: Request) -> Result<Response, Error> {
         let now = Utc::now();
 
-        let stories = Author::all(pool.get_ref().clone(), author_id.into_inner().as_ref())?;
+        match req.state().get::<Pool>() {
+            Some(pool) => {
+                let author_id = &req.params.get("author").unwrap();
 
-        Index::render(now, "Author", stories, None)
+                let stories = Author::all(pool.clone(), &author_id)?;
+
+                Index::render(now, "Author", stories, None)
+            }
+            None => no_pool(),
+        }
     }
 
-    pub fn origin((pool, origin_id): (Data<Pool>, Path<String>)) -> Result<HttpResponse, Error> {
+    pub fn origin(req: Request) -> Result<Response, Error> {
         let now = Utc::now();
 
-        let stories = Origin::all(pool.get_ref().clone(), origin_id.into_inner().as_ref())?;
+        match req.state().get::<Pool>() {
+            Some(pool) => {
+                let origin_id = &req.params.get("origin").unwrap();
 
-        Index::render(now, "Origin", stories, None)
+                let stories = Origin::all(pool.clone(), &origin_id)?;
+
+                Index::render(now, "Origin", stories, None)
+            }
+            None => no_pool(),
+        }
     }
 
-    pub fn tag((pool, tag_id): (Data<Pool>, Path<String>)) -> Result<HttpResponse, Error> {
+    pub fn tag(req: Request) -> Result<Response, Error> {
         let now = Utc::now();
 
-        let stories = Tag::all(pool.get_ref().clone(), tag_id.into_inner().as_ref())?;
+        match req.state().get::<Pool>() {
+            Some(pool) => {
+                let tag_id = &req.params.get("tag").unwrap();
 
-        Index::render(now, "Tag", stories, None)
+                let stories = Tag::all(pool.clone(), &tag_id)?;
+
+                Index::render(now, "Tag", stories, None)
+            }
+            None => no_pool(),
+        }
     }
 }
 
@@ -98,8 +128,8 @@ pub struct ChapterPage {
     pub story: Story,
     pub chapter: Chapter,
     pub page: u32,
-    pub next: u32,
-    pub prev: u32,
+    pub is_first: bool,
+    pub is_last: bool,
     pub title: String,
     pub search: Option<String>,
     pub duration: Duration,
@@ -111,20 +141,18 @@ impl ChapterPage {
         story: Story,
         chapter: Chapter,
         page: u32,
-        next: u32,
-        prev: u32,
-    ) -> Result<HttpResponse, Error> {
-        Ok(HttpResponse::Ok().content_type("text/html").body(
+    ) -> Result<Response, Error> {
+        Ok(Response::Ok().html(
             Self {
                 css: CSS,
                 git: GIT,
                 version: VERSION,
                 title: format!("Chapter {} | {}", page, story.name),
+                is_first: page == 1,
+                is_last: page == story.chapters,
                 story,
                 chapter,
                 page,
-                next,
-                prev,
                 search: None,
                 duration: Utc::now().signed_duration_since(time),
             }
@@ -132,27 +160,30 @@ impl ChapterPage {
         ))
     }
 
-    pub fn index((pool, path): (Data<Pool>, Path<(String, u32)>)) -> Result<HttpResponse, Error> {
-        let (story_id, chapter_number) = path.into_inner();
+    pub fn index(req: Request) -> Result<Response, Error> {
         let time = Utc::now();
 
-        let story = Story::get(pool.get_ref().clone(), &story_id)?;
+        let story_id = &req.params.get("story").unwrap();
+        let chapter_number = req.params.get("chapter").unwrap().parse::<u32>()?;
 
-        if chapter_number.lt(&story.chapters) && chapter_number.gt(&0) {
-            let chapter = Chapter::story(pool.get_ref().clone(), &story_id, chapter_number)?;
+        match req.state().get::<Pool>() {
+            Some(pool) => {
+                let story = Story::get(pool.clone(), &story_id)?;
 
-            Self::render(
-                time,
-                story,
-                chapter,
-                chapter_number,
-                chapter_number + 1,
-                chapter_number - 1,
-            )
-        } else {
-            Ok(HttpResponse::MovedPermanently()
-                .header(http::header::LOCATION, format!("/story/{}/1", story_id))
-                .finish())
+                if chapter_number.le(&story.chapters) && chapter_number.gt(&0) {
+                    let chapter = Chapter::story(pool.clone(), &story_id, chapter_number)?;
+
+                    Self::render(
+                        time,
+                        story,
+                        chapter,
+                        chapter_number,
+                    )
+                } else {
+                    Ok(Response::Location(format!("/story/{}/1", story_id)))
+                }
+            }
+            None => no_pool(),
         }
     }
 }

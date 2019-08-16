@@ -31,7 +31,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 hr {
-  background: #e6e6e6;
+  background: #d5d5d5;
   border: none;
   box-shadow: none;
   height: 1px;
@@ -173,6 +173,7 @@ hr {
 @media all and (max-width: 1048px) {
   [pad="body"] {
     padding: 0;
+    padding-bottom: 40vh;
   }
 }
 
@@ -207,6 +208,7 @@ hr {
 
 button, input, select, textarea {
   border: 1px solid #1c1d21;
+  border-radius: 0.2rem;
   display: block;
   margin: 0.2rem 0;
   outline: none;
@@ -300,6 +302,7 @@ button[type="button"], input[type="button"] {
 
 [nav~="secondary"] {
   line-height: 3rem;
+  overflow-y: auto;
 }
 [nav~="secondary"] > [nav-section] > [nav-item] > * {
   line-height: 3rem;
@@ -348,12 +351,30 @@ button[type="button"], input[type="button"] {
   padding: 0.2rem 0.4rem;
 }
 
-[pager="left"] {
+[pager~="left"] {
   border-radius: 0.2rem;
 }
 
-[pager="right"] {
+[pager~="right"] {
   border-radius: 0.2rem;
+}
+
+[pager~="disabled"] {
+  color: #555555;
+  border-color: #e6e6e6;
+}
+[pager~="disabled"]:link:hover {
+  cursor: default;
+  text-decoration: none;
+}
+
+[page] {
+  color: #555555;
+  display: inline-block;
+  font-size: 1.2rem;
+  line-height: 1.4rem;
+  margin: 0.2rem 0;
+  padding: 0.2rem 0.4rem;
 }
 
 [panel] {
@@ -390,6 +411,7 @@ button[type="button"], input[type="button"] {
 [square] {
   display: block;
   height: 3.6rem;
+  min-width: 3.6rem;
   position: relative;
   width: 3.6rem;
 }

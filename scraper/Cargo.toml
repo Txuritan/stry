@@ -1,0 +1,11 @@
+[package]
+name = "stry-scraper"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+ammonia = "=2.0.0"
+comrak = { version = "0.6", default-features = false }
+isahc = "0.6"
+scraper = { version = "0.10", default-features = false }

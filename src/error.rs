@@ -1,8 +1,13 @@
-#[derive(Debug, derive_more::Display)]
-#[display(fmt = "{}: {}", code, kind)]
+#[derive(Debug)]
 pub struct Error {
     pub kind: ErrorKind,
     pub code: ErrorCode,
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", self.code, self.kind)
+    }
 }
 
 impl Error {
@@ -14,33 +19,71 @@ impl Error {
     }
 }
 
-#[derive(Debug, derive_more::Display)]
+#[derive(Debug)]
 pub enum ErrorKind {
-    #[display(fmt = "(Askama) {}", err)]
-    Askama { err: askama::Error },
-    #[display(fmt = "(IO) {}", err)]
-    IO { err: std::io::Error },
-    #[display(fmt = "(Json) {}", err)]
-    Json { err: serde_json::Error },
-    #[display(fmt = "(Pool) {}", err)]
-    Pool { err: r2d2::Error },
-    #[display(fmt = "(Reqwest) {}", err)]
-    Reqwest { err: reqwest::Error },
-    #[display(fmt = "(SQLite) {}", err)]
-    SQLite { err: rusqlite::Error },
-    #[display(fmt = "(UTF8) {}", err)]
-    UTF8 { err: std::string::FromUtf8Error },
+    Askama {
+        err: askama::Error,
+    },
+    IO {
+        err: std::io::Error,
+    },
+    Json {
+        err: serde_json::Error,
+    },
+    NumParseInt {
+        err: std::num::ParseIntError,
+    },
+    Pool {
+        err: r2d2::Error,
+    },
+    SQLite {
+        err: rusqlite::Error,
+    },
+    UTF8 {
+        err: std::string::FromUtf8Error,
+    },
 
-    #[display(fmt = "(Custom) {}", err)]
-    Custom { err: &'static str },
+    BoxSS {
+        err: Box<dyn std::error::Error + Send + Sync>,
+    },
+    Custom {
+        err: &'static str,
+    },
 }
 
-#[derive(Debug, derive_more::Display)]
+impl std::fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ErrorKind::Askama { ref err } => write!(f, "(Askama) {}", err),
+            ErrorKind::IO { ref err } => write!(f, "(IO) {}", err),
+            ErrorKind::Json { ref err } => write!(f, "(Json) {}", err),
+            ErrorKind::NumParseInt { ref err } => write!(f, "(NumParseInt) {}", err),
+            ErrorKind::Pool { ref err } => write!(f, "(Pool) {}", err),
+            ErrorKind::SQLite { ref err } => write!(f, "(SQLite) {}", err),
+            ErrorKind::UTF8 { ref err } => write!(f, "(UTF8) {}", err),
+            ErrorKind::BoxSS { ref err } => write!(f, "(BoxSS) {}", err),
+            ErrorKind::Custom { ref err } => write!(f, "(Custom) {}", err),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum ErrorCode {
-    #[display(fmt = "Stry Error")]
     InternalError,
-    #[display(fmt = "External Error")]
     ThirdParty,
+}
+
+impl std::fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ErrorCode::InternalError => "Stry Error",
+                ErrorCode::ThirdParty => "External Error",
+            }
+        )
+    }
 }
 
 impl From<askama::Error> for Error {
@@ -70,19 +113,19 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<r2d2::Error> for Error {
-    fn from(err: r2d2::Error) -> Error {
+impl From<std::num::ParseIntError> for Error {
+    fn from(err: std::num::ParseIntError) -> Error {
         Error {
-            kind: ErrorKind::Pool { err },
+            kind: ErrorKind::NumParseInt { err },
             code: ErrorCode::ThirdParty,
         }
     }
 }
 
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Error {
+impl From<r2d2::Error> for Error {
+    fn from(err: r2d2::Error) -> Error {
         Error {
-            kind: ErrorKind::Reqwest { err },
+            kind: ErrorKind::Pool { err },
             code: ErrorCode::ThirdParty,
         }
     }
@@ -106,11 +149,20 @@ impl From<std::string::FromUtf8Error> for Error {
     }
 }
 
-impl actix_web::ResponseError for Error {
-    fn error_response(&self) -> actix_web::HttpResponse {
-        actix_web::HttpResponse::InternalServerError().finish()
+impl From<Box<dyn std::error::Error + Send + Sync>> for Error {
+    fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Error {
+        Error {
+            kind: ErrorKind::BoxSS { err },
+            code: ErrorCode::ThirdParty,
+        }
     }
 }
+
+// impl actix_web::ResponseError for Error {
+//     fn error_response(&self) -> actix_web::HttpResponse {
+//         actix_web::HttpResponse::InternalServerError().finish()
+//     }
+// }
 
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
@@ -118,10 +170,11 @@ impl std::error::Error for Error {
             ErrorKind::Askama { ref err } => Some(err),
             ErrorKind::IO { ref err } => Some(err),
             ErrorKind::Json { ref err } => Some(err),
+            ErrorKind::NumParseInt { ref err } => Some(err),
             ErrorKind::Pool { ref err } => Some(err),
-            ErrorKind::Reqwest { ref err } => Some(err),
             ErrorKind::SQLite { ref err } => Some(err),
             ErrorKind::UTF8 { ref err } => Some(err),
+            ErrorKind::BoxSS { .. } => None,
             ErrorKind::Custom { .. } => None,
         }
     }

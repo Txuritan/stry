@@ -15,10 +15,29 @@
     padding: $padding--small $padding--normal;
 }
 
-[pager="left"] {
+[pager~="left"] {
     border-radius: $padding--small;
 }
 
-[pager="right"] {
+[pager~="right"] {
     border-radius: $padding--small;
+}
+
+[pager~="disabled"] {
+    color: $color--black--light;
+    border-color: $color--gray--light;
+
+    &:link:hover {
+        cursor: default;
+        text-decoration: none;
+    }
+}
+
+[page] {
+    color: $color--black--light;
+    display: inline-block;
+    font-size: 1.2rem;
+    line-height: 1.4rem;
+    margin: $padding--small 0;
+    padding: $padding--small $padding--normal;
 }

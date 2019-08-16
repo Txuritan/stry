@@ -6,7 +6,6 @@ use {
         OptionalExtension, Result as RusqliteResult,
     },
     std::fmt,
-    uuid::Uuid,
 };
 
 const TABLE: &str = "CREATE TABLE
@@ -112,7 +111,7 @@ impl Tag {
         Ok(stories)
     }
 
-    pub fn find_or_create(pool: Pool, name: &str, typ: TagType) -> Result<Uuid, Error> {
+    pub fn find_or_create(pool: Pool, name: &str, typ: TagType) -> Result<String, Error> {
         let mut conn = pool.get()?;
 
         if let Some(id) = conn
@@ -125,7 +124,7 @@ impl Tag {
         {
             Ok(id)
         } else {
-            let id = Uuid::new_v4();
+            let id = crate::nanoid!();
 
             let trans = conn.transaction()?;
 

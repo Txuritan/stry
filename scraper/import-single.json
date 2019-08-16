@@ -1,0 +1,54 @@
+{
+    "imports": [{
+        "id": "12332867",
+        "site": "fanfiction",
+        "origins": ["Harry Potter"],
+        "tags": [{
+            "name": "Harry Potter",
+            "type": "character"
+        }, {
+            "name": "Ginny Weasley",
+            "type": "character"
+        }, {
+            "name": "Luna Lovegood",
+            "type": "character"
+        }, {
+            "name": "Xenophilius Lovegood",
+            "type": "character"
+        }]
+    }, {
+        "id": "12487457",
+        "site": "fanfiction",
+        "origins": ["Harry Potter"],
+        "tags": [{
+            "name": "Harry Potter/Luna Lovegood",
+            "type": "pairing"
+        }, {
+            "name": "Harry Potter",
+            "type": "character"
+        }, {
+            "name": "Luna Lovegood",
+            "type": "character"
+        }, {
+            "name": "Hedwig",
+            "type": "character"
+        }]
+    }, {
+        "id": "12499983",
+        "site": "fanfiction",
+        "origins": ["Harry Potter"],
+        "tags": [{
+            "name": "Harry Potter/Luna Lovegood",
+            "type": "pairing"
+        }, {
+            "name": "Harry Potter",
+            "type": "character"
+        }, {
+            "name": "Luna Lovegood",
+            "type": "character"
+        }, {
+            "name": "Xenophilius Lovegood",
+            "type": "character"
+        }]
+    }]
+}

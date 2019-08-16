@@ -9,7 +9,7 @@
 - Logger for the custom server
 
 - Web interface:
-  - ~~Story tite size~~
+  - ~~Story tile size~~
   - Dark theme
   - ~~Chapter number/title~~
   - ~~Chapter pagination selector~~

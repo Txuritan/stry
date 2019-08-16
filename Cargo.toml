@@ -4,10 +4,6 @@ version = "2.1.0"
 authors = ["Txuritan"]
 edition = "2018"
 
-[features]
-default = []
-ssl = ["openssl"]
-
 [dependencies]
 ascii = "0.9"
 askama = { version = "0.8" }
@@ -15,13 +11,10 @@ chrono = "0.4"
 chunked_transfer = "1.0"
 lazy_static = "1.3"
 log = { version = "0.4", features = ["std"] }
-openssl = { version = "0.10", optional = true }
 r2d2 = { git = "https://github.com/sfackler/r2d2", rev = "3b10dda1ed31091a363a23279cff90cf56063bb9" }
 r2d2_sqlite = "0.12"
 rand = "0.6"
 rusqlite = { version = "0.20", features = ["bundled", "chrono"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 unsafe-any = "0.4"
 
 [patch.crates-io]

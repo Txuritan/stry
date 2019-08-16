@@ -27,9 +27,6 @@ pub enum ErrorKind {
     IO {
         err: std::io::Error,
     },
-    Json {
-        err: serde_json::Error,
-    },
     NumParseInt {
         err: std::num::ParseIntError,
     },
@@ -56,7 +53,6 @@ impl std::fmt::Display for ErrorKind {
         match self {
             ErrorKind::Askama { ref err } => write!(f, "(Askama) {}", err),
             ErrorKind::IO { ref err } => write!(f, "(IO) {}", err),
-            ErrorKind::Json { ref err } => write!(f, "(Json) {}", err),
             ErrorKind::NumParseInt { ref err } => write!(f, "(NumParseInt) {}", err),
             ErrorKind::Pool { ref err } => write!(f, "(Pool) {}", err),
             ErrorKind::SQLite { ref err } => write!(f, "(SQLite) {}", err),
@@ -99,15 +95,6 @@ impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Error {
         Error {
             kind: ErrorKind::IO { err },
-            code: ErrorCode::ThirdParty,
-        }
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Error {
-        Error {
-            kind: ErrorKind::Json { err },
             code: ErrorCode::ThirdParty,
         }
     }
@@ -169,7 +156,6 @@ impl std::error::Error for Error {
         match self.kind {
             ErrorKind::Askama { ref err } => Some(err),
             ErrorKind::IO { ref err } => Some(err),
-            ErrorKind::Json { ref err } => Some(err),
             ErrorKind::NumParseInt { ref err } => Some(err),
             ErrorKind::Pool { ref err } => Some(err),
             ErrorKind::SQLite { ref err } => Some(err),

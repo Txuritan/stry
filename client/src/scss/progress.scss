@@ -1,0 +1,19 @@
+@import "_variables.scss";
+
+[progress-bar] {
+    background-color: $color--gray;
+    border-radius: $padding--normal;
+    height: $padding--normal;
+    margin: $padding--normal 0;
+    position: relative;
+    width: 100%;
+
+    [progress] {
+        background-color: $color--blue;
+        border-radius: $padding--normal;
+        height: $padding--normal;
+        left: 0;
+        position: absolute;
+        top: 0;
+    }
+}

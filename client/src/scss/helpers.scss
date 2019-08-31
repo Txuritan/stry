@@ -1,0 +1,86 @@
+@import "_variables.scss";
+
+[bg="black"] {
+    background-color: $color--black;
+}
+
+[bg="black-light"] {
+    background-color: $color--black--light;
+}
+
+[bg="blue"] {
+    background-color: $color--blue;
+}
+
+[bg="gray"] {
+    background-color: $color--gray;
+}
+
+[bg="green"] {
+    background-color: $color--green;
+}
+
+[bg="green-dark"] {
+    background-color: $color--green--dark;
+}
+
+[bg="orange"] {
+    background-color: $color--orange;
+}
+
+[bg="purple"] {
+    background-color: $color--purple;
+}
+
+[bg="red"] {
+    background-color: $color--red;
+}
+
+[bg="white"] {
+    background-color: $color--white;
+}
+
+[pad="p"] p {margin-bottom: 1rem;margin-top: 1rem;}
+
+[pad="body"] {
+    padding: $padding--extra-large 0;
+
+    @media all and (max-width: $breakpoint) {
+        padding: 0;
+        padding-bottom: 40vh;
+    }
+}
+
+[pad="content"] {
+    padding: $padding--normal $padding--extra-large;
+}
+
+[mar-right="small"] {
+    margin-right: $padding--small;
+}
+
+[mar-right="normal"] {
+    margin-right: $padding--normal;
+}
+
+[mar-right="large"] {
+    margin-right: $padding--large;
+}
+
+[mar-right="extra"] {
+    margin-right: $padding--extra-large;
+}
+
+[txt~="small"] {
+    font-size: 1.2rem;
+    line-height: 1.4rem;
+}
+
+[txt~="large"] {
+    font-size: 1.6rem;
+    line-height: 1.8rem;
+}
+
+[txt~="right"] {
+    text-align: right;
+}

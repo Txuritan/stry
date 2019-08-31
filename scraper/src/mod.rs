@@ -37,3 +37,14 @@ pub fn sleep() {
     log::info!("[util] Sleeping for {} seconds", length);
     thread::sleep(time::Duration::from_secs(length));
 }
+
+fn word_count(str: &str) -> u32 {
+    str.split_whitespace()
+        .filter(|s| match *s {
+            "---" => false,
+            "#" | "##" | "###" | "####" | "#####" | "######" => false,
+            "*" | "**" => false,
+            _ => true,
+        })
+        .count() as u32
+}

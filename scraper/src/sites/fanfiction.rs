@@ -1,14 +1,15 @@
 use {
-    crate::{
-        archiver::sleep,
-        story::{Language, Rating, State},
-        word_count, Error, Pool,
-    },
+    crate::{sleep, word_count, Error},
     chrono::prelude::*,
     comrak::{markdown_to_html, ComrakOptions},
     isahc::prelude::*,
+    rusqlite::{
+        types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
+        Result as RusqliteResult,
+    },
     rusqlite::{OptionalExtension, Transaction},
     scraper::{Html, Selector},
+    std::fmt,
 };
 
 lazy_static::lazy_static! {
@@ -25,10 +26,10 @@ pub struct FanFiction {}
 
 impl FanFiction {
     pub fn scrape(
-        pool: Pool,
+        pool: r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>,
         id: &str,
         origins: &[String],
-        tags: &[crate::archiver::list::Tag],
+        tags: &[crate::list::Tag],
     ) -> Result<(), Error> {
         log::info!("[{}] Importing", id);
 
@@ -76,7 +77,7 @@ impl FanFiction {
         conn: &mut Transaction,
         details: &Details,
         origins: &[String],
-        tags: &[crate::archiver::list::Tag],
+        tags: &[crate::list::Tag],
     ) -> Result<String, Error> {
         log::info!("[{}] Committing", details.name);
 
@@ -524,5 +525,174 @@ impl DetailsBuilder {
 
     fn updated(&mut self, updated: DateTime<Utc>) {
         self.updated = Some(updated);
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(debug_assertions, derive(Debug))]
+pub enum Language {
+    English,
+}
+
+impl fmt::Display for Language {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Language::English => "english",
+            }
+        )
+    }
+}
+
+impl FromSql for Language {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).map(|as_str| match as_str.as_str() {
+            "english" => Language::English,
+            _ => unreachable!(),
+        })
+    }
+}
+
+impl ToSql for Language {
+    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+        Ok(self.to_string().into())
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(debug_assertions, derive(Debug))]
+pub enum Rating {
+    Explicit,
+    Mature,
+    Teen,
+    General,
+}
+
+impl fmt::Display for Rating {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Rating::Explicit => "black",
+                Rating::Mature => "red",
+                Rating::Teen => "green-dark",
+                Rating::General => "blue",
+            }
+        )
+    }
+}
+
+impl FromSql for Rating {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).map(|as_str| match as_str.as_str() {
+            "explicit" => Rating::Explicit,
+            "mature" => Rating::Mature,
+            "teen" => Rating::Teen,
+            "general" => Rating::General,
+            _ => unreachable!(),
+        })
+    }
+}
+
+impl ToSql for Rating {
+    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+        Ok(match self {
+            Rating::Explicit => "explicit",
+            Rating::Mature => "mature",
+            Rating::Teen => "teen",
+            Rating::General => "general",
+        }
+        .into())
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(debug_assertions, derive(Debug))]
+pub enum Warning {
+    Using,
+    None,
+}
+
+impl fmt::Display for Warning {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Warning::Using => "orange",
+                Warning::None => "gray",
+            }
+        )
+    }
+}
+
+impl FromSql for Warning {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).map(|as_str| match as_str.as_str() {
+            "using" => Warning::Using,
+            "none" => Warning::None,
+            _ => unreachable!(),
+        })
+    }
+}
+
+impl ToSql for Warning {
+    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+        Ok(match self {
+            Warning::Using => "using",
+            Warning::None => "none",
+        }
+        .into())
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(debug_assertions, derive(Debug))]
+pub enum State {
+    Completed,
+    InProgress,
+    Hiatus,
+    Abandoned,
+}
+
+impl fmt::Display for State {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                State::Completed => "green-dark",
+                State::InProgress => "blue",
+                State::Hiatus => "purple",
+                State::Abandoned => "red",
+            }
+        )
+    }
+}
+
+impl FromSql for State {
+    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
+        String::column_result(value).map(|as_str| match as_str.as_str() {
+            "completed" => State::Completed,
+            "in-progress" => State::InProgress,
+            "hiatus" => State::Hiatus,
+            "abandoned" => State::Abandoned,
+            _ => unreachable!(),
+        })
+    }
+}
+
+impl ToSql for State {
+    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+        Ok(match self {
+            State::Completed => "completed",
+            State::InProgress => "in-progress",
+            State::Hiatus => "hiatus",
+            State::Abandoned => "abandoned",
+        }
+        .into())
     }
 }

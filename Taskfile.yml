@@ -1,0 +1,14 @@
+version: '2'
+
+tasks:
+  build:
+    deps: [build-front, build-back]
+
+  build-front:
+    dir: site
+    cmds:
+    - npm run build
+
+  build-back:
+    cmds:
+    - cargo build --release

@@ -1,31 +1,32 @@
-<div align="center">
-</div>
+<div>
+  <p align="center">
+    <img align="center" src="./assets/logo.png" alt="stry's home" />
+    <h3 align="center">stry</h3>
 
-<p align="center">
-  <img src="./assets/logo.png" alt="stry's home" />
-  <h3 align="center">stry</h3>
-  <div align="center">
-    <strong>A mini self-hosted Archive Of Our Own, or a story host with tagging.</strong>
-  </div>
-  <div align="center">
-    <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">View Demo</a>
-    ·
-    <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Report Bug</a>
-    ·
-    <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Request Feature</a>
-  </div>
-  <div align="center">
-    <img src="https://img.shields.io/badge/made%20with-rust-orange.svg?style=flat-square" alt="Made With Rust" />
-    <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">
-      <img src="https://img.shields.io/github/license/teammycelium/myriad.svg?style=flat-square" alt="License" />
-    </a>
-  </div>
-  <div align="center">
-    <a href="">
-      <img src="https://img.shields.io/gitlab/pipeline/Txuritan/stry2.svg?style=flat-square" alt="Gitlab Build Status" />
-    </a>
-  </div>
-</p>
+    <div align="center">
+      <strong>A mini self-hosted Archive Of Our Own, or a story host with tagging.</strong>
+    </div>
+    <p align="center">
+      <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">View Demo</a>
+      ·
+      <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Report Bug</a>
+      ·
+      <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Request Feature</a>
+    </p>
+
+    <div align="center">
+      <img src="https://img.shields.io/badge/made%20with-rust-orange.svg?style=flat-square" alt="Made With Rust" />
+      <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">
+        <img src="https://img.shields.io/github/license/teammycelium/myriad.svg?style=flat-square" alt="License" />
+      </a>
+    </div>
+    <div align="center">
+      <a href="">
+        <img src="https://img.shields.io/gitlab/pipeline/Txuritan/stry2.svg?style=flat-square" alt="Gitlab Build Status" />
+      </a>
+    </div>
+  </p>
+</div>
 
 ## Table of Contents
 

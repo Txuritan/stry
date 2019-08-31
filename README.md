@@ -2,7 +2,6 @@
   <p align="center">
     <img align="center" src="./assets/logo.png" alt="stry's home" />
     <h3 align="center">stry</h3>
-
     <div align="center">
       <strong>A mini self-hosted Archive Of Our Own, or a story host with tagging.</strong>
     </div>
@@ -13,7 +12,6 @@
       ·
       <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Request Feature</a>
     </p>
-
     <div align="center">
       <img src="https://img.shields.io/badge/made%20with-rust-orange.svg?style=flat-square" alt="Made With Rust" />
       <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">

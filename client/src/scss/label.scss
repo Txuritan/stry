@@ -6,9 +6,21 @@
     font-size: 1.2rem;
     margin: $padding--small;
     padding: $padding--small $padding--normal;
+}
 
-    &:link, &:hover, &:link:hover {
-        color: $color--white;
+body[theme="light"] {
+    [label] {
+        &:link, &:hover, &:link:hover {
+            color: $color--white;
+        }
+    }
+}
+
+body[theme="dark"] {
+    [label] {
+        &:link, &:hover, &:link:hover {
+            color: $color--white;
+        }
     }
 }
 

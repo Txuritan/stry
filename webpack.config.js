@@ -19,7 +19,7 @@ const package = JSON.parse(readFileSync(path.join(__dirname, "package.json")));
 const isProd = process.env.NODE_ENV === "production";
 
 const config = {
-    entry: "./client/src/index.tsx",
+    entry: "./client/src/index.ts",
     mode: "development",
     devtool: "inline-source-map",
     output: {

@@ -24,9 +24,6 @@
 }
 
 [pager~="disabled"] {
-    color: $color--black--light;
-    border-color: $color--gray--light;
-
     &:link:hover {
         cursor: default;
         text-decoration: none;
@@ -34,10 +31,41 @@
 }
 
 [page] {
-    color: $color--black--light;
     display: inline-block;
     font-size: 1.2rem;
     line-height: 1.4rem;
     margin: $padding--small 0;
     padding: $padding--small $padding--normal;
+}
+
+body[theme="light"] {
+    [pager] {
+        color: $color--black--light;
+        border-color: $color--gray;
+    }
+
+    [pager~="disabled"] {
+        color: $color--black--light;
+        border-color: $color--gray--light;
+    }
+
+    [page] {
+        color: $color--black--light;
+    }
+}
+
+body[theme="dark"] {
+    [pager] {
+        color: $color--white;
+        border-color: $color--gray;
+    }
+
+    [pager~="disabled"] {
+        color: $color--black--light;
+        border-color: $color--black--light;
+    }
+
+    [page] {
+        color: $color--white;
+    }
 }

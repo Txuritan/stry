@@ -8,20 +8,46 @@ button, input, select, textarea {
     outline: none;
     padding: $padding--small $padding--normal;
     width: 100%;
-
-    &:focus, &:hover {
-        border-color: $color--blue;
-    }
-
-    &[error] {
-        border-color: $color--red;
-    }
-
-    &[success] {
-        border-color: $color--green;
-    }
 }
 
 button[type="button"], input[type="button"] {
     border-radius: $padding--small;
+}
+
+body[theme="light"] {
+    button, input, select, textarea {
+        border-color: $color--black;
+    }
+
+    button, input, select, textarea:focus,
+    button, input, select, textarea:hover {
+        border-color: $color--blue;
+    }
+    
+    button[error], input[error], select[error], textarea[error] {
+        border-color: $color--red;
+    }
+
+    button[success], input[success], select[success], textarea[success] {
+        border-color: $color--green--dark;
+    }
+}
+
+body[theme="dark"] {
+    button, input, select, textarea {
+        border-color: $color--gray;
+    }
+
+    button, input, select, textarea:focus,
+    button, input, select, textarea:hover {
+        border-color: $color--blue;
+    }
+    
+    button[error], input[error], select[error], textarea[error] {
+        border-color: $color--red;
+    }
+
+    button[success], input[success], select[success], textarea[success] {
+        border-color: $color--green;
+    }
 }

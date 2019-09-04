@@ -8,19 +8,9 @@ export class ComponentMain implements m.ClassComponent {
         return [
             m("div", { "grid": "auto" }, [
                 m("div", { "grid-column": "1" }),
-                m("div", { "grid-column": "10 max" }, [
+                m("div", { "grid-column": "10 max", "shadow": true }, [
                     m(ComponentNavbar),
-                ]),
-                m("div", { "grid-column": "1" }),
-            ]),
-            m("div", { "grid": "auto" }, [
-                m("div", { "grid-column": "1" }),
-                m("div", { "grid-column": "10 max", "l-bg": "white", "d-bg": "black", "pad": "content" }, vnode.children),
-                m("div", { "grid-column": "1" }),
-            ]),
-            m("div", { "grid": "auto" }, [
-                m("div", { "grid-column": "1" }),
-                m("div", { "grid-column": "10 max" }, [
+                    m("div", { "l-bg": "white", "d-bg": "black", "pad": "content" }, vnode.children),
                     m(ComponentFooter),
                 ]),
                 m("div", { "grid-column": "1" }),

@@ -24,8 +24,10 @@
   "homepage": "https://gitlab.com/Txuritan/stry2#readme",
   "dependencies": {
     "dateformat": "^3.0.3",
+    "es-cookie": "^1.2.0",
     "marked": "^0.7.0",
-    "mithril": "^2.0.3"
+    "mithril": "^2.0.3",
+    "typescript-optional": "^2.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",

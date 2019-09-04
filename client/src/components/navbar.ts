@@ -10,12 +10,12 @@ export class ComponentNavbar implements m.ClassComponent {
                     ]),
                 ]),
                 m("div", { "nav-section": true }, [
-                    m("div", { "nav-item": true }, [
-                        m(m.route.Link, { "href": "/list/author" }, "register"),
-                    ]),
-                    m("div", { "nav-item": true }, [
-                        m(m.route.Link, { "href": "/list/author" }, "login"),
-                    ]),
+                    // m("div", { "nav-item": true }, [
+                    //     m(m.route.Link, { "href": "/list/author" }, "register"),
+                    // ]),
+                    // m("div", { "nav-item": true }, [
+                    //     m(m.route.Link, { "href": "/list/author" }, "login"),
+                    // ]),
                     m("input", { "nav-item": true, "type": "search", "placeholder": "search" }),
                 ]),
             ]),

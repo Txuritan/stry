@@ -4,10 +4,6 @@ import m from "mithril";
 
 import { PageChapter, PageHome, PageStoryList } from "./pages";
 
-document.addEventListener("stryStateDarkMode", ((e: CustomEvent<boolean>) => {
-    document.body.setAttribute("theme", e.detail ? "dark" : "light")
-}) as EventListener);
-
 m.route(document.body, "/home/1", {
     "/home/:key": PageHome,
     "/story/:id/:page": {

@@ -19,8 +19,8 @@ body[theme="light"] {
         border-color: $color--black;
     }
 
-    button, input, select, textarea:focus,
-    button, input, select, textarea:hover {
+    button:focus, input:focus, select:focus, textarea:focus,
+    button:hover, input:hover, select:hover, textarea:hover {
         border-color: $color--blue;
     }
     
@@ -38,8 +38,8 @@ body[theme="dark"] {
         border-color: $color--gray;
     }
 
-    button, input, select, textarea:focus,
-    button, input, select, textarea:hover {
+    button:focus, input:focus, select:focus, textarea:focus,
+    button:hover, input:hover, select:hover, textarea:hover {
         border-color: $color--blue;
     }
     

@@ -10,17 +10,14 @@ mod typemap;
 
 pub type Conn = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
 
-pub use crate::{
-    error::{Error, ErrorKind},
-    models::*,
-    schema::Schema,
-};
+pub use crate::error::{Error, ErrorKind};
 
 use {
     crate::{
         logger::init_with_level,
         server::{Router, Server},
     },
+    common::schema::Schema,
     log::Level,
     std::path::Path,
 };
@@ -121,6 +118,8 @@ impl typemap::Key for Pool {
 }
 
 fn schema() -> Result<String, Box<dyn std::error::Error>> {
+    use common::models::{Author, Chapter, Origin, Story, Tag};
+
     let mut sch = String::new();
 
     Story::schema(&mut sch)?;

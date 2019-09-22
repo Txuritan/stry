@@ -11,24 +11,22 @@ pub fn view(model: &Model) -> Vec<Node<Message>> {
             div![attrs! { "nav-item" => true }, div!["mode:"]],
             div![
                 attrs! { "nav-item" => if !model.dark { "brand" } else { "" } },
-                a![
-                    simple_ev(Ev::Click, Message::ToggleTheme),
-                    "light",
-                ],
+                a![simple_ev(Ev::Click, Message::ToggleTheme), "light",],
             ],
             div![
                 attrs! { "nav-item" => if model.dark { "brand" } else { "" } },
-                a![
-                    simple_ev(Ev::Click, Message::ToggleTheme),
-                    "dark",
-                ],
+                a![simple_ev(Ev::Click, Message::ToggleTheme), "dark",],
             ],
         ],
         div![
             attrs! { "nav-section" => true },
             div![
                 attrs! { "nav-item" => "brand" },
-                a![attrs! { "href" => "#!/home/1" }, /*"v2.1.0-fab195f-modified"*/ concat!("v", env!("CARGO_PKG_VERSION") , "-", git_version::git_version!())],
+                a![
+                    attrs! { "href" => "#!/home/1" },
+                    /*"v2.1.0-fab195f-modified"*/
+                    concat!("v", env!("CARGO_PKG_VERSION"), "-", env!("GIT_VERSION"))
+                ],
             ],
         ],
     ]]

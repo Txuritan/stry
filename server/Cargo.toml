@@ -4,9 +4,13 @@ version = "2.1.0"
 authors = ["Txuritan"]
 edition = "2018"
 
+build = "build.rs"
+
 workspace = ".."
 
 [dependencies]
+common = { path = "../common", features = ["rusqlite"] }
+
 bcrypt = "0.5"
 chrono = "0.4"
 itertools = "0.8"
@@ -18,5 +22,10 @@ r2d2_sqlite = "0.12"
 rand = "0.7"
 rusqlite = { version = "0.20", features = ["bundled", "chrono"] }
 rust-embed = { version = "5.1", features = ["interpolate-folder-path"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 tiny-http = { path = "../tiny-http" }
 unsafe-any = "0.4"
+
+[build-dependencies]
+scripts = { path = "../scripts" }

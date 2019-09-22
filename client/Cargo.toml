@@ -4,16 +4,21 @@ version = "2.1.0"
 authors = ["Txuritan"]
 edition = "2018"
 
+build = "build.rs"
+
 workspace = ".."
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
+common = { path = "../common", features = ["wasm"] }
+
 futures = "0.1"
-git-version = "0.3"
 log = "0.4"
 seed = "0.4"
+serde = "1.0"
+serde_json = "1.0"
 wasm-bindgen = "0.2"
 wasm-logger = "0.1"
 
@@ -29,3 +34,6 @@ features = [
     "WebSocket",
     "Window"
 ]
+
+[build-dependencies]
+scripts = { path = "../scripts" }

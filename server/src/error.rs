@@ -35,7 +35,7 @@ pub enum ErrorKind {
         err: std::io::Error,
     },
     Json {
-        err: json::Error,
+        err: serde_json::Error,
     },
     NumParseInt {
         err: std::num::ParseIntError,
@@ -102,8 +102,8 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl From<json::Error> for Error {
-    fn from(err: json::Error) -> Error {
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Error {
         Error {
             kind: ErrorKind::Json { err },
             code: ErrorCode::ThirdParty,

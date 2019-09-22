@@ -38,7 +38,7 @@ fn update(msg: Message, model: &mut Model, orders: &mut impl Orders<Message>) {
                     });
                 });
             });
-        },
+        }
     }
 }
 
@@ -49,9 +49,7 @@ fn view(model: &Model) -> impl View<Message> {
         div![
             attrs! { "grid-column" => "10 max", "shadow" => true },
             navbar::view(model),
-            div![
-                attrs! { "l-bg" => "gray-100", "d-bg" => "black-700", "pad" => "content" },
-            ],
+            div![attrs! { "l-bg" => "gray-100", "d-bg" => "black-700", "pad" => "content" },],
             footer::view(model),
         ],
         div![attrs! { "grid-column" => "1" }],

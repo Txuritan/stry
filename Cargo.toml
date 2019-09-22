@@ -3,6 +3,7 @@ members = [
     "client",
     "common",
     "scraper",
+    "scripts",
     "server",
     "tiny-http"
 ]

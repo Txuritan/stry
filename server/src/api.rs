@@ -1,14 +1,22 @@
-use crate::{
-    models::tag::TagType,
-    server::{Request, Response},
-    Author, Chapter, Error, Origin, Pool, Story, Tag,
+use {
+    crate::{
+        models::{author, chapter, origin, story, tag},
+        server::{Request, Response},
+        Error, Pool,
+    },
+    common::models::{
+        api::{
+            AuthorResponse, ChapterResponse, OriginResponse, SearchRequest, StoryResponse,
+            TagResponse, Wrapper,
+        },
+        Story, TagType,
+    },
 };
 
-fn get_page<T: Into<json::JsonValue>>(
+fn get_page<T: serde::Serialize>(
     req: Request,
-    per: f64,
-    tag: &'static str,
     query: impl FnOnce(Pool, u32) -> Result<(u32, Vec<T>), Error>,
+    res: impl FnOnce(u32, Vec<T>) -> Result<Response, Error>,
 ) -> Result<Response, Error> {
     let pool = req
         .state()
@@ -29,70 +37,146 @@ fn get_page<T: Into<json::JsonValue>>(
 
     let (count, vec) = query(pool.clone(), page)?;
 
-    Ok(Response::Ok()
-        .header("Access-Control-Allow-Origin", "*")
-        .json(json::object! {
-            "data" => json::object! {
-                "count" => count,
-                "pages" => (f64::from(count) / per).ceil(),
-                tag => vec,
-            },
-        }))
+    res(count, vec)
 }
 
 // /api/authors/:page
 pub fn authors(req: Request) -> Result<Response, Error> {
-    get_page(req, 100.0, "authors", |pool, page| {
-        Author::all(pool.clone(), page)
-    })
+    get_page(
+        req,
+        |pool, page| author::all(pool.clone(), page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: AuthorResponse {
+                        count,
+                        pages: (f64::from(count) / 100.0).ceil() as u32,
+                        authors: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/characters/:page
 pub fn characters(req: Request) -> Result<Response, Error> {
-    get_page(req, 100.0, "tags", |pool, page| {
-        Tag::all_of_type(pool.clone(), TagType::Character, page)
-    })
+    get_page(
+        req,
+        |pool, page| tag::all_of_type(pool.clone(), TagType::Character, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: TagResponse {
+                        count,
+                        pages: (f64::from(count) / 100.0).ceil() as u32,
+                        tags: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/origins/:page
 pub fn origins(req: Request) -> Result<Response, Error> {
-    get_page(req, 100.0, "origins", |pool, page| {
-        Origin::all(pool.clone(), page)
-    })
+    get_page(
+        req,
+        |pool, page| origin::all(pool.clone(), page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: OriginResponse {
+                        count,
+                        pages: (f64::from(count) / 100.0).ceil() as u32,
+                        origins: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/pairings/:page
 pub fn pairings(req: Request) -> Result<Response, Error> {
-    get_page(req, 100.0, "tags", |pool, page| {
-        Tag::all_of_type(pool.clone(), TagType::Pairing, page)
-    })
+    get_page(
+        req,
+        |pool, page| tag::all_of_type(pool.clone(), TagType::Pairing, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: TagResponse {
+                        count,
+                        pages: (f64::from(count) / 100.0).ceil() as u32,
+                        tags: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/tags/:page
 pub fn tags(req: Request) -> Result<Response, Error> {
-    get_page(req, 100.0, "tags", |pool, page| {
-        Tag::all_of_type(pool.clone(), TagType::General, page)
-    })
+    get_page(
+        req,
+        |pool, page| tag::all_of_type(pool.clone(), TagType::General, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: TagResponse {
+                        count,
+                        pages: (f64::from(count) / 100.0).ceil() as u32,
+                        tags: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/stories/:page
 pub fn stories(req: Request) -> Result<Response, Error> {
-    get_page(req, 10.0, "stories", |pool, page| {
-        Story::all(pool.clone(), page)
-    })
+    get_page(
+        req,
+        |pool, page| story::all(pool.clone(), page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: StoryResponse {
+                        count,
+                        pages: (f64::from(count) / 10.0).ceil() as u32,
+                        stories: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/warnings/:page
 pub fn warnings(req: Request) -> Result<Response, Error> {
-    get_page(req, 100.0, "tags", |pool, page| {
-        Tag::all_of_type(pool.clone(), TagType::Warning, page)
-    })
+    get_page(
+        req,
+        |pool, page| tag::all_of_type(pool.clone(), TagType::Warning, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: TagResponse {
+                        count,
+                        pages: (f64::from(count) / 100.0).ceil() as u32,
+                        tags: vec,
+                    },
+                })?))
+        },
+    )
 }
 
-fn get_id_page<T: Into<json::JsonValue>>(
+fn get_id_page<T: serde::Serialize>(
     req: Request,
-    tag: &'static str,
     query: impl FnOnce(Pool, &str, u32) -> Result<(u32, Vec<T>), Error>,
+    res: impl FnOnce(u32, Vec<T>) -> Result<Response, Error>,
 ) -> Result<Response, Error> {
     let pool = req
         .state()
@@ -115,15 +199,7 @@ fn get_id_page<T: Into<json::JsonValue>>(
 
             let (count, vec) = query(pool.clone(), id, page)?;
 
-            Ok(Response::Ok()
-                .header("Access-Control-Allow-Origin", "*")
-                .json(json::object! {
-                    "data" => json::object! {
-                        "count" => count,
-                        "pages" => (f64::from(count) / 10.0).ceil(),
-                        tag => vec,
-                    },
-                }))
+            res(count, vec)
         }
         None => Ok(Response::InternalError()
             .header("Content-Type", "text/plain")
@@ -133,23 +209,59 @@ fn get_id_page<T: Into<json::JsonValue>>(
 
 // /api/author/:id/:page
 pub fn author_stories(req: Request) -> Result<Response, Error> {
-    get_id_page(req, "stories", |pool, id, page| {
-        Author::for_stories(pool.clone(), id, page)
-    })
+    get_id_page(
+        req,
+        |pool, id, page| author::for_stories(pool.clone(), id, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: StoryResponse {
+                        count,
+                        pages: (f64::from(count) / 10.0).ceil() as u32,
+                        stories: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/origin/:id/:page
 pub fn origin_stories(req: Request) -> Result<Response, Error> {
-    get_id_page(req, "stories", |pool, id, page| {
-        Origin::for_stories(pool.clone(), id, page)
-    })
+    get_id_page(
+        req,
+        |pool, id, page| origin::for_stories(pool.clone(), id, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: StoryResponse {
+                        count,
+                        pages: (f64::from(count) / 10.0).ceil() as u32,
+                        stories: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/tag/:id/:page
 pub fn tag_stories(req: Request) -> Result<Response, Error> {
-    get_id_page(req, "stories", |pool, id, page| {
-        Tag::for_stories(pool.clone(), id, page)
-    })
+    get_id_page(
+        req,
+        |pool, id, page| tag::for_stories(pool.clone(), id, page),
+        |count, vec| {
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: StoryResponse {
+                        count,
+                        pages: (f64::from(count) / 10.0).ceil() as u32,
+                        stories: vec,
+                    },
+                })?))
+        },
+    )
 }
 
 // /api/story/:id/chapter/:chapter
@@ -171,19 +283,19 @@ pub fn story_chapter(req: Request) -> Result<Response, Error> {
                 chapter_number = 1;
             }
 
-            let story = Story::get(pool.clone(), id)?;
+            let story = story::get(pool.clone(), id)?;
 
             if chapter_number <= story.chapters && chapter_number != 0 {
-                let chapter = Chapter::of_story(pool.clone(), &story.id, chapter_number)?;
+                let chapter = chapter::of_story(pool.clone(), &story.id, chapter_number)?;
 
                 Ok(Response::Ok()
                     .header("Access-Control-Allow-Origin", "*")
-                    .json(json::object! {
-                        "data" => json::object! {
-                            "chapter" => chapter,
-                            "story" => story,
+                    .json(serde_json::to_string(&Wrapper {
+                        data: ChapterResponse {
+                            chapter: chapter,
+                            story: story,
                         },
-                    }))
+                    })?))
             } else {
                 Ok(Response::BadRequest()
                     .header("Content-Type", "text/plain")
@@ -216,144 +328,60 @@ pub fn search(mut req: Request) -> Result<Response, Error> {
     }
 
     if let Some(body) = req.body.as_mut() {
-        match json::parse(&body)? {
-            json::JsonValue::Object(mut obj) => {
-                let mut page: u32 = obj
-                    .get("page")
-                    .and_then(|n| match n {
-                        json::JsonValue::Number(num) => Some(u32::from(*num)),
-                        _ => None,
-                    })
-                    .unwrap_or(1);
+        let search = serde_json::from_str::<SearchRequest>(&body)?;
 
-                if page == 0 {
-                    page = 1;
-                }
+        if let Some((search_query, count_query, and, not)) = create_search(&search.search) {
+            let pool = req
+                .state()
+                .get::<Pool>()
+                .ok_or_else(|| Error::state("Pool doesn't exist in server state"))?;
 
-                page -= 1;
+            // collect stories
+            let conn = pool.get()?;
+            let mut stmt = conn.prepare(&search_query)?;
 
-                match obj.get_mut("search") {
-                    Some(sv) => {
-                        match sv {
-                            json::JsonValue::String(_) | json::JsonValue::Short(_) => {
-                                let search = sv.take_string().unwrap_or_default();
+            let mut params = and
+                .iter()
+                .chain(&not)
+                .map(|t| t as &dyn rusqlite::ToSql)
+                .collect::<Vec<_>>();
 
-                                let pool = req.state().get::<Pool>().ok_or_else(|| {
-                                    Error::state("Pool doesn't exist in server state")
-                                })?;
+            let and_len = and.len() as u32;
 
-                                // split input tags
-                                let mut and = Vec::new();
-                                let mut not = Vec::new();
+            params.push(&and_len);
 
-                                let tags = search.split(',');
+            let offset = 10 * search.page;
 
-                                for tag in tags {
-                                    let tag = tag.trim_start().trim_end().to_string();
+            let count = conn.query_row(&count_query, &params, |row| row.get::<_, i32>("Count"))?;
 
-                                    if tag.starts_with('-') {
-                                        not.push(
-                                            tag.trim_start_matches('-')
-                                                .trim_start()
-                                                .trim_end()
-                                                .to_string(),
-                                        );
-                                    } else {
-                                        and.push(tag.trim_start().trim_end().to_string());
-                                    }
-                                }
+            params.push(&offset);
 
-                                if and.is_empty() {
-                                    return Ok(Response::BadRequest()
-                                        .header("Access-Control-Allow-Origin", "*")
-                                        .json(json::object! {
-                                            "error" => json::object! {
-                                                "code" => 400i32,
-                                                "title" => "Bad Request",
-                                            },
-                                        }));
-                                }
+            let story_rows = stmt.query_map(&params, |row| row.get::<_, String>("Id"))?;
 
-                                // create search query (using value replacers)
-                                let mut search_query = String::from("SELECT S.Id");
+            let mut stories: Vec<Story> = Vec::new();
 
-                                query(&mut search_query, &and, &not, false);
-
-                                // create count query
-                                let mut count_query =
-                                    String::from("SELECT COUNT(*) AS Count FROM (SELECT S.Id");
-
-                                query(&mut count_query, &and, &not, true);
-
-                                // collect stories
-                                let conn = pool.get()?;
-                                let mut stmt = conn.prepare(&search_query)?;
-
-                                let mut params = and
-                                    .iter()
-                                    .chain(&not)
-                                    .map(|t| t as &dyn rusqlite::ToSql)
-                                    .collect::<Vec<_>>();
-
-                                let and_len = and.len() as u32;
-
-                                params.push(&and_len);
-
-                                let offset = 10 * page;
-
-                                let count = conn.query_row(&count_query, &params, |row| {
-                                    row.get::<_, i32>("Count")
-                                })?;
-
-                                params.push(&offset);
-
-                                let story_rows =
-                                    stmt.query_map(&params, |row| row.get::<_, String>("Id"))?;
-
-                                let mut stories: Vec<Story> = Vec::new();
-
-                                for id in story_rows {
-                                    stories.push(Story::get(pool.clone(), &id?)?);
-                                }
-
-                                Ok(Response::Ok()
-                                    .header("Access-Control-Allow-Origin", "*")
-                                    .json(json::object! {
-                                        "data" => json::object! {
-                                            "count" => count,
-                                            "pages" => (f64::from(count) / 10.0).ceil(),
-                                            "stories" => stories,
-                                        },
-                                    }))
-                            }
-                            _ => Ok(Response::BadRequest()
-                                .header("Access-Control-Allow-Origin", "*")
-                                .json(json::object! {
-                                    "error" => json::object! {
-                                        "code" => 400i32,
-                                        "title" => "Bad Request",
-                                    },
-                                })),
-                        }
-                    }
-                    None => Ok(Response::BadRequest()
-                        .header("Access-Control-Allow-Origin", "*")
-                        .json(json::object! {
-                            "error" => json::object! {
-                                "code" => 400i32,
-                                "title" => "Bad Request",
-                            },
-                        })),
-                }
+            for id in story_rows {
+                stories.push(story::get(pool.clone(), &id?)?);
             }
-            _ => Ok(Response::BadRequest()
+
+            Ok(Response::Ok()
+                .header("Access-Control-Allow-Origin", "*")
+                .json(serde_json::to_string(&Wrapper {
+                    data: StoryResponse {
+                        count: count as u32,
+                        pages: (f64::from(count) / 10.0).ceil() as u32,
+                        stories,
+                    },
+                })?))
+        } else {
+            Ok(Response::BadRequest()
                 .header("Access-Control-Allow-Origin", "*")
                 .json(json::object! {
                     "error" => json::object! {
                         "code" => 400i32,
                         "title" => "Bad Request",
                     },
-                })),
+                }))
         }
     } else {
         Ok(Response::BadRequest()
@@ -365,6 +393,44 @@ pub fn search(mut req: Request) -> Result<Response, Error> {
                 },
             }))
     }
+}
+
+fn create_search(search: &str) -> Option<(String, String, Vec<String>, Vec<String>)> {
+    let mut and = Vec::new();
+    let mut not = Vec::new();
+
+    let tags = search.split(',');
+
+    for tag in tags {
+        let tag = tag.trim_start().trim_end().to_string();
+
+        if tag.starts_with('-') {
+            not.push(
+                tag.trim_start_matches('-')
+                    .trim_start()
+                    .trim_end()
+                    .to_string(),
+            );
+        } else {
+            and.push(tag.trim_start().trim_end().to_string());
+        }
+    }
+
+    if and.is_empty() {
+        return None;
+    }
+
+    // create search query (using value replacers)
+    let mut search_query = String::from("SELECT S.Id");
+
+    query(&mut search_query, &and, &not, false);
+
+    // create count query
+    let mut count_query = String::from("SELECT COUNT(*) AS Count FROM (SELECT S.Id");
+
+    query(&mut count_query, &and, &not, true);
+
+    Some((search_query, count_query, and, not))
 }
 
 fn query(buf: &mut String, and: &[String], not: &[String], search: bool) {

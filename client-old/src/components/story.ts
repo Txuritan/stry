@@ -100,7 +100,7 @@ export class ComponentStory implements m.ClassComponent<IComponentStory> {
                             switch (type) {
                                 case "warning":
                                     return "red-500";
-                                case "paring":
+                                case "pairing":
                                     return "orange-500";
                                 case "character":
                                     return "purple-500";

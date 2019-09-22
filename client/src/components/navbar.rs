@@ -3,7 +3,7 @@ use {
     seed::{a, attrs, div, input, nav, prelude::*},
 };
 
-pub fn view(model: &Model) -> Vec<Node<Message>> {
+pub(crate) fn view(model: &Model) -> Vec<Node<Message>> {
     vec![
         nav![
             attrs! { "nav" => "primary", "flex" => "grow", "bg" => if model.debug { "red-500" } else { "black-800" } },

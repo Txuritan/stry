@@ -25,8 +25,8 @@ IF NOT EXISTS
         Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))                        NOT NULL
     );";
 
+#[derive(Clone, Debug)]
 #[derive(serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
 pub struct Chapter {
     pub id: String,
 

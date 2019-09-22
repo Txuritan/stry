@@ -26,8 +26,8 @@ use rusqlite::{
     Result as RusqliteResult,
 };
 
+#[derive(Clone, Debug)]
 #[derive(serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
 pub struct Story {
     pub id: String,
 
@@ -58,9 +58,9 @@ impl Schema for Story {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 pub enum Language {
+    #[serde(rename = "english")]
     English,
 }
 
@@ -93,12 +93,15 @@ impl ToSql for Language {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 pub enum Rating {
+    #[serde(rename = "explicit")]
     Explicit,
+    #[serde(rename = "mature")]
     Mature,
+    #[serde(rename = "teen")]
     Teen,
+    #[serde(rename = "general")]
     General,
 }
 
@@ -143,10 +146,11 @@ impl ToSql for Rating {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 pub enum Warning {
+    #[serde(rename = "using")]
     Using,
+    #[serde(rename = "none")]
     None,
 }
 
@@ -185,12 +189,15 @@ impl ToSql for Warning {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 pub enum State {
+    #[serde(rename = "completed")]
     Completed,
+    #[serde(rename = "in-progress")]
     InProgress,
+    #[serde(rename = "hiatus")]
     Hiatus,
+    #[serde(rename = "abandoned")]
     Abandoned,
 }
 
@@ -235,8 +242,7 @@ impl ToSql for State {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 pub struct Square {
     pub rating: Rating,
     pub warnings: Warning,

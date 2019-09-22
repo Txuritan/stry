@@ -3,18 +3,18 @@ use {
     seed::{a, attrs, div, nav, prelude::*},
 };
 
-pub fn view(model: &Model) -> Vec<Node<Message>> {
+pub(crate) fn view(model: &Model) -> Vec<Node<Message>> {
     vec![nav![
         attrs! { "nav" => "primary", "flex" => "grow", "bg" => "black-800" },
         div![
             attrs! { "nav-section" => "grow" },
             div![attrs! { "nav-item" => true }, div!["mode:"]],
             div![
-                attrs! { "nav-item" => if !model.dark { "brand" } else { "" } },
+                attrs! { "nav-item" => if !model.data.dark { "brand" } else { "" } },
                 a![simple_ev(Ev::Click, Message::ToggleTheme), "light",],
             ],
             div![
-                attrs! { "nav-item" => if model.dark { "brand" } else { "" } },
+                attrs! { "nav-item" => if model.data.dark { "brand" } else { "" } },
                 a![simple_ev(Ev::Click, Message::ToggleTheme), "dark",],
             ],
         ],

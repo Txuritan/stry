@@ -29,12 +29,12 @@ IF NOT EXISTS
         Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))                        NOT NULL
     );";
 
-#[derive(serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Tag {
     pub id: String,
 
     pub name: String,
+    #[serde(rename = "type")]
     pub typ: TagType,
 
     pub created: DateTime<Utc>,
@@ -50,12 +50,15 @@ impl Schema for Tag {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
-#[cfg_attr(debug_assertions, derive(Debug))]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
 pub enum TagType {
+    #[serde(rename = "warning")]
     Warning,
+    #[serde(rename = "pairing")]
     Pairing,
+    #[serde(rename = "character")]
     Character,
+    #[serde(rename = "general")]
     General,
 }
 
@@ -66,7 +69,7 @@ impl fmt::Display for TagType {
             "{}",
             match self {
                 TagType::Warning => "warning",
-                TagType::Pairing => "paring",
+                TagType::Pairing => "pairing",
                 TagType::Character => "character",
                 TagType::General => "general",
             }
@@ -79,7 +82,7 @@ impl FromSql for TagType {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
         String::column_result(value).map(|as_str| match as_str.as_str() {
             "warning" => TagType::Warning,
-            "paring" => TagType::Pairing,
+            "pairing" => TagType::Pairing,
             "character" => TagType::Character,
             "general" => TagType::General,
             _ => unreachable!(),
@@ -92,7 +95,7 @@ impl ToSql for TagType {
     fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
         Ok(match self {
             TagType::Warning => "warning",
-            TagType::Pairing => "paring",
+            TagType::Pairing => "pairing",
             TagType::Character => "character",
             TagType::General => "general",
         }

@@ -1,0 +1,17 @@
+[package]
+name = "client"
+version = "2.1.0"
+authors = ["Txuritan"]
+edition = "2018"
+
+workspace = ".."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+futures = "0.1"
+log = "0.4"
+seed = "0.4"
+wasm-bindgen = "0.2"
+wasm-logger = "0.1"

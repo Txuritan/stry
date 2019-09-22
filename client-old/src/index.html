@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#1A1A1B">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="stry">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <% for (var index in htmlWebpackPlugin.files.css) { %>
+        <link rel="stylesheet" href="<% if (webpackConfig.mode !== 'development') { %>/assets<% } %>/<%= htmlWebpackPlugin.files.css[index] %>"/>
+    <% } %>
+</head>
+
+<body theme="light">
+    <% for (var index in htmlWebpackPlugin.files.js) { %>
+        <script src="<% if (webpackConfig.mode !== 'development') { %>/assets<% } %>/<%= htmlWebpackPlugin.files.js[index] %>"></script>
+    <% } %>
+    <noscript>
+        <h3 mar-left="extra" pad="content">Javascript must be enabled to use this site</h3>
+    </noscript>
+</body>
+
+</html>

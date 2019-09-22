@@ -2,11 +2,12 @@
 
 use {
     super::{tree::PathTree, Request, Response},
-    crate::{http::Method, Error},
+    crate::Error,
     std::{collections::HashMap, sync::Arc},
+    tiny_http::Method,
 };
 
-type RouteHandler = Fn(Request) -> Result<Response, Error> + Send + Sync + 'static;
+type RouteHandler = dyn Fn(Request) -> Result<Response, Error> + Send + Sync + 'static;
 
 pub struct Route {
     inner: Box<RouteHandler>,
@@ -150,7 +151,7 @@ impl Router {
 
     pub fn find<'a>(
         &'a self,
-        method: &'a crate::http::Method,
+        method: &'a Method,
         path: &'a str,
     ) -> Option<(Arc<Route>, HashMap<&'a str, &'a str>)> {
         let tree = self.trees.get(&method)?;

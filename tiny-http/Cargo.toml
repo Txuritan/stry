@@ -1,0 +1,13 @@
+[package]
+name = "tiny-http"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+workspace = ".."
+
+[dependencies]
+ascii = "1.0"
+chrono = "0.4"
+chunked_transfer = "1.0"
+log = "0.4"

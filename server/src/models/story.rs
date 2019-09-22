@@ -95,9 +95,9 @@ impl Story {
         for story in story_rows {
             let story = story?;
 
-            let authors = Author::story(pool.clone(), &story.id)?;
-            let origins = Origin::story(pool.clone(), &story.id)?;
-            let tags = Tag::story(pool.clone(), &story.id)?;
+            let authors = Author::of_story(pool.clone(), &story.id)?;
+            let origins = Origin::of_story(pool.clone(), &story.id)?;
+            let tags = Tag::of_story(pool.clone(), &story.id)?;
 
             let warn = tags.iter().any(|t| t.typ == TagType::Warning);
 
@@ -142,9 +142,9 @@ impl Story {
     pub fn get(pool: Pool, id: &str) -> Result<Self, Error> {
         let conn = pool.get()?;
 
-        let authors = Author::story(pool.clone(), id)?;
-        let origins = Origin::story(pool.clone(), id)?;
-        let tags = Tag::story(pool.clone(), id)?;
+        let authors = Author::of_story(pool.clone(), id)?;
+        let origins = Origin::of_story(pool.clone(), id)?;
+        let tags = Tag::of_story(pool.clone(), id)?;
 
         let warn = tags.iter().any(|t| t.typ == TagType::Warning);
 
@@ -268,10 +268,10 @@ impl fmt::Display for Rating {
             f,
             "{}",
             match self {
-                Rating::Explicit => "black",
-                Rating::Mature => "red",
-                Rating::Teen => "green-dark",
-                Rating::General => "blue",
+                Rating::Explicit => "explicit",
+                Rating::Mature => "mature",
+                Rating::Teen => "teen",
+                Rating::General => "general",
             }
         )
     }
@@ -314,8 +314,8 @@ impl fmt::Display for Warning {
             f,
             "{}",
             match self {
-                Warning::Using => "orange",
-                Warning::None => "gray",
+                Warning::Using => "using",
+                Warning::None => "none",
             }
         )
     }
@@ -356,10 +356,10 @@ impl fmt::Display for State {
             f,
             "{}",
             match self {
-                State::Completed => "green-dark",
-                State::InProgress => "blue",
-                State::Hiatus => "purple",
-                State::Abandoned => "red",
+                State::Completed => "completed",
+                State::InProgress => "in-progress",
+                State::Hiatus => "hiatus",
+                State::Abandoned => "abandoned",
             }
         )
     }

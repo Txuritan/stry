@@ -1,2 +1,2 @@
-client/dist/index.html linguist-vendored
+client/dist/* linguist-vendored
 server/src/http/* linguist-vendored

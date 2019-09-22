@@ -1,5 +1,3 @@
-#[macro_use]
-mod http;
 mod logger;
 mod models;
 mod server;
@@ -9,14 +7,6 @@ mod error;
 mod nanoid;
 mod schema;
 mod typemap;
-
-cfg_if::cfg_if! {
-    if #[cfg(debug_assertions)] {
-        pub const INDEX: &str = "";
-    } else {
-        pub const INDEX: &str = include_str!("../../dist/index.html");
-    }
-}
 
 pub type Conn = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
 
@@ -52,18 +42,66 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "0.0.0.0:8901",
         state,
         Router::new()
+            .get("/api/authors/:page", api::authors)
+            .get("/api/characters/:page", api::characters)
+            .get("/api/origins/:page", api::origins)
+            .get("/api/pairings/:page", api::pairings)
+            .get("/api/tags/:page", api::tags)
             .get("/api/stories/:page", api::stories)
+            .get("/api/warnings/:page", api::warnings)
             .get("/api/author/:id/:page", api::author_stories)
             .get("/api/origin/:id/:page", api::origin_stories)
             .get("/api/tag/:id/:page", api::tag_stories)
             .get("/api/story/:id/chapter/:chapter", api::story_chapter)
             .post("/api/search", api::search)
-            .get("/", |_req| Ok(crate::server::Response::Ok().html(INDEX))),
+            .get("/", |_req| {
+                Ok(crate::server::Response::Ok()
+                    .header("Cache-Control", "max-age=900, public")
+                    .html(
+                        std::str::from_utf8(
+                            Assets::get("index.html")
+                                .expect("Unable to find `index.html` in assets")
+                                .as_ref(),
+                        )
+                        .expect("`index.html` is no valid UTF-8"),
+                    ))
+            })
+            .get("/assets/:file", asset),
     )?
     .run();
 
     Ok(())
 }
+
+fn asset(req: crate::server::Request) -> Result<crate::server::Response, Error> {
+    if let Some(file) = req.params.get("file") {
+        if file == &"index.html" {
+            return Ok(crate::server::Response::NotFound().body("404: Page Not Found"));
+        }
+
+        if let Some(found) = Assets::get(file) {
+            if file.ends_with(".css") {
+                Ok(crate::server::Response::Ok()
+                    .header("Cache-Control", "max-age=900, public")
+                    .css(std::str::from_utf8(&found).expect("`index.html` is no valid UTF-8")))
+            } else if file.ends_with(".js") {
+                Ok(crate::server::Response::Ok()
+                    .header("Cache-Control", "max-age=900, public")
+                    .js(std::str::from_utf8(&found).expect("`index.html` is no valid UTF-8")))
+            } else {
+                Ok(crate::server::Response::NotFound().body("404: Page Not Found"))
+            }
+        } else {
+            Ok(crate::server::Response::NotFound().body("404: Page Not Found"))
+        }
+    } else {
+        Ok(crate::server::Response::NotFound().body("404: Page Not Found"))
+    }
+}
+
+#[derive(rust_embed::RustEmbed)]
+#[folder = "$CARGO_MANIFEST_DIR/../client/dist"]
+pub struct Assets;
 
 #[derive(Clone)]
 pub struct Pool {

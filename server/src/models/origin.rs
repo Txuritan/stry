@@ -33,7 +33,38 @@ pub struct Origin {
 }
 
 impl Origin {
-    pub fn all(pool: Pool, id: &str, page: u32) -> Result<(u32, Vec<Story>), Error> {
+    pub fn all(pool: Pool, page: u32) -> Result<(u32, Vec<Self>), Error> {
+        let conn = pool.get()?;
+
+        let mut stmt = conn.prepare(
+            "SELECT Id, Name, Created, Updated FROM Origin ORDER BY Name DESC LIMIT 100 OFFSET ?;",
+        )?;
+
+        let origin_rows = stmt.query_map(rusqlite::params![10 * page], |row| {
+            Ok(Origin {
+                id: row.get("Id")?,
+                name: row.get("Name")?,
+                created: row.get("Created")?,
+                updated: row.get("Updated")?,
+            })
+        })?;
+
+        let mut origins = Vec::new();
+
+        for origin in origin_rows {
+            origins.push(origin?);
+        }
+
+        let count = conn.query_row(
+            "SELECT COUNT(Id) as Count FROM Origin;",
+            rusqlite::NO_PARAMS,
+            |row| row.get("Count"),
+        )?;
+
+        Ok((count, origins))
+    }
+
+    pub fn for_stories(pool: Pool, id: &str, page: u32) -> Result<(u32, Vec<Story>), Error> {
         let conn = pool.get()?;
 
         let mut stmt = conn.prepare("SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = ? ORDER BY S.Updated DESC LIMIT 10 OFFSET ?;")?;
@@ -53,7 +84,7 @@ impl Origin {
         Ok((count, stories))
     }
 
-    pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
+    pub fn of_story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
         let conn = pool.get()?;
 
         let mut stmt = conn.prepare(

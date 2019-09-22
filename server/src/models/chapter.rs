@@ -40,7 +40,7 @@ pub struct Chapter {
 }
 
 impl Chapter {
-    pub fn story(pool: Pool, story: &str, place: u32) -> Result<Self, Error> {
+    pub fn of_story(pool: Pool, story: &str, place: u32) -> Result<Self, Error> {
         let conn = pool.get()?;
 
         let chapter = conn.query_row(

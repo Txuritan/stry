@@ -10,6 +10,8 @@
     - Route logging
   - Story and chapter edit API routes
   - Clap arguments/config
+  - Maybe use Actix or Warp instead
+  - Maybe which over to Serde and GraphQL
 
 - Web interface:
   - ~~Story tile size~~

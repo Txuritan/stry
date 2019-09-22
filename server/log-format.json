@@ -1,0 +1,26 @@
+{
+    "timestamp": "2019-09-05 00:56:40,532",
+    "context": {
+        "application": "stry",
+        "level": "info",
+        "namespace": "stry::server",
+        "pid": "",
+        "version": "v2.1.0-fab195f-modified"
+    },
+    "session": {
+        "bytes": {
+            "received": "23",
+            "sent": "23"
+        },
+        "method": "GET",
+        "path": "/assets/styles.581b64c55234a1a023b6.css",
+        "status": "200",
+        "version": "1.1"
+    },
+    "request": {
+        "body": "",
+        "params": {},
+        "query": {},
+        "headers": {}
+    }
+}

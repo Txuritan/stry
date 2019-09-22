@@ -1,7 +1,31 @@
 [package]
-name = "stry-client"
-version = "0.1.0"
-authors = ["Txuritan <txuritan@protonmail.com>"]
+name = "client"
+version = "2.1.0"
+authors = ["Txuritan"]
 edition = "2018"
 
 workspace = ".."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+futures = "0.1"
+git-version = "0.3"
+log = "0.4"
+seed = "0.4"
+wasm-bindgen = "0.2"
+wasm-logger = "0.1"
+
+[dependencies.web-sys]
+version = "0.3.27"
+features = [
+    "Document",
+    "Element",
+    "HtmlElement",
+    "MessageEvent",
+    "ScrollBehavior",
+    "ScrollToOptions",
+    "WebSocket",
+    "Window"
+]

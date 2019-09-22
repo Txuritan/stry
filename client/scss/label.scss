@@ -1,0 +1,35 @@
+@import "_variables.scss";
+
+[label] {
+    border-radius: $padding--small;
+    color: $color__gray-100;
+    font-size: 1.2rem;
+    margin: $padding--small;
+    padding: $padding--small $padding--normal;
+}
+
+body[theme="light"] {
+    [label] {
+        &:link, &:hover, &:link:hover, &:visited, &:visited:hover {
+            color: $color__gray-100;
+        }
+    }
+}
+
+body[theme="dark"] {
+    [label] {
+        &:link, &:hover, &:link:hover, &:visited, &:visited:hover {
+            color: $color__gray-100;
+        }
+    }
+}
+
+[label-list] {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: $padding--normal;
+
+    > [label]:first-child {
+        margin-left: 0;
+    }
+}

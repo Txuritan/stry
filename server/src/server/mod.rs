@@ -16,14 +16,14 @@ pub use self::{request::Request, response::Response, router::Router};
 
 pub struct Server {
     router: Arc<Router>,
-    state: Arc<TypeMap<CloneAny + Send + Sync>>,
-    server: crate::http::Server,
+    state: Arc<TypeMap<dyn CloneAny + Send + Sync>>,
+    server: tiny_http::Server,
 }
 
 impl Server {
     pub fn new(
         addr: impl ToSocketAddrs + std::fmt::Display,
-        state: TypeMap<CloneAny + Send + Sync>,
+        state: TypeMap<dyn CloneAny + Send + Sync>,
         router: Router,
     ) -> Result<Self, Error> {
         log::info!("Binding to: {}", addr);
@@ -31,7 +31,7 @@ impl Server {
         Ok(Self {
             router: Arc::new(router),
             state: Arc::new(state),
-            server: crate::http::Server::http(addr)?,
+            server: tiny_http::Server::http(addr)?,
         })
     }
 
@@ -49,16 +49,15 @@ impl Server {
     #[allow(clippy::collapsible_if)]
     fn process(
         &self,
-        mut req: crate::http::Request,
+        mut req: tiny_http::Request,
         router: Arc<Router>,
-        state: Arc<TypeMap<CloneAny + Send + Sync>>,
+        state: Arc<TypeMap<dyn CloneAny + Send + Sync>>,
     ) {
         thread::spawn(move || {
             if let Some(size) = req.body_length() {
                 if size >= 1024 {
                     if let Err(err) = req.respond(
-                        crate::http::Response::from_string("400: Bad Request")
-                            .with_status_code(400),
+                        tiny_http::Response::from_string("400: Bad Request").with_status_code(400),
                     ) {
                         log::error!("{}", err);
                     }
@@ -72,10 +71,8 @@ impl Server {
                             }
                             Err(reader_err) => {
                                 if let Err(http_err) = req.respond(
-                                    crate::http::Response::from_string(
-                                        "500: Internal Server Error",
-                                    )
-                                    .with_status_code(500),
+                                    tiny_http::Response::from_string("500: Internal Server Error")
+                                        .with_status_code(500),
                                 ) {
                                     log::error!("http: {}, reader: {}", http_err, reader_err);
                                 }
@@ -91,9 +88,9 @@ impl Server {
 
     #[allow(clippy::collapsible_if)]
     fn handle(
-        req: crate::http::Request,
+        req: tiny_http::Request,
         router: Arc<Router>,
-        state: Arc<TypeMap<CloneAny + Send + Sync>>,
+        state: Arc<TypeMap<dyn CloneAny + Send + Sync>>,
         body: Option<String>,
     ) {
         let me = req.method();
@@ -110,12 +107,20 @@ impl Server {
             let res = handler.as_ref().handle(new_req);
 
             if let Err(err) = match res {
-                Ok(ok) => req.respond(ok.into_inner()),
+                Ok(ok) => {
+                    let inner = ok.into_inner();
+
+                    log::info!("{} {} {}", me, inner.status_code().0, url);
+
+                    req.respond(inner)
+                }
                 Err(err) => {
+                    log::info!("{} {} {}", me, 500, url);
+
                     log::error!("{}", err);
 
                     req.respond(
-                        crate::http::Response::from_string("500: Internal Server Error")
+                        tiny_http::Response::from_string("500: Internal Server Error")
                             .with_status_code(500),
                     )
                 }
@@ -123,8 +128,10 @@ impl Server {
                 log::error!("{}", err);
             }
         } else {
+            log::info!("{} {} {}", me, 404, url);
+
             if let Err(err) = req.respond(
-                crate::http::Response::from_string("404: Page Not Found").with_status_code(404),
+                tiny_http::Response::from_string("404: Page Not Found").with_status_code(404),
             ) {
                 log::error!("{}", err);
             }

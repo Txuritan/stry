@@ -1,0 +1,61 @@
+@import "_variables.scss";
+
+[panel] {
+    display: block;
+    margin: $padding--extra-large 0;
+    position: relative;
+    
+    > [body] {
+        font-size: 1.4rem;
+    }
+
+    > [foot] {
+        font-size: 1.4rem;
+    }
+}
+
+[panel] > [head] {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    h3 {
+        font-size: 1.6rem;
+        font-weight: normal;
+        font-style: normal;
+        margin-bottom: 0.2rem;
+    }
+
+    p, > * {
+        font-size: 1.4rem;
+        line-height: 1.6rem;
+    }
+}
+
+body[theme="light"] {
+    [panel] > [head] {
+        color: $color__gray-700;
+    }
+
+    [panel] > [body] {
+        color: $color__gray-700;
+    }
+
+    [panel] > [foot] {
+        color: $color__gray-700;
+    }
+}
+
+body[theme="dark"] {
+    [panel] > [head] {
+        color: $color__gray-200;
+    }
+
+    [panel] > [body] {
+        color: $color__gray-400;
+    }
+
+    [panel] > [foot] {
+        color: $color__gray-600;
+    }
+}

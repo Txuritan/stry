@@ -17,10 +17,20 @@ impl Error {
             code: ErrorCode::InternalError,
         }
     }
+
+    pub fn state(context: &'static str) -> Self {
+        Self {
+            kind: ErrorKind::State { context },
+            code: ErrorCode::InternalError,
+        }
+    }
 }
 
 #[derive(Debug)]
 pub enum ErrorKind {
+    State {
+        context: &'static str,
+    },
     IO {
         err: std::io::Error,
     },
@@ -51,6 +61,7 @@ pub enum ErrorKind {
 impl std::fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            ErrorKind::State { context } => write!(f, "(State) {}", context),
             ErrorKind::IO { ref err } => write!(f, "(IO) {}", err),
             ErrorKind::Json { ref err } => write!(f, "(Json) {}", err),
             ErrorKind::NumParseInt { ref err } => write!(f, "(NumParseInt) {}", err),
@@ -154,8 +165,7 @@ impl std::error::Error for Error {
             ErrorKind::Pool { ref err } => Some(err),
             ErrorKind::SQLite { ref err } => Some(err),
             ErrorKind::UTF8 { ref err } => Some(err),
-            ErrorKind::BoxSS { .. } => None,
-            ErrorKind::Custom { .. } => None,
+            _ => None,
         }
     }
 }

@@ -4,7 +4,4 @@
 *.db
 *.sql
 **/node_modules/
-**/temp
-**/dist/*
-!client/dist/index.html
-!client/dist/README.md
+**/temp/

@@ -1,5 +1,11 @@
 [workspace]
-members = ["client", "server", "scraper"]
+members = [
+    "client",
+    "common",
+    "scraper",
+    "server",
+    "tiny-http"
+]
 
 [patch.crates-io]
 r2d2 = { git = "https://github.com/sfackler/r2d2", rev = "3b10dda1ed31091a363a23279cff90cf56063bb9" }

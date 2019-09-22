@@ -1,14 +1,34 @@
 version: '2'
 
 tasks:
+  css:
+    cmds:
+      - rsass --style Compressed ./client/scss/index.scss > ./client/dist/stry.css
+    sources:
+      - client/scss/**/*.scss
+    generates:
+      - client/dist/stry.css
+
   build:
-    deps: [build-front, build-back]
-
-  build-front:
-    dir: site
+    deps: [build-client, build-server]
+  build-client:
+    deps: [css]
     cmds:
-    - npm run build
-
-  build-back:
+      - wasm-pack build --target no-modules --out-name stry --out-dir dist --no-typescript --release ./client
+  build-server:
     cmds:
-    - cargo build --release
+      - cargo build --bin stry --release
+
+  dev:
+    deps: [dev-client, dev-server]
+  dev-client:
+    deps: [css]
+    cmds:
+      - wasm-pack build --target web --out-name stry --out-dir dist --no-typescript --dev ./client
+  dev-server:
+    cmds:
+      - cargo build --bin stry
+
+  serve:
+    cmds:
+      - microserver --port 8904 ./client

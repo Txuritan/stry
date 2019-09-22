@@ -42,10 +42,10 @@ impl fmt::Display for TagType {
             f,
             "{}",
             match self {
-                TagType::Warning => "red",
-                TagType::Pairing => "orange",
-                TagType::Character => "purple",
-                TagType::General => "black-light",
+                TagType::Warning => "warning",
+                TagType::Pairing => "paring",
+                TagType::Character => "character",
+                TagType::General => "general",
             }
         )
     }
@@ -87,7 +87,71 @@ pub struct Tag {
 }
 
 impl Tag {
-    pub fn all(pool: Pool, id: &str, page: u32) -> Result<(u32, Vec<Story>), Error> {
+    pub fn all(pool: Pool, page: u32) -> Result<(u32, Vec<Self>), Error> {
+        let conn = pool.get()?;
+
+        let mut stmt = conn.prepare(
+            "SELECT Id, Name, Type, Created, Updated FROM Tag ORDER BY Name LIMIT 100 OFFSET ?;",
+        )?;
+
+        let tag_rows = stmt.query_map(rusqlite::params![10 * page], |row| {
+            Ok(Tag {
+                id: row.get("Id")?,
+                name: row.get("Name")?,
+                typ: row.get("Type")?,
+                created: row.get("Created")?,
+                updated: row.get("Updated")?,
+            })
+        })?;
+
+        let mut tags = Vec::new();
+
+        for tag in tag_rows {
+            tags.push(tag?);
+        }
+
+        let count = conn.query_row(
+            "SELECT COUNT(Id) as Count FROM Tag;",
+            rusqlite::NO_PARAMS,
+            |row| row.get("Count"),
+        )?;
+
+        Ok((count, tags))
+    }
+
+    pub fn all_of_type(pool: Pool, typ: TagType, page: u32) -> Result<(u32, Vec<Self>), Error> {
+        let conn = pool.get()?;
+
+        let mut stmt = conn.prepare(
+            "SELECT Id, Name, Type, Created, Updated FROM Tag WHERE Type = ? ORDER BY Name LIMIT 100 OFFSET ?;",
+        )?;
+
+        let tag_rows = stmt.query_map(rusqlite::params![typ, 10 * page], |row| {
+            Ok(Tag {
+                id: row.get("Id")?,
+                name: row.get("Name")?,
+                typ: row.get("Type")?,
+                created: row.get("Created")?,
+                updated: row.get("Updated")?,
+            })
+        })?;
+
+        let mut tags = Vec::new();
+
+        for tag in tag_rows {
+            tags.push(tag?);
+        }
+
+        let count = conn.query_row(
+            "SELECT COUNT(Id) as Count FROM Tag WHERE Type = ?;",
+            rusqlite::params![typ],
+            |row| row.get("Count"),
+        )?;
+
+        Ok((count, tags))
+    }
+
+    pub fn for_stories(pool: Pool, id: &str, page: u32) -> Result<(u32, Vec<Story>), Error> {
         let conn = pool.get()?;
 
         let mut stmt = conn.prepare("SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = StoryId WHERE ST.TagId = ? ORDER BY S.Updated DESC LIMIT 10 OFFSET ?;")?;
@@ -135,7 +199,7 @@ impl Tag {
         }
     }
 
-    pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
+    pub fn of_story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
         let conn = pool.get()?;
 
         let mut stmt = conn.prepare(

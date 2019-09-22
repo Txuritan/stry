@@ -3,12 +3,16 @@
 use std::io::Cursor;
 
 pub struct Response {
-    inner: crate::http::Response<Cursor<Vec<u8>>>,
+    inner: tiny_http::Response<Cursor<Vec<u8>>>,
 }
 
 impl Response {
     pub fn Ok() -> ResponseBuilder {
         ResponseBuilder::Ok()
+    }
+
+    pub fn NotFound() -> ResponseBuilder {
+        ResponseBuilder::NotFound()
     }
 
     pub fn InternalError() -> ResponseBuilder {
@@ -23,42 +27,49 @@ impl Response {
         ResponseBuilder::Location(url)
     }
 
-    pub fn into_inner(self) -> crate::http::Response<Cursor<Vec<u8>>> {
+    pub fn into_inner(self) -> tiny_http::Response<Cursor<Vec<u8>>> {
         self.inner
     }
 }
 
 pub struct ResponseBuilder {
-    headers: Vec<crate::http::Header>,
-    status: crate::http::StatusCode,
+    headers: Vec<tiny_http::Header>,
+    status: tiny_http::StatusCode,
 }
 
 impl ResponseBuilder {
     pub fn Ok() -> Self {
         Self {
             headers: Vec::with_capacity(10),
-            status: crate::http::StatusCode(200),
+            status: tiny_http::StatusCode(200),
+        }
+    }
+
+    pub fn NotFound() -> Self {
+        Self {
+            headers: Vec::with_capacity(10),
+            status: tiny_http::StatusCode(404),
         }
     }
 
     pub fn InternalError() -> Self {
         Self {
             headers: Vec::with_capacity(10),
-            status: crate::http::StatusCode(500),
+            status: tiny_http::StatusCode(500),
         }
     }
 
     pub fn BadRequest() -> Self {
         Self {
             headers: Vec::with_capacity(10),
-            status: crate::http::StatusCode(400),
+            status: tiny_http::StatusCode(400),
         }
     }
 
     pub fn Location(url: impl AsRef<[u8]>) -> Response {
         Self {
             headers: Vec::with_capacity(10),
-            status: crate::http::StatusCode(301),
+            status: tiny_http::StatusCode(301),
         }
         .header("Location", url)
         .body("")
@@ -66,7 +77,7 @@ impl ResponseBuilder {
 
     pub fn header(mut self, key: impl AsRef<[u8]>, value: impl AsRef<[u8]>) -> Self {
         self.headers
-            .push(crate::http::Header::from_bytes(&key.as_ref()[..], &value.as_ref()[..]).unwrap());
+            .push(tiny_http::Header::from_bytes(&key.as_ref()[..], &value.as_ref()[..]).unwrap());
 
         self
     }
@@ -76,7 +87,7 @@ impl ResponseBuilder {
         let data_len = data.len();
 
         Response {
-            inner: crate::http::Response::new(
+            inner: tiny_http::Response::new(
                 self.status,
                 self.headers,
                 Cursor::new(data.into_bytes()),
@@ -91,6 +102,16 @@ impl ResponseBuilder {
             .body(data)
     }
 
+    pub fn css(self, data: impl Into<String>) -> Response {
+        self.header("Content-Type", "text/css; charset=UTF-8")
+            .body(data)
+    }
+
+    pub fn js(self, data: impl Into<String>) -> Response {
+        self.header("Content-Type", "application/javascript; charset=UTF-8")
+            .body(data)
+    }
+
     pub fn json(self, data: impl Into<json::JsonValue>) -> Response {
         self.header("Content-Type", "application/json; charset=UTF-8")
             .body(data.into().dump())
@@ -100,7 +121,7 @@ impl ResponseBuilder {
         let data_len = data.len();
 
         Response {
-            inner: crate::http::Response::new(
+            inner: tiny_http::Response::new(
                 self.status,
                 self.headers,
                 Cursor::new(data),

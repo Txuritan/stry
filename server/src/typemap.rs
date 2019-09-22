@@ -20,7 +20,7 @@ pub use internals::{CloneAny, DebugAny};
 /// be stored in this map. Usually, you are looking for `ShareMap`, which
 /// is `Send + Sync`.
 #[derive(Default, Debug)]
-pub struct TypeMap<A: ?Sized = UnsafeAny>
+pub struct TypeMap<A: ?Sized = dyn UnsafeAny>
 where
     A: UnsafeAnyExt,
 {
@@ -157,7 +157,7 @@ impl<A: UnsafeAnyExt + ?Sized> TypeMap<A> {
 }
 
 /// A view onto an entry in a `TypeMap`.
-pub enum Entry<'a, K, A: ?Sized + UnsafeAnyExt + 'a = UnsafeAny> {
+pub enum Entry<'a, K, A: ?Sized + UnsafeAnyExt + 'a = dyn UnsafeAny> {
     /// A view onto an occupied entry in a TypeMap.
     Occupied(OccupiedEntry<'a, K, A>),
     /// A view onto an unoccupied entry in a TypeMap.
@@ -191,13 +191,13 @@ impl<'a, K: Key, A: ?Sized + UnsafeAnyExt + 'a> Entry<'a, K, A> {
 }
 
 /// A view onto an occupied entry in a `TypeMap`.
-pub struct OccupiedEntry<'a, K, A: ?Sized + UnsafeAnyExt + 'a = UnsafeAny> {
+pub struct OccupiedEntry<'a, K, A: ?Sized + UnsafeAnyExt + 'a = dyn UnsafeAny> {
     data: hash_map::OccupiedEntry<'a, TypeId, Box<A>>,
     _marker: PhantomData<K>,
 }
 
 /// A view onto an unoccupied entry in a `TypeMap`.
-pub struct VacantEntry<'a, K, A: ?Sized + UnsafeAnyExt + 'a = UnsafeAny> {
+pub struct VacantEntry<'a, K, A: ?Sized + UnsafeAnyExt + 'a = dyn UnsafeAny> {
     data: hash_map::VacantEntry<'a, TypeId, Box<A>>,
     _marker: PhantomData<K>,
 }
@@ -274,10 +274,10 @@ mod internals {
     pub trait DebugAny: Any + Debug {}
     impl<T: Any + Debug> DebugAny for T {}
 
-    unsafe impl UnsafeAnyExt for DebugAny {}
-    unsafe impl UnsafeAnyExt for DebugAny + Send {}
-    unsafe impl UnsafeAnyExt for DebugAny + Sync {}
-    unsafe impl UnsafeAnyExt for DebugAny + Send + Sync {}
+    unsafe impl UnsafeAnyExt for dyn DebugAny {}
+    unsafe impl UnsafeAnyExt for dyn DebugAny + Send {}
+    unsafe impl UnsafeAnyExt for dyn DebugAny + Sync {}
+    unsafe impl UnsafeAnyExt for dyn DebugAny + Send + Sync {}
 
     /// A marker trait meant for use as the `A` parameter in `TypeMap`.
     ///
@@ -289,129 +289,129 @@ mod internals {
     /// There is also an exported alias for this type of `TypeMap`, `CloneAny`.
     pub trait CloneAny: Any {
         #[doc(hidden)]
-        fn clone_any(&self) -> Box<CloneAny>;
+        fn clone_any(&self) -> Box<dyn CloneAny>;
         #[doc(hidden)]
-        fn clone_any_send(&self) -> Box<CloneAny + Send>;
+        fn clone_any_send(&self) -> Box<dyn CloneAny + Send>;
         #[doc(hidden)]
-        fn clone_any_sync(&self) -> Box<CloneAny + Sync>;
+        fn clone_any_sync(&self) -> Box<dyn CloneAny + Sync>;
         #[doc(hidden)]
-        fn clone_any_send_sync(&self) -> Box<CloneAny + Send + Sync>;
+        fn clone_any_send_sync(&self) -> Box<dyn CloneAny + Send + Sync>;
     }
 
     impl<T: Any + Clone + Send + Sync> CloneAny for T {
-        fn clone_any(&self) -> Box<CloneAny> {
+        fn clone_any(&self) -> Box<dyn CloneAny> {
             Box::new(self.clone())
         }
 
-        fn clone_any_send(&self) -> Box<CloneAny + Send> {
+        fn clone_any_send(&self) -> Box<dyn CloneAny + Send> {
             Box::new(self.clone())
         }
 
-        fn clone_any_sync(&self) -> Box<CloneAny + Sync> {
+        fn clone_any_sync(&self) -> Box<dyn CloneAny + Sync> {
             Box::new(self.clone())
         }
 
-        fn clone_any_send_sync(&self) -> Box<CloneAny + Send + Sync> {
+        fn clone_any_send_sync(&self) -> Box<dyn CloneAny + Send + Sync> {
             Box::new(self.clone())
         }
     }
 
-    impl Clone for Box<CloneAny> {
-        fn clone(&self) -> Box<CloneAny> {
+    impl Clone for Box<dyn CloneAny> {
+        fn clone(&self) -> Box<dyn CloneAny> {
             (**self).clone_any()
         }
     }
 
-    impl Clone for Box<CloneAny + Send> {
-        fn clone(&self) -> Box<CloneAny + Send> {
+    impl Clone for Box<dyn CloneAny + Send> {
+        fn clone(&self) -> Box<dyn CloneAny + Send> {
             (**self).clone_any_send()
         }
     }
 
-    impl Clone for Box<CloneAny + Sync> {
-        fn clone(&self) -> Box<CloneAny + Sync> {
+    impl Clone for Box<dyn CloneAny + Sync> {
+        fn clone(&self) -> Box<dyn CloneAny + Sync> {
             (**self).clone_any_sync()
         }
     }
 
-    impl Clone for Box<CloneAny + Send + Sync> {
-        fn clone(&self) -> Box<CloneAny + Send + Sync> {
+    impl Clone for Box<dyn CloneAny + Send + Sync> {
+        fn clone(&self) -> Box<dyn CloneAny + Send + Sync> {
             (**self).clone_any_send_sync()
         }
     }
 
-    unsafe impl UnsafeAnyExt for CloneAny {}
-    unsafe impl UnsafeAnyExt for CloneAny + Send {}
-    unsafe impl UnsafeAnyExt for CloneAny + Sync {}
-    unsafe impl UnsafeAnyExt for CloneAny + Send + Sync {}
+    unsafe impl UnsafeAnyExt for dyn CloneAny {}
+    unsafe impl UnsafeAnyExt for dyn CloneAny + Send {}
+    unsafe impl UnsafeAnyExt for dyn CloneAny + Sync {}
+    unsafe impl UnsafeAnyExt for dyn CloneAny + Send + Sync {}
 
     #[doc(hidden)] // Not actually exported
     pub unsafe trait Implements<A: ?Sized + UnsafeAnyExt> {
         fn into_object(self) -> Box<A>;
     }
 
-    unsafe impl<T: UnsafeAny> Implements<UnsafeAny> for T {
-        fn into_object(self) -> Box<UnsafeAny> {
+    unsafe impl<T: UnsafeAny> Implements<dyn UnsafeAny> for T {
+        fn into_object(self) -> Box<dyn UnsafeAny> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: UnsafeAny + Send> Implements<(UnsafeAny + Send)> for T {
-        fn into_object(self) -> Box<UnsafeAny + Send> {
+    unsafe impl<T: UnsafeAny + Send> Implements<(dyn UnsafeAny + Send)> for T {
+        fn into_object(self) -> Box<dyn UnsafeAny + Send> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: UnsafeAny + Sync> Implements<(UnsafeAny + Sync)> for T {
-        fn into_object(self) -> Box<UnsafeAny + Sync> {
+    unsafe impl<T: UnsafeAny + Sync> Implements<(dyn UnsafeAny + Sync)> for T {
+        fn into_object(self) -> Box<dyn UnsafeAny + Sync> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: UnsafeAny + Send + Sync> Implements<(UnsafeAny + Send + Sync)> for T {
-        fn into_object(self) -> Box<UnsafeAny + Send + Sync> {
+    unsafe impl<T: UnsafeAny + Send + Sync> Implements<(dyn UnsafeAny + Send + Sync)> for T {
+        fn into_object(self) -> Box<dyn UnsafeAny + Send + Sync> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: CloneAny> Implements<CloneAny> for T {
-        fn into_object(self) -> Box<CloneAny> {
+    unsafe impl<T: CloneAny> Implements<dyn CloneAny> for T {
+        fn into_object(self) -> Box<dyn CloneAny> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: CloneAny + Send> Implements<(CloneAny + Send)> for T {
-        fn into_object(self) -> Box<CloneAny + Send> {
+    unsafe impl<T: CloneAny + Send> Implements<(dyn CloneAny + Send)> for T {
+        fn into_object(self) -> Box<dyn CloneAny + Send> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: CloneAny + Send + Sync> Implements<(CloneAny + Send + Sync)> for T {
-        fn into_object(self) -> Box<CloneAny + Send + Sync> {
+    unsafe impl<T: CloneAny + Send + Sync> Implements<(dyn CloneAny + Send + Sync)> for T {
+        fn into_object(self) -> Box<dyn CloneAny + Send + Sync> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: DebugAny> Implements<DebugAny> for T {
-        fn into_object(self) -> Box<DebugAny> {
+    unsafe impl<T: DebugAny> Implements<dyn DebugAny> for T {
+        fn into_object(self) -> Box<dyn DebugAny> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: DebugAny + Send> Implements<DebugAny + Send> for T {
-        fn into_object(self) -> Box<DebugAny + Send> {
+    unsafe impl<T: DebugAny + Send> Implements<dyn DebugAny + Send> for T {
+        fn into_object(self) -> Box<dyn DebugAny + Send> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: DebugAny + Sync> Implements<DebugAny + Sync> for T {
-        fn into_object(self) -> Box<DebugAny + Sync> {
+    unsafe impl<T: DebugAny + Sync> Implements<dyn DebugAny + Sync> for T {
+        fn into_object(self) -> Box<dyn DebugAny + Sync> {
             Box::new(self)
         }
     }
 
-    unsafe impl<T: DebugAny + Send + Sync> Implements<DebugAny + Send + Sync> for T {
-        fn into_object(self) -> Box<DebugAny + Send + Sync> {
+    unsafe impl<T: DebugAny + Send + Sync> Implements<dyn DebugAny + Send + Sync> for T {
+        fn into_object(self) -> Box<dyn DebugAny + Send + Sync> {
             Box::new(self)
         }
     }

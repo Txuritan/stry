@@ -48,13 +48,11 @@ pub fn authors(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: AuthorResponse {
-                        count,
-                        pages: (f64::from(count) / 100.0).ceil() as u32,
-                        authors: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(AuthorResponse {
+                    count,
+                    pages: (f64::from(count) / 100.0).ceil() as u32,
+                    authors: vec,
+                })))
         },
     )
 }
@@ -67,13 +65,11 @@ pub fn characters(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: TagResponse {
-                        count,
-                        pages: (f64::from(count) / 100.0).ceil() as u32,
-                        tags: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(TagResponse {
+                    count,
+                    pages: (f64::from(count) / 100.0).ceil() as u32,
+                    tags: vec,
+                })))
         },
     )
 }
@@ -86,13 +82,11 @@ pub fn origins(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: OriginResponse {
-                        count,
-                        pages: (f64::from(count) / 100.0).ceil() as u32,
-                        origins: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(OriginResponse {
+                    count,
+                    pages: (f64::from(count) / 100.0).ceil() as u32,
+                    origins: vec,
+                })))
         },
     )
 }
@@ -105,13 +99,11 @@ pub fn pairings(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: TagResponse {
-                        count,
-                        pages: (f64::from(count) / 100.0).ceil() as u32,
-                        tags: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(TagResponse {
+                    count,
+                    pages: (f64::from(count) / 100.0).ceil() as u32,
+                    tags: vec,
+                })))
         },
     )
 }
@@ -124,13 +116,11 @@ pub fn tags(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: TagResponse {
-                        count,
-                        pages: (f64::from(count) / 100.0).ceil() as u32,
-                        tags: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(TagResponse {
+                    count,
+                    pages: (f64::from(count) / 100.0).ceil() as u32,
+                    tags: vec,
+                })))
         },
     )
 }
@@ -143,13 +133,11 @@ pub fn stories(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: StoryResponse {
-                        count,
-                        pages: (f64::from(count) / 10.0).ceil() as u32,
-                        stories: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(StoryResponse {
+                    count,
+                    pages: (f64::from(count) / 10.0).ceil() as u32,
+                    stories: vec,
+                })))
         },
     )
 }
@@ -162,13 +150,11 @@ pub fn warnings(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: TagResponse {
-                        count,
-                        pages: (f64::from(count) / 100.0).ceil() as u32,
-                        tags: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(TagResponse {
+                    count,
+                    pages: (f64::from(count) / 100.0).ceil() as u32,
+                    tags: vec,
+                })))
         },
     )
 }
@@ -215,13 +201,11 @@ pub fn author_stories(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: StoryResponse {
-                        count,
-                        pages: (f64::from(count) / 10.0).ceil() as u32,
-                        stories: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(StoryResponse {
+                    count,
+                    pages: (f64::from(count) / 10.0).ceil() as u32,
+                    stories: vec,
+                })))
         },
     )
 }
@@ -234,13 +218,11 @@ pub fn origin_stories(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: StoryResponse {
-                        count,
-                        pages: (f64::from(count) / 10.0).ceil() as u32,
-                        stories: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(StoryResponse {
+                    count,
+                    pages: (f64::from(count) / 10.0).ceil() as u32,
+                    stories: vec,
+                })))
         },
     )
 }
@@ -253,13 +235,11 @@ pub fn tag_stories(req: Request) -> Result<Response, Error> {
         |count, vec| {
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: StoryResponse {
-                        count,
-                        pages: (f64::from(count) / 10.0).ceil() as u32,
-                        stories: vec,
-                    },
-                })?))
+                .json(Wrapper::ok(StoryResponse {
+                    count,
+                    pages: (f64::from(count) / 10.0).ceil() as u32,
+                    stories: vec,
+                })))
         },
     )
 }
@@ -290,21 +270,14 @@ pub fn story_chapter(req: Request) -> Result<Response, Error> {
 
                 Ok(Response::Ok()
                     .header("Access-Control-Allow-Origin", "*")
-                    .json(serde_json::to_string(&Wrapper {
-                        data: ChapterResponse {
-                            chapter: chapter,
-                            story: story,
-                        },
-                    })?))
+                    .json(Wrapper::ok(ChapterResponse {
+                        chapter: chapter,
+                        story: story,
+                    })))
             } else {
                 Ok(Response::BadRequest()
                     .header("Content-Type", "text/plain")
-                    .json(json::object! {
-                        "error" => json::object! {
-                            "code" => 400i32,
-                            "title" => "Bad Request",
-                        },
-                    }))
+                    .json(Wrapper::err(400, vec![String::from("Bad Request")])))
             }
         }
         None => Ok(Response::InternalError()
@@ -318,12 +291,7 @@ pub fn search(mut req: Request) -> Result<Response, Error> {
         if size >= 1024 {
             return Ok(Response::BadRequest()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(json::object! {
-                    "error" => json::object! {
-                        "code" => 400i32,
-                        "title" => "Bad Request",
-                    },
-                }));
+                .json(Wrapper::err(400, vec![String::from("Bad Request")])));
         }
     }
 
@@ -366,32 +334,20 @@ pub fn search(mut req: Request) -> Result<Response, Error> {
 
             Ok(Response::Ok()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(serde_json::to_string(&Wrapper {
-                    data: StoryResponse {
-                        count: count as u32,
-                        pages: (f64::from(count) / 10.0).ceil() as u32,
-                        stories,
-                    },
-                })?))
+                .json(Wrapper::ok(StoryResponse {
+                    count: count as u32,
+                    pages: (f64::from(count) / 10.0).ceil() as u32,
+                    stories,
+                })))
         } else {
             Ok(Response::BadRequest()
                 .header("Access-Control-Allow-Origin", "*")
-                .json(json::object! {
-                    "error" => json::object! {
-                        "code" => 400i32,
-                        "title" => "Bad Request",
-                    },
-                }))
+                .json(Wrapper::err(400, vec![String::from("Bad Request")])))
         }
     } else {
         Ok(Response::BadRequest()
             .header("Access-Control-Allow-Origin", "*")
-            .json(json::object! {
-                "error" => json::object! {
-                    "code" => 400i32,
-                    "title" => "Bad Request",
-                },
-            }))
+            .json(Wrapper::err(400, vec![String::from("Bad Request")])))
     }
 }
 

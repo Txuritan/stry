@@ -112,9 +112,18 @@ impl ResponseBuilder {
             .body(data)
     }
 
-    pub fn json(self, data: impl Into<json::JsonValue>) -> Response {
-        self.header("Content-Type", "application/json; charset=UTF-8")
-            .body(data.into().dump())
+    pub fn json(self, data: impl serde::Serialize) -> Response {
+        match serde_json::to_string(&data) {
+            Ok(data) => self
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(data),
+            Err(err) => {
+                log::error!("JSON error: {}", err);
+
+                self.header("Content-Type", "application/json; charset=UTF-8")
+                    .body(r#"{"status":"error","code":500,"messages":["Internal Server Error"],"data":{}}"#)
+            }
+        }
     }
 
     pub fn stream(self, data: Vec<u8>) -> Response {

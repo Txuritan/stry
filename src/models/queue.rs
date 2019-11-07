@@ -63,11 +63,13 @@ impl Queue {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let row = conn.query_row(
-                    "SELECT Url FROM Queue WHERE Site = ? AND State = ?;",
-                    rusqlite::params![site, State::Finished],
-                    |row| row.get::<_, String>("Url"),
-                ).optional()?;
+                let row = conn
+                    .query_row(
+                        "SELECT Url FROM Queue WHERE Site = ? AND State = ?;",
+                        rusqlite::params![site, State::Finished],
+                        |row| row.get::<_, String>("Url"),
+                    )
+                    .optional()?;
 
                 Ok(row.is_some())
             }
@@ -122,7 +124,13 @@ impl Queue {
         }
     }
 
-    pub fn start(backend: Backend, url: &str, site: Site, name: &str, chapters: u32) -> Result<u64, Error> {
+    pub fn start(
+        backend: Backend,
+        url: &str,
+        site: Site,
+        name: &str,
+        chapters: u32,
+    ) -> Result<u64, Error> {
         match &backend {
             Backend::PostgreSQL { pool } => {
                 let conn = pool.get()?;
@@ -250,7 +258,7 @@ impl ToSql for Site {
             Site::ArchiveOfOurOwn => "archive-of-our-own",
             Site::FanFiction => "fanfiction",
         }
-            .into())
+        .into())
     }
 }
 
@@ -295,6 +303,6 @@ impl ToSql for State {
             State::Running => "running",
             State::Finished => "finished",
         }
-            .into())
+        .into())
     }
 }

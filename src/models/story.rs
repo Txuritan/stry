@@ -6,10 +6,7 @@ use {
     },
     chrono::{DateTime, Utc},
     postgres::to_sql_checked,
-    rusqlite::{
-        types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
-        Result as RusqliteResult,
-    },
+    rusqlite::types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
     std::fmt,
 };
 
@@ -141,7 +138,7 @@ impl Story {
 
                 let rows = conn.query(
                     "SELECT Id, Url, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = $1;",
-                    &[&id]
+                    &[&id],
                 )?;
 
                 if rows.is_empty() {
@@ -158,9 +155,9 @@ impl Story {
                     language: row.get("Language"),
                     chapters: {
                         let count_rows = conn.query(
-                                "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = $1;",
-                                &[&id],
-                            )?;
+                            "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = $1;",
+                            &[&id],
+                        )?;
 
                         if count_rows.is_empty() {
                             return Err(Error::no_rows_returned());
@@ -170,9 +167,9 @@ impl Story {
                     },
                     words: {
                         let count_rows = conn.query(
-                                "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = $1;",
-                                &[&id],
-                            )?;
+                            "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = $1;",
+                            &[&id],
+                        )?;
 
                         if count_rows.is_empty() {
                             return Err(Error::no_rows_returned());
@@ -220,12 +217,12 @@ impl Story {
                             chapters: conn.query_row(
                                 "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = ?;",
                                 rusqlite::params![id],
-                                |row| row.get("Chapters")
+                                |row| row.get("Chapters"),
                             )?,
                             words: conn.query_row(
                                 "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = ?;",
                                 rusqlite::params![id],
-                                |row| row.get("Words")
+                                |row| row.get("Words"),
                             )?,
                             created: row.get("Created")?,
                             updated: row.get("Updated")?,
@@ -239,7 +236,7 @@ impl Story {
                             origins,
                             tags,
                         })
-                    }
+                    },
                 )?;
 
                 Ok(story)
@@ -296,7 +293,7 @@ impl FromSql for Language {
 }
 
 impl ToSql for Language {
-    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
         Ok(self.to_string().into())
     }
 }
@@ -352,7 +349,7 @@ impl FromSql for Rating {
 }
 
 impl ToSql for Rating {
-    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
         Ok(match self {
             Rating::Explicit => "explicit",
             Rating::Mature => "mature",
@@ -402,7 +399,7 @@ impl FromSql for Warning {
 }
 
 impl ToSql for Warning {
-    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
         Ok(match self {
             Warning::Using => "using",
             Warning::None => "none",
@@ -462,7 +459,7 @@ impl FromSql for State {
 }
 
 impl ToSql for State {
-    fn to_sql(&self) -> RusqliteResult<ToSqlOutput> {
+    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
         Ok(match self {
             State::Completed => "completed",
             State::InProgress => "in-progress",

@@ -1,0 +1,33 @@
+@import "_variables.scss";
+
+[grid] {
+    display: flex;
+}
+
+[grid="auto"] {
+    flex: 1 auto;
+}
+
+[grid="grow"] {
+    flex: 1 1 auto;
+}
+
+[grid-column] {
+    flex-direction: column;
+}
+
+[grid-column~="max"] {
+    max-width: 102.4rem;
+}
+
+@for $size from 1 through 12 {
+    [grid-column~="#{$size}"] {
+        flex: $size;
+    }
+}
+
+@media (max-width: $breakpoint) {
+    [grid-collapse] {
+        display: block;
+    }
+}

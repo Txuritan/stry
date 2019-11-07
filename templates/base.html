@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{ title }} | stry</title>
+    <link rel="stylesheet" href="/css/polygon.css">
+    <link rel="stylesheet" href="/css/stry.css">
+</head>
+
+<body theme="dark">
+    <div grid="auto" grid-collapse>
+        <div grid-column="1"></div>
+        <div grid-column="10 max" shadow>
+            <nav nav="primary" flex="grow" bg="black-800">
+                <div nav-section="grow">
+                    <div nav-item="brand"><a href="/">stry</a></div>
+                </div>
+                <div nav-section>
+                    <form nav-item action="/search" method="GET"><input l-bg="white-200" d-bg="black-700" name="search" type="search" placeholder="search" value="{% match search %}{% when Some with (val) %}{{ val }}{% when None %}{% endmatch %}"></form>
+                </div>
+            </nav>
+            <nav nav="secondary" flex="grow" bg="blue-500">
+                <div nav-section="grow">
+                    <div nav-item><a href="/explore/authors?page=1">authors</a></div>
+                    <div nav-item><a href="/explore/origins?page=1">origins</a></div>
+                    <div nav-item><a href="/explore/warnings?page=1">warnings</a></div>
+                    <div nav-item><a href="/explore/pairings?page=1">pairings</a></div>
+                    <div nav-item><a href="/explore/characters?page=1">characters</a></div>
+                    <div nav-item><a href="/explore/tags?page=1">tags</a></div>
+                </div>
+            </nav>
+            <div l-bg="gray-100" d-bg="black-700" pad="content">
+                {% block content %}{% endblock %}
+            </div>
+            <footer nav="primary" flex="grow" bg="black-800">
+                <div nav-section="grow">
+                    <div nav-item><a href="/">mode:</a></div>
+                    <div nav-item id="mode-light"><a href="/">light</a></div>
+                    <div nav-item="brand" id="mode-dark"><a href="/">dark</a></div>
+                </div>
+                <div nav-section>
+                    <div nav-item="brand"><a href="/">v{{ version }}-{{ git }}</a></div>
+                </div>
+            </footer>
+        </div>
+        <div grid-column="1"></div>
+    </div>
+    <script src="/js/js-cookie.js"></script>
+    <script src="/js/stry.js"></script>
+    {% block script %}{% endblock %}
+</body>
+
+</html>

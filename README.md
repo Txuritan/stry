@@ -42,18 +42,18 @@
 
 ## Features
 
+- Dark mode (default)
 - Tagging system
-- Search (soon to be added)
+- Search
 - Importer from various sites
-  - FanFiction.net (as of now)
+  - Archive Of Our Own
+  - FanFiction.net
 - Single user only, made for phones and raspberry pis
 
 ## Requirements
 
-- [Task](https://github.com/go-task/task) task runner
 - Rust
-- SQLite
-- NodeJS (scraper and front-end)
+- SQLite or C/C++ compiler
 
 ## Building
 
@@ -63,8 +63,8 @@
 
 ## Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details
+
+## Acknowledgements

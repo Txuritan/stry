@@ -1,7 +1,8 @@
 /target
+/.idea
 **/*.rs.bk
 *.log
 *.db
 *.sql
-**/node_modules/
-**/temp/
+*.json
+*.exe

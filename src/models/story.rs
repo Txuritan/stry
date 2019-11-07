@@ -13,18 +13,32 @@ use {
     std::fmt,
 };
 
+const POSTGRES_TABLE: &str = "CREATE TABLE
+IF NOT EXISTS
+    Story (
+        Id          VARCHAR(6)                      NOT NULL    PRIMARY KEY     UNIQUE,
+        Url         VARCHAR(256)                    NOT NULL,
+        Name        VARCHAR(256)                    NOT NULL,
+        Summary     VARCHAR(256)                    NOT NULL,
+        Language    VARCHAR(24)                     NOT NULL,
+        Rating      VARCHAR(24)                     NOT NULL,
+        State       VARCHAR(24)                     NOT NULL,
+        Created     TIMESTAMP WITHOUT TIME ZONE     NOT NULL    DEFAULT (DATETIME('now', 'utc')),
+        Updated     TIMESTAMP WITHOUT TIME ZONE     NOT NULL    DEFAULT (DATETIME('now', 'utc'))
+    );";
+
 const SQLITE_TABLE: &str = "CREATE TABLE
 IF NOT EXISTS
     Story (
-        Id          TEXT    PRIMARY KEY                         NOT NULL    UNIQUE,
-        Url         TEXT                                        NOT NULL,
-        Name        TEXT                                        NOT NULL,
-        Summary     TEXT                                        NOT NULL,
-        Language    TEXT                                        NOT NULL,
-        Rating      TEXT                                        NOT NULL,
-        State       TEXT                                        NOT NULL,
-        Created     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL,
-        Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))    NOT NULL
+        Id          TEXT    NOT NULL    PRIMARY KEY     UNIQUE,
+        Url         TEXT    NOT NULL,
+        Name        TEXT    NOT NULL,
+        Summary     TEXT    NOT NULL,
+        Language    TEXT    NOT NULL,
+        Rating      TEXT    NOT NULL,
+        State       TEXT    NOT NULL,
+        Created     TEXT    NOT NULL    DEFAULT (DATETIME('now', 'utc')),
+        Updated     TEXT    NOT NULL    DEFAULT (DATETIME('now', 'utc'))
     );";
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
@@ -60,7 +74,7 @@ impl Story {
 
                 let rows = conn.query(
                     "SELECT Id FROM Story ORDER BY Updated DESC LIMIT $1 OFFSET $2;",
-                    &[&limit, &(10 * page)]
+                    &[&limit, &(10 * page)],
                 )?;
 
                 if rows.is_empty() {
@@ -89,11 +103,12 @@ impl Story {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
-                    "SELECT Id FROM Story ORDER BY Updated DESC LIMIT ? OFFSET ?;",
-                )?;
+                let mut stmt =
+                    conn.prepare("SELECT Id FROM Story ORDER BY Updated DESC LIMIT ? OFFSET ?;")?;
 
-                let rows = stmt.query_map(rusqlite::params![limit, 10 * page], |row| row.get::<_, String>("Id"))?;
+                let rows = stmt.query_map(rusqlite::params![limit, 10 * page], |row| {
+                    row.get::<_, String>("Id")
+                })?;
 
                 let mut stories = Vec::with_capacity(limit as usize);
 
@@ -236,7 +251,9 @@ impl Story {
 impl Schema for Story {
     fn schema(b: Backend, m: &mut impl fmt::Write) -> fmt::Result {
         match b {
-            Backend::PostgreSQL { .. } => {}
+            Backend::PostgreSQL { .. } => {
+                writeln!(m, "{}", POSTGRES_TABLE)?;
+            }
             Backend::SQLite { .. } => {
                 writeln!(m, "{}", SQLITE_TABLE)?;
             }

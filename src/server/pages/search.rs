@@ -55,27 +55,34 @@ impl SearchPage {
     }
 }
 
-pub fn index(paging: Paging, search: Search, backend: Backend) -> Result<impl Reply, Rejection> {
-    let norm = paging.normalize();
+pub async fn index(
+    paging: Paging,
+    search: Search,
+    backend: Backend,
+) -> Result<impl Reply, Rejection> {
+    tokio_executor::blocking::run(move || {
+        let norm = paging.normalize();
 
-    if let Some((stories, pages)) = create_search(backend.clone(), norm, &search.search)
-        .map_err(|err| custom(Error::new(err)))?
-    {
-        let page = SearchPage::new(
-            search.search.clone(),
-            search.search,
-            paging.page,
-            pages,
-            stories,
-        )
-        .map_err(|err| custom(Error::new(err)))?;
+        if let Some((stories, pages)) = create_search(backend.clone(), norm, &search.search)
+            .map_err(|err| custom(Error::new(err)))?
+        {
+            let page = SearchPage::new(
+                search.search.clone(),
+                search.search,
+                paging.page,
+                pages,
+                stories,
+            )
+            .map_err(|err| custom(Error::new(err)))?;
 
-        let rendered: String = page.render().map_err(|err| custom(Error::new(err)))?;
+            let rendered: String = page.render().map_err(|err| custom(Error::new(err)))?;
 
-        Ok(reply::html(rendered))
-    } else {
-        Ok(reply::html(format!("page: {}", paging.page)))
-    }
+            Ok(reply::html(rendered))
+        } else {
+            Ok(reply::html(format!("page: {}", paging.page)))
+        }
+    })
+    .await
 }
 
 fn create_search(

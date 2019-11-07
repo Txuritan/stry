@@ -10,7 +10,8 @@ build = "build.rs"
 askama = { git = "https://github.com/djc/askama", rev = "81080812777c7a1998f579908f159e383e3c9a31" }
 bcrypt = "0.6"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
-futures = "0.1"
+futures-preview = "0.3.0-alpha.19"
+futures-util-preview = "0.3.0-alpha.19"
 http = "0.1"
 log = { version = "0.4", features = ["std"] }
 postgres = { version = "0.15", features = ["with-chrono"] }
@@ -25,8 +26,8 @@ serde_json = "1.0"
 serde_urlencoded = "0.6"
 story-dl = { version = "0.1", default-features = false }
 # signal-hook = { version = "0.1", features = ["tokio-support"] } # wait for windows support
-tokio-threadpool = "0.1"
-warp = { version = "0.1", default-features = false }
+tokio-executor = "=0.2.0-alpha.6"
+warp = { git = "https://github.com/seanmonstar/warp", rev = "b4c022871ca995ee2c29276c5000b20b5fd673c1" }
 
 [profile.release]
 codegen-units = 1

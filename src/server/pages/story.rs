@@ -8,7 +8,7 @@ use {
     warp::{reject::custom, reply, Rejection, Reply},
 };
 
-pub fn index(_story_id: String, _backend: Backend) -> Result<impl Reply, Rejection> {
+pub async fn index(_story_id: String, _backend: Backend) -> Result<impl Reply, Rejection> {
     Ok(reply::html("story"))
 }
 
@@ -49,35 +49,39 @@ impl ChapterPage {
     }
 }
 
-pub fn chapter(
+pub async fn chapter(
     story_id: String,
     mut chapter_page: u32,
     backend: Backend,
 ) -> Result<impl Reply, Rejection> {
-    if chapter_page == 0 {
-        chapter_page = 1;
-    }
+    tokio_executor::blocking::run(move || {
+        if chapter_page == 0 {
+            chapter_page = 1;
+        }
 
-    let story = Story::get(backend.clone(), &story_id).map_err(|err| custom(Error::new(err)))?;
+        let story =
+            Story::get(backend.clone(), &story_id).map_err(|err| custom(Error::new(err)))?;
 
-    if chapter_page <= story.chapters && chapter_page != 0 {
-        let chapter = Chapter::of_story(backend.clone(), &story.id, chapter_page)
+        if chapter_page <= story.chapters && chapter_page != 0 {
+            let chapter = Chapter::of_story(backend.clone(), &story.id, chapter_page)
+                .map_err(|err| custom(Error::new(err)))?;
+
+            let rendered: String = ChapterPage::new(
+                format!(
+                    "chapter {}: {} | {}",
+                    chapter_page, chapter.name, story.name
+                ),
+                chapter_page,
+                story,
+                chapter,
+            )
+            .render()
             .map_err(|err| custom(Error::new(err)))?;
 
-        let rendered: String = ChapterPage::new(
-            format!(
-                "chapter {}: {} | {}",
-                chapter_page, chapter.name, story.name
-            ),
-            chapter_page,
-            story,
-            chapter,
-        )
-        .render()
-        .map_err(|err| custom(Error::new(err)))?;
-
-        Ok(reply::html(rendered))
-    } else {
-        Err(custom(Error::moved(format!("/story/{}/1", story_id))))
-    }
+            Ok(reply::html(rendered))
+        } else {
+            Err(custom(Error::moved(format!("/story/{}/1", story_id))))
+        }
+    })
+    .await
 }

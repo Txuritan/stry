@@ -110,10 +110,7 @@ impl std::fmt::Display for Error {
                 f,
                 "(NoRowsReturned) No rows were returned from the database"
             ),
-            Error::UnknownSite => write!(
-                f,
-                "(UnknownSite) Give URL is not a known site"
-            ),
+            Error::UnknownSite => write!(f, "(UnknownSite) Give URL is not a known site"),
 
             Error::BoxSS { ref err } => write!(f, "(BoxSS) {}", err),
             Error::Custom { ref err } => write!(f, "(Custom) {}", err),

@@ -1,5 +1,6 @@
 use {
     crate::{
+        params,
         schema::{Backend, Schema},
         Error, Pool,
     },
@@ -49,7 +50,7 @@ impl Series {
             "SELECT A.Id, A.Name, A.Summary, A.Created, A.Updated FROM StorySeries SA LEFT JOIN Series A ON SA.SeriesId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
         )?;
 
-        let series = stmt.query_map(rusqlite::params![&story], |row| {
+        let series = stmt.query_map(params!(s => [&story]), |row| {
             Ok(Self {
                 id: row.get("Id")?,
                 name: row.get("Name")?,

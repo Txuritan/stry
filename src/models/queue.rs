@@ -1,15 +1,12 @@
 use {
     crate::{
         error::Error,
+        params,
         schema::{Backend, Schema},
     },
     http_req::uri::Uri,
-    rand::Rng,
-    rusqlite::{
-        types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
-        OptionalExtension,
-    },
-    std::{fmt, sync::Arc, thread, time},
+    rusqlite::types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
+    std::fmt,
 };
 
 const POSTGRES_TABLE: &str = "CREATE TABLE
@@ -44,7 +41,7 @@ pub struct Queue {
     pub url: String,
     pub name: String,
 
-    pub chapters: u32
+    pub chapters: u32,
 }
 
 impl Queue {
@@ -60,7 +57,7 @@ impl Queue {
 
                 conn.execute(
                     "INSERT INTO Queue (Id, Site, State, Url, Name, Chapters) VALUES ($1, $2, $3, $4, $5, $6);",
-                    crate::params![p; id, site, State::Queued, url, name, chapters]
+                    params!(p => [id, site, State::Queued, url, name, chapters])
                 )?;
             }
             //#endregion
@@ -71,10 +68,9 @@ impl Queue {
 
                 conn.execute(
                     "INSERT INTO Queue (Id, Site, State, Url, Name, Chapters) VALUES (?, ?, ?, ?, ?, ?);",
-                    crate::params![s; id, site, State::Queued, url, name, chapters]
+                    params!(s => [id, site, State::Queued, url, name, chapters])
                 )?;
-            }
-            //#endregion
+            } //#endregion
         }
 
         Ok(id)
@@ -88,7 +84,7 @@ impl Queue {
 
                 let rows = conn.query(
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = $1;",
-                    crate::params![p; id],
+                    params!(p => [id]),
                 )?;
 
                 if rows.is_empty() {
@@ -114,7 +110,7 @@ impl Queue {
 
                 let queue = conn.query_row(
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = ?;",
-                    crate::params![s; id],
+                    params!(s => [id]),
                     |row| {
                         Ok(Self {
                             id: id.to_owned(),
@@ -128,8 +124,7 @@ impl Queue {
                 )?;
 
                 Ok(queue)
-            }
-            //#endregion
+            } //#endregion
         }
     }
 
@@ -141,7 +136,7 @@ impl Queue {
 
                 let rows = conn.execute(
                     "UPDATE Queue SET State = $1 FROM Queue WHERE Id = $2;",
-                    crate::params![p; State::Finished, id],
+                    params!(p => [State::Finished, id]),
                 )?;
 
                 Ok(rows)
@@ -154,12 +149,11 @@ impl Queue {
 
                 let rows = conn.execute(
                     "UPDATE Queue SET State = ? FROM Queue WHERE Id = ?;",
-                    crate::params![s; State::Finished, id],
+                    params!(s => [State::Finished, id]),
                 )?;
 
                 Ok(rows as u64)
-            }
-            //#endregion
+            } //#endregion
         }
     }
 }
@@ -194,18 +188,16 @@ pub enum Site {
 
 impl Site {
     fn from_url(url: &str) -> Option<Self> {
-        url.parse::<Uri>().ok().and_then(|uri| uri.host().map(String::from)).and_then(|host| match host.as_str() {
-            "archiveofourown.org" | "www.archiveofourown.org" => Some(Site::ArchiveOfOurOwn),
-            "fanfiction.net" | "www.fanfiction.net" | "m.fanfiction.net" => Some(Site::FanFiction),
-            _ => None,
-        })
-    }
-
-    fn db_str(self) -> &'static str {
-        match self {
-            Site::ArchiveOfOurOwn => "archive-of-our-own",
-            Site::FanFiction => "fanfiction",
-        }
+        url.parse::<Uri>()
+            .ok()
+            .and_then(|uri| uri.host().map(String::from))
+            .and_then(|host| match host.as_str() {
+                "archiveofourown.org" | "www.archiveofourown.org" => Some(Site::ArchiveOfOurOwn),
+                "fanfiction.net" | "www.fanfiction.net" | "m.fanfiction.net" => {
+                    Some(Site::FanFiction)
+                }
+                _ => None,
+            })
     }
 }
 

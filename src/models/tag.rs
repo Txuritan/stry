@@ -1,6 +1,7 @@
 use {
     crate::{
         models::{Paging, Resource, Story},
+        params,
         schema::{Backend, Schema},
         Error,
     },
@@ -52,7 +53,7 @@ impl Tag {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Type, Created, Updated FROM Tag ORDER BY Name LIMIT 100 OFFSET ?;",
-                    &[&(10 * page)],
+                    params!(p => [10 * page]),
                 )?;
 
                 if rows.is_empty() {
@@ -71,7 +72,8 @@ impl Tag {
                     });
                 }
 
-                let count_rows = conn.query("SELECT COUNT(Id) as Count FROM Tag;", &[])?;
+                let count_rows =
+                    conn.query("SELECT COUNT(Id) as Count FROM Tag;", params!(p => []))?;
 
                 if count_rows.is_empty() {
                     return Err(Error::no_rows_returned());
@@ -91,7 +93,7 @@ impl Tag {
                     "SELECT Id, Name, Type, Created, Updated FROM Tag ORDER BY Name LIMIT 100 OFFSET ?;",
                 )?;
 
-                let tag_rows = stmt.query_map(rusqlite::params![10 * page], |row| {
+                let tag_rows = stmt.query_map(params!(s => [10 * page]), |row| {
                     Ok(Self {
                         id: row.get("Id")?,
                         name: row.get("Name")?,
@@ -109,7 +111,7 @@ impl Tag {
 
                 let count = conn.query_row(
                     "SELECT COUNT(Id) as Count FROM Tag;",
-                    rusqlite::NO_PARAMS,
+                    params!(s => []),
                     |row| row.get("Count"),
                 )?;
 
@@ -130,7 +132,7 @@ impl Tag {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Type, Created, Updated FROM Tag WHERE Type = $1 ORDER BY Name LIMIT $2 OFFSET $3;",
-                    &[&typ, &paging.page_size, &(paging.page_size * paging.page)]
+                    params!(p => [typ, paging.page_size, paging.page_size * paging.page])
                 )?;
 
                 if rows.is_empty() {
@@ -151,7 +153,7 @@ impl Tag {
 
                 let count_rows = conn.query(
                     "SELECT COUNT(Id) as Count FROM Tag WHERE Type = $1;",
-                    &[&typ],
+                    params!(p => [typ]),
                 )?;
 
                 if count_rows.is_empty() {
@@ -173,7 +175,7 @@ impl Tag {
                 )?;
 
                 let tag_rows = stmt.query_map(
-                    rusqlite::params![typ, paging.page_size, paging.page_size * paging.page],
+                    params!(s => [typ, paging.page_size, paging.page_size * paging.page]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -193,7 +195,7 @@ impl Tag {
 
                 let count = conn.query_row(
                     "SELECT COUNT(Id) as Count FROM Tag WHERE Type = ?;",
-                    rusqlite::params![typ],
+                    params!(s => [typ]),
                     |row| row.get("Count"),
                 )?;
 
@@ -210,7 +212,7 @@ impl Tag {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Type, Created, Updated FROM Origin WHERE Id = $1;",
-                    &[&id],
+                    params!(p => [id]),
                 )?;
 
                 if rows.is_empty() {
@@ -235,7 +237,7 @@ impl Tag {
 
                 let tag = conn.query_row(
                     "SELECT Id, Name, Type, Created, Updated FROM Origin WHERE Id = ?;",
-                    rusqlite::params![id],
+                    params!(s => [id]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -264,7 +266,7 @@ impl Tag {
 
                 let rows = conn.query(
                     "SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = StoryId WHERE ST.TagId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $;",
-                    &[&id, &paging.page_size, &(paging.page_size * paging.page)],
+                    params!(p => [id, paging.page_size, paging.page_size * paging.page]),
                 )?;
 
                 if rows.is_empty() {
@@ -282,7 +284,7 @@ impl Tag {
 
                 let count_rows = conn.query(
                     "SELECT COUNT(ST.StoryId) as Count FROM StoryTag ST LEFT JOIN Story S ON S.Id = StoryId WHERE ST.TagId = $1;",
-                    &[&id]
+                    params!(p => [id])
                 )?;
 
                 if count_rows.is_empty() {
@@ -303,10 +305,10 @@ impl Tag {
                     "SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = StoryId WHERE ST.TagId = ? ORDER BY S.Updated DESC LIMIT 10 OFFSET ?;"
                 )?;
 
-                let story_rows = stmt.query_map(
-                    rusqlite::params![id, paging.page_size * paging.page],
-                    |row| row.get::<_, String>("StoryId"),
-                )?;
+                let story_rows = stmt
+                    .query_map(params!(s => [id, paging.page_size * paging.page]), |row| {
+                        row.get::<_, String>("StoryId")
+                    })?;
 
                 let mut stories = Vec::new();
 
@@ -316,7 +318,7 @@ impl Tag {
 
                 let count = conn.query_row(
                     "SELECT COUNT(ST.StoryId) as Count FROM StoryTag ST LEFT JOIN Story S ON S.Id = StoryId WHERE ST.TagId = ?;",
-                    rusqlite::params![id], |row|
+                    params!(s => [id]), |row|
                     row.get("Count")
                 )?;
 
@@ -333,7 +335,7 @@ impl Tag {
 
                 let rows = conn.query(
                     "SELECT Id FROM Tag WHERE Name = $1 AND Type = $2;",
-                    &[&name, &typ],
+                    params!(p => [name, typ]),
                 )?;
 
                 if rows.is_empty() {
@@ -343,7 +345,7 @@ impl Tag {
 
                     trans.execute(
                         "INSERT INTO Tag(Id, Name, Type) VALUES ($1, $2, $3);",
-                        &[&id, &name, &typ],
+                        params!(p => [id, name, typ]),
                     )?;
 
                     trans.commit()?;
@@ -362,7 +364,7 @@ impl Tag {
                 if let Some(id) = conn
                     .query_row(
                         "SELECT Id FROM Tag WHERE Name = ? AND Type = ?;",
-                        rusqlite::params![name, typ],
+                        params!(s => [name, typ]),
                         |row| row.get("Id"),
                     )
                     .optional()?
@@ -375,7 +377,7 @@ impl Tag {
 
                     trans.execute(
                         "INSERT INTO Tag(Id, Name, Type) VALUES (?, ?, ?);",
-                        rusqlite::params![id, name, typ],
+                        params!(s => [id, name, typ]),
                     )?;
 
                     trans.commit()?;
@@ -394,7 +396,7 @@ impl Tag {
 
                 let rows = conn.query(
                     "SELECT T.Id, T.Name, T.Type, T.Created, T.Updated FROM StoryTag ST LEFT JOIN Tag T ON ST.TagId = T.Id WHERE ST.StoryId = $1 ORDER BY T.Name;",
-                    &[&story]
+                    params!(p => [story])
                 )?;
 
                 if rows.is_empty() {
@@ -427,7 +429,7 @@ impl Tag {
                     "SELECT T.Id, T.Name, T.Type, T.Created, T.Updated FROM StoryTag ST LEFT JOIN Tag T ON ST.TagId = T.Id WHERE ST.StoryId = ? ORDER BY T.Name;"
                 )?;
 
-                let tag_rows = stmt.query_map(rusqlite::params![&story], |row| {
+                let tag_rows = stmt.query_map(params!(s => [story]), |row| {
                     Ok(Self {
                         id: row.get("Id")?,
                         name: row.get("Name")?,

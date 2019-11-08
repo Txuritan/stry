@@ -1,6 +1,7 @@
 use {
     crate::{
         models::{Paging, Resource, Story},
+        params,
         schema::{Backend, Schema},
         Error,
     },
@@ -45,7 +46,7 @@ impl Author {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Created, Updated FROM Author ORDER BY Name DESC LIMIT $1 OFFSET $2;",
-                    &[&paging.page_size, &(paging.page_size * paging.page)]
+                    params!(p => [paging.page_size, (paging.page_size * paging.page)])
                 )?;
 
                 if rows.is_empty() {
@@ -63,7 +64,8 @@ impl Author {
                     });
                 }
 
-                let count_rows = conn.query("SELECT COUNT(Id) as Count FROM Author;", &[])?;
+                let count_rows =
+                    conn.query("SELECT COUNT(Id) as Count FROM Author;", params!(p => []))?;
 
                 if count_rows.is_empty() {
                     return Err(Error::no_rows_returned());
@@ -84,7 +86,7 @@ impl Author {
                 )?;
 
                 let author_rows = stmt.query_map(
-                    rusqlite::params![paging.page_size, paging.page_size * paging.page],
+                    params!(s => [paging.page_size, paging.page_size * paging.page]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -103,7 +105,7 @@ impl Author {
 
                 let count = conn.query_row(
                     "SELECT COUNT(Id) as Count FROM Author;",
-                    rusqlite::NO_PARAMS,
+                    params!(s => []),
                     |row| row.get("Count"),
                 )?;
 
@@ -120,7 +122,7 @@ impl Author {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Created, Updated FROM Author WHERE Id = $1;",
-                    &[&id],
+                    params!(p => [id]),
                 )?;
 
                 if rows.is_empty() {
@@ -144,7 +146,7 @@ impl Author {
 
                 let author = conn.query_row(
                     "SELECT Id, Name, Created, Updated FROM Author WHERE Id = ?;",
-                    rusqlite::params![id],
+                    params!(s => [id]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -172,7 +174,7 @@ impl Author {
 
                 let rows = conn.query(
                     "SELECT SA.StoryId FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $3;",
-                    &[&id, &paging.page_size, &(paging.page_size * paging.page)],
+                    params!(p => [id, paging.page_size, (paging.page_size * paging.page)]),
                 )?;
 
                 if rows.is_empty() {
@@ -190,7 +192,7 @@ impl Author {
 
                 let count_rows = conn.query(
                     "SELECT COUNT(SA.StoryId) as Count FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = $1;",
-                    &[&id]
+                    params!(p => [id]),
                 )?;
 
                 if count_rows.is_empty() {
@@ -212,7 +214,7 @@ impl Author {
                 )?;
 
                 let story_rows = stmt.query_map(
-                    rusqlite::params![id, paging.page_size, paging.page_size * paging.page],
+                    params!(s => [id, paging.page_size, paging.page_size * paging.page]),
                     |row| row.get::<_, String>("StoryId"),
                 )?;
 
@@ -224,7 +226,8 @@ impl Author {
 
                 let count = conn.query_row(
                     "SELECT COUNT(SA.StoryId) as Count FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = ?;",
-                    rusqlite::params![id], |row| row.get("Count"),
+                    params!(s => [id]),
+                    |row| row.get("Count"),
                 )?;
 
                 Ok((count, stories))
@@ -240,7 +243,7 @@ impl Author {
 
                 let rows = conn.query(
                     "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = $1 ORDER BY A.Name;",
-                    &[&story]
+                    params!(p => [story])
                 )?;
 
                 if rows.is_empty() {
@@ -270,7 +273,7 @@ impl Author {
                     "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
                 )?;
 
-                let authors = stmt.query_map(rusqlite::params![&story], |row| {
+                let authors = stmt.query_map(params!(s => [story]), |row| {
                     Ok(Self {
                         id: row.get("Id")?,
                         name: row.get("Name")?,

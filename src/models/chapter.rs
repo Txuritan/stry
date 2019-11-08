@@ -1,5 +1,6 @@
 use {
     crate::{
+        params,
         schema::{Backend, Schema},
         Error,
     },
@@ -55,7 +56,7 @@ impl Chapter {
 
                 let rows = conn.query(
                     "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = $1 AND SC.Place = $2;",
-                    &[&story, &place]
+                    params!(p => [story, place])
                 )?;
 
                 if rows.is_empty() {
@@ -83,7 +84,7 @@ impl Chapter {
 
                 let chapter = conn.query_row(
                     "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
-                    rusqlite::params![&story, &place],
+                    params!(s => [story, place]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,

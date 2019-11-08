@@ -113,25 +113,32 @@ impl Readable for u64 {}
 impl Readable for i32 {}
 impl Readable for i64 {}
 
+pub(crate) const POSTGRES_NO_PARAMS: &[&(dyn postgres::types::ToSql + Sync)] = &[];
+pub(crate) const SQLITE_NO_PARAMS: &[&dyn rusqlite::types::ToSql] = &[];
+
 #[macro_export]
 macro_rules! params {
-    () => {
-        &[]
+    (p => []) => {
+        crate::POSTGRES_NO_PARAMS
     };
 
-    (p; $($param:expr),+ $(,)?) => {
+    (p => [$($param:expr),+ $(,)?]) => {
         &[$(&$param as &(dyn postgres::types::ToSql + Sync)),+]
     };
 
-    (p; $($param_name:literal: $param_val:expr),+ $(,)?) => {
+    (p => [$($param_name:literal: $param_val:expr),+ $(,)?]) => {
         &[$(($param_name, &$param_val as &(dyn postgres::types::ToSql + Sync))),+]
     };
 
-    (s; $($param:expr),+ $(,)?) => {
-        &[$(&$param as &rusqlite::types::ToSql),+]
+    (s => []) => {
+        crate::SQLITE_NO_PARAMS
     };
 
-    (s; $($param_name:literal: $param_val:expr),+ $(,)?) => {
-        &[$(($param_name, &$param_val as &rusqlite::types::ToSql)),+]
+    (s => [$($param:expr),+ $(,)?]) => {
+        &[$(&$param as &dyn rusqlite::types::ToSql),+]
+    };
+
+    (s => [$($param_name:literal: $param_val:expr),+ $(,)?]) => {
+        &[$(($param_name, &$param_val as &dyn rusqlite::types::ToSql)),+]
     };
 }

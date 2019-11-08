@@ -1,6 +1,7 @@
 use {
     crate::{
         models::{Paging, Resource, Story},
+        params,
         schema::{Backend, Schema},
         Error,
     },
@@ -46,7 +47,7 @@ impl Origin {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Created, Updated FROM Origin ORDER BY Name DESC LIMIT $1 OFFSET $2;",
-                    &[&paging.page_size, &(paging.page_size * paging.page)],
+                    params!(p => [paging.page_size, (paging.page_size * paging.page)]),
                 )?;
 
                 if rows.is_empty() {
@@ -64,7 +65,8 @@ impl Origin {
                     });
                 }
 
-                let count_rows = conn.query("SELECT COUNT(Id) as Count FROM Origin;", &[])?;
+                let count_rows =
+                    conn.query("SELECT COUNT(Id) as Count FROM Origin;", params!(p => []))?;
 
                 if count_rows.is_empty() {
                     return Err(Error::no_rows_returned());
@@ -85,7 +87,7 @@ impl Origin {
                 )?;
 
                 let origin_rows = stmt.query_map(
-                    rusqlite::params![paging.page_size, paging.page_size * paging.page],
+                    params!(s => [paging.page_size, paging.page_size * paging.page]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -104,7 +106,7 @@ impl Origin {
 
                 let count = conn.query_row(
                     "SELECT COUNT(Id) as Count FROM Origin;",
-                    rusqlite::NO_PARAMS,
+                    params!(s => []),
                     |row| row.get("Count"),
                 )?;
 
@@ -121,7 +123,7 @@ impl Origin {
 
                 let rows = conn.query(
                     "SELECT Id, Name, Created, Updated FROM Origin WHERE Id = $1;",
-                    &[&id],
+                    params!(p => [id]),
                 )?;
 
                 if rows.is_empty() {
@@ -145,7 +147,7 @@ impl Origin {
 
                 let origin = conn.query_row(
                     "SELECT Id, Name, Created, Updated FROM Origin WHERE Id = ?;",
-                    rusqlite::params![id],
+                    params!(s => [id]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -173,7 +175,7 @@ impl Origin {
 
                 let rows = conn.query(
                     "SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $3;",
-                    &[&id, &paging.page_size, &(paging.page_size * paging.page)],
+                    params!(p => [id, paging.page_size, (paging.page_size * paging.page)]),
                 )?;
 
                 let mut stories = Vec::<Story>::with_capacity(rows.len());
@@ -187,7 +189,7 @@ impl Origin {
 
                 let count_rows = conn.query(
                     "SELECT COUNT(SO.StoryId) as Count FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = StoryId WHERE SO.OriginId = $1;",
-                    &[&id]
+                    params!(p => [id])
                 )?;
 
                 if count_rows.is_empty() {
@@ -208,10 +210,10 @@ impl Origin {
                     "SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = ? ORDER BY S.Updated DESC LIMIT 10 OFFSET ?;"
                 )?;
 
-                let story_rows = stmt.query_map(
-                    rusqlite::params![id, paging.page_size * paging.page],
-                    |row| row.get::<_, String>("StoryId"),
-                )?;
+                let story_rows = stmt
+                    .query_map(params!(s => [id, paging.page_size * paging.page]), |row| {
+                        row.get::<_, String>("StoryId")
+                    })?;
 
                 let mut stories = Vec::new();
 
@@ -221,7 +223,7 @@ impl Origin {
 
                 let count = conn.query_row(
                     "SELECT COUNT(SO.StoryId) as Count FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = StoryId WHERE SO.OriginId = ?;",
-                    rusqlite::params![id],
+                    params!(s => [id]),
                     |row| row.get("Count")
                 )?;
 
@@ -238,7 +240,7 @@ impl Origin {
 
                 let rows = conn.query(
                     "SELECT O.Id, O.Name, O.Created, O.Updated FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = $1 ORDER BY O.Name;",
-                    &[&story],
+                    params!(p => [story]),
                 )?;
 
                 if rows.is_empty() {
@@ -268,7 +270,7 @@ impl Origin {
                     "SELECT O.Id, O.Name, O.Created, O.Updated FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = ? ORDER BY O.Name;"
                 )?;
 
-                let origins = stmt.query_map(rusqlite::params![&story], |row| {
+                let origins = stmt.query_map(params!(s => [story]), |row| {
                     Ok(Self {
                         id: row.get("Id")?,
                         name: row.get("Name")?,
@@ -288,7 +290,10 @@ impl Origin {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query("SELECT Id FROM Origin WHERE Name = $1;", &[&name])?;
+                let rows = conn.query(
+                    "SELECT Id FROM Origin WHERE Name = $1;",
+                    params!(p => [name]),
+                )?;
 
                 if rows.is_empty() {
                     let id = crate::nanoid!();
@@ -297,7 +302,7 @@ impl Origin {
 
                     trans.execute(
                         "INSERT INTO Origin(Id, Name) VALUES ($1, $2);",
-                        &[&id, &name],
+                        params!(p => [id, name]),
                     )?;
 
                     trans.commit()?;
@@ -316,7 +321,7 @@ impl Origin {
                 if let Some(id) = conn
                     .query_row(
                         "SELECT Id FROM Origin WHERE Name = ?;",
-                        rusqlite::params![name],
+                        params!(s => [name]),
                         |row| row.get("Id"),
                     )
                     .optional()?
@@ -329,7 +334,7 @@ impl Origin {
 
                     trans.execute(
                         "INSERT INTO Origin(Id, Name) VALUES (?, ?);",
-                        rusqlite::params![id, name],
+                        params!(s => [id, name]),
                     )?;
 
                     trans.commit()?;

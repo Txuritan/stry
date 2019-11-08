@@ -1,8 +1,5 @@
 use {
-    crate::{
-        schema::Backend,
-        Error, Readable,
-    },
+    crate::{schema::Backend, Error, Readable},
     askama::Template,
     warp::{reject::custom, reply, Rejection, Reply},
 };

@@ -1,6 +1,7 @@
 use {
     crate::{
         models::{Author, Origin, Series, Tag, TagType},
+        params,
         schema::{Backend, Schema},
         Error,
     },
@@ -70,7 +71,7 @@ impl Story {
 
                 let rows = conn.query(
                     "SELECT Id FROM Story ORDER BY Updated DESC LIMIT $1 OFFSET $2;",
-                    &[&limit, &(10 * page)],
+                    params!(p => [limit, 10 * page]),
                 )?;
 
                 if rows.is_empty() {
@@ -83,7 +84,8 @@ impl Story {
                     stories.push(Story::get(backend.clone(), &row.get::<_, String>("Id"))?);
                 }
 
-                let count_rows = conn.query("SELECT COUNT(Id) as Count FROM Story;", &[])?;
+                let count_rows =
+                    conn.query("SELECT COUNT(Id) as Count FROM Story;", params!(p => []))?;
 
                 if count_rows.is_empty() {
                     return Err(Error::no_rows_returned());
@@ -102,7 +104,7 @@ impl Story {
                 let mut stmt =
                     conn.prepare("SELECT Id FROM Story ORDER BY Updated DESC LIMIT ? OFFSET ?;")?;
 
-                let rows = stmt.query_map(rusqlite::params![limit, 10 * page], |row| {
+                let rows = stmt.query_map(params!(s => [limit, 10 * page]), |row| {
                     row.get::<_, String>("Id")
                 })?;
 
@@ -114,7 +116,7 @@ impl Story {
 
                 let count = conn.query_row(
                     "SELECT COUNT(Id) as Count FROM Story;",
-                    rusqlite::NO_PARAMS,
+                    params!(s => []),
                     |row| row.get("Count"),
                 )?;
 
@@ -137,7 +139,7 @@ impl Story {
 
                 let rows = conn.query(
                     "SELECT Id, Url, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = $1;",
-                    &[&id],
+                    params!(p => [id]),
                 )?;
 
                 if rows.is_empty() {
@@ -155,7 +157,7 @@ impl Story {
                     chapters: {
                         let count_rows = conn.query(
                             "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = $1;",
-                            &[&id],
+                            params!(p => [id]),
                         )?;
 
                         if count_rows.is_empty() {
@@ -167,7 +169,7 @@ impl Story {
                     words: {
                         let count_rows = conn.query(
                             "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = $1;",
-                            &[&id],
+                            params!(p => [id]),
                         )?;
 
                         if count_rows.is_empty() {
@@ -205,7 +207,7 @@ impl Story {
 
                 let story = conn.query_row(
                     "SELECT Id, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = ?;",
-                    rusqlite::params![id],
+                    params!(s => [id]),
                     |row| {
                         Ok(Self {
                             id: row.get("Id")?,
@@ -215,12 +217,12 @@ impl Story {
                             language: row.get("Language")?,
                             chapters: conn.query_row(
                                 "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = ?;",
-                                rusqlite::params![id],
+                                params!(s => [id]),
                                 |row| row.get("Chapters"),
                             )?,
                             words: conn.query_row(
                                 "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = ?;",
-                                rusqlite::params![id],
+                                params!(s => [id]),
                                 |row| row.get("Words"),
                             )?,
                             created: row.get("Created")?,

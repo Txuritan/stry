@@ -2,10 +2,8 @@ use {
     crate::{
         error::Error,
         schema::{Backend, Schema},
-        Pool,
     },
     http_req::uri::Uri,
-    postgres::to_sql_checked,
     rand::Rng,
     rusqlite::{
         types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
@@ -54,12 +52,17 @@ impl Queue {
         let id = crate::nanoid!();
 
         match &backend {
+            //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
                 let conn = pool.get()?;
             }
+            //#endregion
+
+            //#region[rgba(51,103,145,0.1)] SQLite
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
             }
+            //#endregion
         }
 
         Ok(id)
@@ -67,8 +70,9 @@ impl Queue {
 
     pub fn get(backend: Backend, id: &str) -> Result<Self, Error> {
         match &backend {
+            //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = $1;",
@@ -79,7 +83,7 @@ impl Queue {
                     return Err(Error::no_rows_returned());
                 }
 
-                let row = rows.get(0);
+                let row = rows.get(0).unwrap();
 
                 Ok(Self {
                     id: id.to_owned(),
@@ -90,6 +94,9 @@ impl Queue {
                     chapters: row.get("Chapters"),
                 })
             }
+            //#endregion
+
+            //#region[rgba(51,103,145,0.1)] SQLite
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
@@ -110,13 +117,15 @@ impl Queue {
 
                 Ok(queue)
             }
+            //#endregion
         }
     }
 
     pub fn finish(backend: Backend, id: &str) -> Result<u64, Error> {
         match &backend {
+            //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.execute(
                     "UPDATE Queue SET State = $1 FROM Queue WHERE Id = $2;",
@@ -125,6 +134,9 @@ impl Queue {
 
                 Ok(rows)
             }
+            //#endregion
+
+            //#region[rgba(51,103,145,0.1)] SQLite
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
@@ -135,6 +147,7 @@ impl Queue {
 
                 Ok(rows as u64)
             }
+            //#endregion
         }
     }
 }

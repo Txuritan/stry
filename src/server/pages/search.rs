@@ -135,19 +135,19 @@ fn create_search(
     match &backend {
         //#region[rgba(241,153,31,0.1)] PostgreSQL
         Backend::PostgreSQL { pool } => {
-            let conn = pool.get()?;
+            let mut conn = pool.get()?;
 
             let mut params = and
                 .iter()
                 .chain(&not)
-                .map(|t| t as &dyn postgres::types::ToSql)
+                .map(|t| t as &(dyn postgres::types::ToSql + Sync))
                 .collect::<Vec<_>>();
 
             params.push(&and_len);
 
             params.push(&offset);
 
-            let rows = conn.query(&search_query, &params)?;
+            let rows = conn.query(search_query.as_str(), &params)?;
 
             let mut stories: Vec<Story> = Vec::with_capacity(rows.len());
 
@@ -155,13 +155,13 @@ fn create_search(
                 stories.push(Story::get(backend.clone(), &row.get::<_, String>("Id"))?);
             }
 
-            let count_rows = conn.query(&count_query, &params)?;
+            let count_rows = conn.query(count_query.as_str(), &params)?;
 
             if count_rows.is_empty() {
                 return Err(Error::no_rows_returned());
             }
 
-            let count = count_rows.get(0).get::<_, u32>("Count");
+            let count = count_rows.get(0).unwrap().get::<_, u32>("Count");
 
             Ok(Some((
                 stories,

@@ -41,7 +41,7 @@ impl Author {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id, Name, Created, Updated FROM Author ORDER BY Name DESC LIMIT $1 OFFSET $2;",
@@ -69,7 +69,7 @@ impl Author {
                     return Err(Error::no_rows_returned());
                 }
 
-                let count = count_rows.get(0).get("Count");
+                let count = count_rows.get(0).unwrap().get("Count");
 
                 Ok((count, authors))
             }
@@ -116,7 +116,7 @@ impl Author {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id, Name, Created, Updated FROM Author WHERE Id = $1;",
@@ -127,7 +127,7 @@ impl Author {
                     return Err(Error::no_rows_returned());
                 }
 
-                let row = rows.get(0);
+                let row = rows.get(0).unwrap();
 
                 Ok(Self {
                     id: row.get("Id"),
@@ -168,7 +168,7 @@ impl Author {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT SA.StoryId FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $3;",
@@ -197,7 +197,7 @@ impl Author {
                     return Err(Error::no_rows_returned());
                 }
 
-                let count = count_rows.get(0).get("Count");
+                let count = count_rows.get(0).unwrap().get("Count");
 
                 Ok((count, stories))
             }
@@ -236,7 +236,7 @@ impl Author {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = $1 ORDER BY A.Name;",

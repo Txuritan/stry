@@ -51,7 +51,7 @@ impl Chapter {
         match backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = $1 AND SC.Place = $2;",
@@ -62,7 +62,7 @@ impl Chapter {
                     return Err(Error::no_rows_returned());
                 }
 
-                let row = rows.get(0);
+                let row = rows.get(0).unwrap();
 
                 Ok(Self {
                     id: row.get("Id"),

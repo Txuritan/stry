@@ -5,7 +5,6 @@ use {
         Error,
     },
     chrono::{DateTime, Utc},
-    postgres::to_sql_checked,
     rusqlite::{
         types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
         OptionalExtension, Result as RusqliteResult,
@@ -49,7 +48,7 @@ impl Tag {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id, Name, Type, Created, Updated FROM Tag ORDER BY Name LIMIT 100 OFFSET ?;",
@@ -78,7 +77,7 @@ impl Tag {
                     return Err(Error::no_rows_returned());
                 }
 
-                let count = count_rows.get(0).get("Count");
+                let count = count_rows.get(0).unwrap().get("Count");
 
                 Ok((count, tags))
             }
@@ -127,7 +126,7 @@ impl Tag {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id, Name, Type, Created, Updated FROM Tag WHERE Type = $1 ORDER BY Name LIMIT $2 OFFSET $3;",
@@ -159,7 +158,7 @@ impl Tag {
                     return Err(Error::no_rows_returned());
                 }
 
-                let count = count_rows.get(0).get("Count");
+                let count = count_rows.get(0).unwrap().get("Count");
 
                 Ok((count, tags))
             }
@@ -207,7 +206,7 @@ impl Tag {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id, Name, Type, Created, Updated FROM Origin WHERE Id = $1;",
@@ -218,7 +217,7 @@ impl Tag {
                     return Err(Error::no_rows_returned());
                 }
 
-                let row = rows.get(0);
+                let row = rows.get(0).unwrap();
 
                 Ok(Self {
                     id: row.get("Id"),
@@ -261,7 +260,7 @@ impl Tag {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = StoryId WHERE ST.TagId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $;",
@@ -290,7 +289,7 @@ impl Tag {
                     return Err(Error::no_rows_returned());
                 }
 
-                let count = count_rows.get(0).get("Count");
+                let count = count_rows.get(0).unwrap().get("Count");
 
                 Ok((count, stories))
             }
@@ -330,7 +329,7 @@ impl Tag {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id FROM Tag WHERE Name = $1 AND Type = $2;",
@@ -340,7 +339,7 @@ impl Tag {
                 if rows.is_empty() {
                     let id = crate::nanoid!();
 
-                    let trans = conn.transaction()?;
+                    let mut trans = conn.transaction()?;
 
                     trans.execute(
                         "INSERT INTO Tag(Id, Name, Type) VALUES ($1, $2, $3);",
@@ -351,7 +350,7 @@ impl Tag {
 
                     Ok(id)
                 } else {
-                    Ok(rows.get(0).get("Id"))
+                    Ok(rows.get(0).unwrap().get("Id"))
                 }
             }
             //#endregion
@@ -391,7 +390,7 @@ impl Tag {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT T.Id, T.Name, T.Type, T.Created, T.Updated FROM StoryTag ST LEFT JOIN Tag T ON ST.TagId = T.Id WHERE ST.StoryId = $1 ORDER BY T.Name;",

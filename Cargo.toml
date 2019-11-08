@@ -15,10 +15,11 @@ futures-util-preview = "0.3.0-alpha.19"
 http = "0.1"
 http_req = "0.5"
 log = { version = "0.4", features = ["std"] }
-postgres = { version = "0.15", features = ["with-chrono"] }
-postgres-derive = "0.3"
+postgres = { version = "0.17.0-alpha.1", features = ["with-chrono-0_4"] }
+postgres-derive = "0.4.0-alpha.1"
+postgres-types = "0.1.0-alpha.1"
 r2d2 = "0.8"
-r2d2_postgres = "0.14"
+r2d2_postgres = "0.16.0-alpha.1"
 r2d2_sqlite = "0.12"
 rand = "0.7"
 rusqlite = { version = "0.20", features = ["bundled", "chrono"] }

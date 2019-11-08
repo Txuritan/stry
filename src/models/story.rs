@@ -5,7 +5,6 @@ use {
         Error,
     },
     chrono::{DateTime, Utc},
-    postgres::to_sql_checked,
     rusqlite::types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
     std::fmt,
 };
@@ -67,7 +66,7 @@ impl Story {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let rows = conn.query(
                     "SELECT Id FROM Story ORDER BY Updated DESC LIMIT $1 OFFSET $2;",
@@ -90,7 +89,7 @@ impl Story {
                     return Err(Error::no_rows_returned());
                 }
 
-                let count = count_rows.get(0).get("Count");
+                let count = count_rows.get(0).unwrap().get("Count");
 
                 Ok((count, stories))
             }
@@ -128,7 +127,7 @@ impl Story {
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
 
                 let authors = Author::of_story(backend.clone(), id)?;
                 let origins = Origin::of_story(backend.clone(), id)?;
@@ -145,7 +144,7 @@ impl Story {
                     return Err(Error::no_rows_returned());
                 }
 
-                let row = rows.get(0);
+                let row = rows.get(0).unwrap();
 
                 let story = Self {
                     id: row.get("Id"),
@@ -163,7 +162,7 @@ impl Story {
                             return Err(Error::no_rows_returned());
                         }
 
-                        count_rows.get(0).get("Chapters")
+                        count_rows.get(0).unwrap().get("Chapters")
                     },
                     words: {
                         let count_rows = conn.query(
@@ -175,7 +174,7 @@ impl Story {
                             return Err(Error::no_rows_returned());
                         }
 
-                        count_rows.get(0).get("Words")
+                        count_rows.get(0).unwrap().get("Words")
                     },
                     created: row.get("Created"),
                     updated: row.get("Updated"),

@@ -3,7 +3,7 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub enum Backend {
     PostgreSQL {
-        pool: r2d2::Pool<r2d2_postgres::PostgresConnectionManager>,
+        pool: r2d2::Pool<r2d2_postgres::PostgresConnectionManager<postgres::NoTls>>,
     },
     SQLite {
         pool: r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>,

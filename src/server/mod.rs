@@ -4,7 +4,7 @@ use {
     crate::{
         models::{Paging, Search},
         schema::Backend,
-        Error, ErrorKind,
+        Error,
     },
     std::thread,
     warp::{Filter, Reply},
@@ -58,6 +58,33 @@ pub fn start(backend: Backend) -> thread::JoinHandle<()> {
                 .and(with_state.clone())
                 .and_then(pages::search::index);
 
+            let dashboard = {
+                let downloads = warp::get()
+                    .and(warp::path("dashboard"))
+                    .and(warp::path("downloads"))
+                    .and(with_state.clone())
+                    .and_then(pages::dashboard::downloads);
+
+                let queue = warp::get()
+                    .and(warp::path("dashboard"))
+                    .and(warp::path("downloads"))
+                    .and(with_state.clone())
+                    .and_then(pages::dashboard::queue);
+
+                let updates = warp::get()
+                    .and(warp::path("dashboard"))
+                    .and(warp::path("downloads"))
+                    .and(with_state.clone())
+                    .and_then(pages::dashboard::updates);
+
+                let index = warp::get()
+                    .and(warp::path("dashboard"))
+                    .and(with_state.clone())
+                    .and_then(pages::dashboard::index);
+
+                downloads.or(queue).or(updates).or(index)
+            };
+
             let story = {
                 let chapter = warp::get()
                     .and(warp::path("story"))
@@ -89,7 +116,8 @@ pub fn start(backend: Backend) -> thread::JoinHandle<()> {
                 .and(with_state.clone())
                 .and_then(pages::item);
 
-            let routes = story
+            let routes = dashboard
+                .or(story)
                 .or(css)
                 .or(js)
                 .or(explore)
@@ -111,8 +139,8 @@ async fn error(err: warp::Rejection) -> Result<impl Reply, warp::Rejection> {
     };
 
     if let Some(err) = &err.find_cause::<Error>() {
-        match &err.kind {
-            ErrorKind::Moved { location } => Ok(with_status(
+        match &err {
+            Error::Moved { location } => Ok(with_status(
                 with_header(html(""), header::LOCATION, location).into_response(),
                 StatusCode::MOVED_PERMANENTLY,
             )),

@@ -15,7 +15,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub type Conn = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
 pub type Pool = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
 
-pub use crate::error::{Error, ErrorKind};
+pub use crate::error::Error;
 
 use {
     crate::{logger::init_with_level, schema::Backend},

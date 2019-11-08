@@ -1,85 +1,7 @@
 // TODO: Somehow add context to this (eg: failure and anyhow)
 
 #[derive(Debug)]
-pub struct Error {
-    pub kind: ErrorKind,
-    pub code: ErrorCode,
-}
-
-impl Error {
-    pub fn new(err: impl Into<Error>) -> Self {
-        err.into()
-    }
-
-    pub fn custom(err: impl Into<String>) -> Self {
-        Self {
-            kind: ErrorKind::Custom { err: err.into() },
-            code: ErrorCode::InternalError,
-        }
-    }
-
-    pub fn moved(location: impl Into<String>) -> Self {
-        Self {
-            kind: ErrorKind::Moved {
-                location: location.into(),
-            },
-            code: ErrorCode::InternalError,
-        }
-    }
-
-    pub fn state(context: &'static str) -> Self {
-        Self {
-            kind: ErrorKind::State { context },
-            code: ErrorCode::InternalError,
-        }
-    }
-
-    pub fn no_rows_returned() -> Self {
-        Self {
-            kind: ErrorKind::NoRowsReturned,
-            code: ErrorCode::InternalError,
-        }
-    }
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}", self.code, self.kind)
-    }
-}
-
-impl std::error::Error for Error {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self.kind {
-            ErrorKind::State { .. } => None,
-            ErrorKind::Moved { .. } => None,
-
-            ErrorKind::IO { ref err } => Some(err),
-            ErrorKind::ParseInt { ref err } => Some(err),
-            ErrorKind::Utf8 { ref err } => Some(err),
-            ErrorKind::FromUtf8 { ref err } => Some(err),
-
-            ErrorKind::Http { ref err } => Some(err),
-            ErrorKind::UrlEncodedDes { ref err } => Some(err),
-            ErrorKind::UrlEncodedSer { ref err } => Some(err),
-
-            ErrorKind::Askama { ref err } => Some(err),
-            ErrorKind::Json { ref err } => Some(err),
-
-            ErrorKind::Pool { ref err } => Some(err),
-            ErrorKind::PostgreSQL { ref err } => Some(err),
-            ErrorKind::SQLite { ref err } => Some(err),
-
-            ErrorKind::NoRowsReturned { .. } => None,
-
-            ErrorKind::BoxSS { .. } => None,
-            ErrorKind::Custom { .. } => None,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ErrorKind {
+pub enum Error {
     State {
         context: &'static str,
     },
@@ -137,173 +59,167 @@ pub enum ErrorKind {
     },
 }
 
-impl std::fmt::Display for ErrorKind {
+impl Error {
+    pub fn new(err: impl Into<Error>) -> Self {
+        err.into()
+    }
+
+    pub fn custom(err: impl Into<String>) -> Self {
+        Error::Custom { err: err.into() }
+    }
+
+    pub fn moved(location: impl Into<String>) -> Self {
+        Error::Moved {
+            location: location.into(),
+        }
+    }
+
+    pub fn state(context: &'static str) -> Self {
+        Error::State { context }
+    }
+
+    pub fn no_rows_returned() -> Self {
+        Error::NoRowsReturned
+    }
+}
+
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ErrorKind::State { context } => write!(f, "(State) {}", context),
-            ErrorKind::Moved { location } => write!(f, "(Moved) {}", location),
+            Error::State { context } => write!(f, "(State) {}", context),
+            Error::Moved { location } => write!(f, "(Moved) {}", location),
 
-            ErrorKind::IO { ref err } => write!(f, "(IO) {}", err),
-            ErrorKind::ParseInt { ref err } => write!(f, "(ParseInt) {}", err),
-            ErrorKind::Utf8 { ref err } => write!(f, "(Utf8) {}", err),
-            ErrorKind::FromUtf8 { ref err } => write!(f, "(FromUtf8) {}", err),
+            Error::IO { ref err } => write!(f, "(IO) {}", err),
+            Error::ParseInt { ref err } => write!(f, "(ParseInt) {}", err),
+            Error::Utf8 { ref err } => write!(f, "(Utf8) {}", err),
+            Error::FromUtf8 { ref err } => write!(f, "(FromUtf8) {}", err),
 
-            ErrorKind::Http { ref err } => write!(f, "(Http) {}", err),
-            ErrorKind::UrlEncodedDes { ref err } => write!(f, "(UrlEncodedDes) {}", err),
-            ErrorKind::UrlEncodedSer { ref err } => write!(f, "(UrlEncodedSer) {}", err),
+            Error::Http { ref err } => write!(f, "(Http) {}", err),
+            Error::UrlEncodedDes { ref err } => write!(f, "(UrlEncodedDes) {}", err),
+            Error::UrlEncodedSer { ref err } => write!(f, "(UrlEncodedSer) {}", err),
 
-            ErrorKind::Askama { ref err } => write!(f, "(Askama) {}", err),
-            ErrorKind::Json { ref err } => write!(f, "(Json) {}", err),
+            Error::Askama { ref err } => write!(f, "(Askama) {}", err),
+            Error::Json { ref err } => write!(f, "(Json) {}", err),
 
-            ErrorKind::Pool { ref err } => write!(f, "(Pool) {}", err),
-            ErrorKind::PostgreSQL { ref err } => write!(f, "(PostgreSQL) {}", err),
-            ErrorKind::SQLite { ref err } => write!(f, "(SQLite) {}", err),
+            Error::Pool { ref err } => write!(f, "(Pool) {}", err),
+            Error::PostgreSQL { ref err } => write!(f, "(PostgreSQL) {}", err),
+            Error::SQLite { ref err } => write!(f, "(SQLite) {}", err),
 
-            ErrorKind::NoRowsReturned => write!(
+            Error::NoRowsReturned => write!(
                 f,
                 "(NoRowsReturned) No rows were returned from the database"
             ),
 
-            ErrorKind::BoxSS { ref err } => write!(f, "(BoxSS) {}", err),
-            ErrorKind::Custom { ref err } => write!(f, "(Custom) {}", err),
+            Error::BoxSS { ref err } => write!(f, "(BoxSS) {}", err),
+            Error::Custom { ref err } => write!(f, "(Custom) {}", err),
         }
     }
 }
 
-#[derive(Debug)]
-pub enum ErrorCode {
-    UnknownError,
-    InternalError,
-    ThirdParty,
-}
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Error::State { .. } => None,
+            Error::Moved { .. } => None,
 
-impl std::fmt::Display for ErrorCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                ErrorCode::UnknownError => "Unknown Error",
-                ErrorCode::InternalError => "Stry Error",
-                ErrorCode::ThirdParty => "External Error",
-            }
-        )
+            Error::IO { ref err } => Some(err),
+            Error::ParseInt { ref err } => Some(err),
+            Error::Utf8 { ref err } => Some(err),
+            Error::FromUtf8 { ref err } => Some(err),
+
+            Error::Http { ref err } => Some(err),
+            Error::UrlEncodedDes { ref err } => Some(err),
+            Error::UrlEncodedSer { ref err } => Some(err),
+
+            Error::Askama { ref err } => Some(err),
+            Error::Json { ref err } => Some(err),
+
+            Error::Pool { ref err } => Some(err),
+            Error::PostgreSQL { ref err } => Some(err),
+            Error::SQLite { ref err } => Some(err),
+
+            Error::NoRowsReturned { .. } => None,
+
+            Error::BoxSS { .. } => None,
+            Error::Custom { .. } => None,
+        }
     }
 }
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Error {
-        Error {
-            kind: ErrorKind::IO { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::IO { err }
     }
 }
 
 impl From<std::num::ParseIntError> for Error {
     fn from(err: std::num::ParseIntError) -> Error {
-        Error {
-            kind: ErrorKind::ParseInt { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::ParseInt { err }
     }
 }
 
 impl From<std::str::Utf8Error> for Error {
     fn from(err: std::str::Utf8Error) -> Error {
-        Error {
-            kind: ErrorKind::Utf8 { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::Utf8 { err }
     }
 }
 
 impl From<std::string::FromUtf8Error> for Error {
     fn from(err: std::string::FromUtf8Error) -> Error {
-        Error {
-            kind: ErrorKind::FromUtf8 { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::FromUtf8 { err }
     }
 }
 
 impl From<http::Error> for Error {
     fn from(err: http::Error) -> Error {
-        Error {
-            kind: ErrorKind::Http { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::Http { err }
     }
 }
 
 impl From<serde_urlencoded::de::Error> for Error {
     fn from(err: serde_urlencoded::de::Error) -> Error {
-        Error {
-            kind: ErrorKind::UrlEncodedDes { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::UrlEncodedDes { err }
     }
 }
 
 impl From<serde_urlencoded::ser::Error> for Error {
     fn from(err: serde_urlencoded::ser::Error) -> Error {
-        Error {
-            kind: ErrorKind::UrlEncodedSer { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::UrlEncodedSer { err }
     }
 }
 
 impl From<askama::Error> for Error {
     fn from(err: askama::Error) -> Error {
-        Error {
-            kind: ErrorKind::Askama { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::Askama { err }
     }
 }
 
 impl From<serde_json::Error> for Error {
     fn from(err: serde_json::Error) -> Error {
-        Error {
-            kind: ErrorKind::Json { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::Json { err }
     }
 }
 
 impl From<r2d2::Error> for Error {
     fn from(err: r2d2::Error) -> Error {
-        Error {
-            kind: ErrorKind::Pool { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::Pool { err }
     }
 }
 
 impl From<postgres::Error> for Error {
     fn from(err: postgres::Error) -> Error {
-        Error {
-            kind: ErrorKind::PostgreSQL { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::PostgreSQL { err }
     }
 }
 
 impl From<rusqlite::Error> for Error {
     fn from(err: rusqlite::Error) -> Error {
-        Error {
-            kind: ErrorKind::SQLite { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::SQLite { err }
     }
 }
 
 impl From<Box<dyn std::error::Error + Send + Sync>> for Error {
     fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Error {
-        Error {
-            kind: ErrorKind::BoxSS { err },
-            code: ErrorCode::ThirdParty,
-        }
+        Error::BoxSS { err }
     }
 }

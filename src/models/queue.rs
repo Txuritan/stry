@@ -1,9 +1,10 @@
 use {
     crate::{
-        error::{Error, ErrorKind},
+        error::Error,
         schema::{Backend, Schema},
         Pool,
     },
+    http_req::uri::Uri,
     postgres::to_sql_checked,
     rand::Rng,
     rusqlite::{
@@ -16,74 +17,62 @@ use {
 const POSTGRES_TABLE: &str = "CREATE TABLE
 IF NOT EXISTS
     Scraper (
-        Site        VARCHAR(256)    NOT NULL    PRIMARY KEY     UNIQUE,
+        Id          VARCHAR(6)      NOT NULL    PRIMARY KEY     UNIQUE,
+        Site        VARCHAR(256)    NOT NULL,
         State       VARCHAR(10)     NOT NULL,
         Url         VARCHAR(256)    NOT NULL,
         Name        VARCHAR(256)    NOT NULL,
-        Chapters    INTEGER         NOT NULL,
-        Current     INTEGER         NOT NULL
+        Chapters    INTEGER         NOT NULL
     );";
 
 const SQLITE_TABLE: &str = "CREATE TABLE
 IF NOT EXISTS
     Scraper (
-        Site        TEXT        NOT NULL    PRIMARY KEY     UNIQUE,
+        Id          TEXT        NOT NULL    PRIMARY KEY     UNIQUE,
+        Site        TEXT        NOT NULL,
         State       TEXT        NOT NULL,
         Url         TEXT        NOT NULL,
         Name        TEXT        NOT NULL,
-        Chapters    INTEGER     NOT NULL,
-        Current     INTEGER     NOT NULL
+        Chapters    INTEGER     NOT NULL
     );";
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct Queue {
+    pub id: String,
+
     pub site: Site,
     pub state: State,
 
     pub url: String,
     pub name: String,
 
-    pub chapters: u32,
-    pub current: u32,
+    pub chapters: u32
 }
 
 impl Queue {
-    pub fn is_finished(backend: Backend, site: Site) -> Result<bool, Error> {
+    pub fn create(backend: Backend, url: &str, name: &str, chapters: u32) -> Result<String, Error> {
+        let id = crate::nanoid!();
+
         match &backend {
             Backend::PostgreSQL { pool } => {
                 let conn = pool.get()?;
-
-                let rows = conn.query(
-                    "SELECT Url FROM Queue WHERE Site = $1 AND State = $2;",
-                    &[&site, &State::Finished],
-                )?;
-
-                Ok(!rows.is_empty())
             }
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
-
-                let row = conn
-                    .query_row(
-                        "SELECT Url FROM Queue WHERE Site = ? AND State = ?;",
-                        rusqlite::params![site, State::Finished],
-                        |row| row.get::<_, String>("Url"),
-                    )
-                    .optional()?;
-
-                Ok(row.is_some())
             }
         }
+
+        Ok(id)
     }
 
-    pub fn get(backend: Backend, site: Site) -> Result<Self, Error> {
+    pub fn get(backend: Backend, id: &str) -> Result<Self, Error> {
         match &backend {
             Backend::PostgreSQL { pool } => {
                 let conn = pool.get()?;
 
                 let rows = conn.query(
-                    "SELECT Url, State, Name, Chapters, Current FROM Queue WHERE Site = $1;",
-                    &[&site],
+                    "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = $1;",
+                    &[&id],
                 )?;
 
                 if rows.is_empty() {
@@ -93,28 +82,28 @@ impl Queue {
                 let row = rows.get(0);
 
                 Ok(Self {
+                    id: id.to_owned(),
                     url: row.get("Url"),
+                    site: row.get("Site"),
                     state: row.get("State"),
                     name: row.get("Name"),
                     chapters: row.get("Chapters"),
-                    current: row.get("Current"),
-                    site,
                 })
             }
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
                 let queue = conn.query_row(
-                    "SELECT Url, State, Name, Chapters, Current FROM Queue WHERE Site = ?;",
-                    rusqlite::params![site],
+                    "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = ?;",
+                    rusqlite::params![id],
                     |row| {
                         Ok(Self {
+                            id: id.to_owned(),
                             url: row.get("Url")?,
+                            site: row.get("Site")?,
                             state: row.get("State")?,
                             name: row.get("Name")?,
                             chapters: row.get("Chapters")?,
-                            current: row.get("Current")?,
-                            site,
                         })
                     },
                 )?;
@@ -124,20 +113,14 @@ impl Queue {
         }
     }
 
-    pub fn start(
-        backend: Backend,
-        url: &str,
-        site: Site,
-        name: &str,
-        chapters: u32,
-    ) -> Result<u64, Error> {
+    pub fn finish(backend: Backend, id: &str) -> Result<u64, Error> {
         match &backend {
             Backend::PostgreSQL { pool } => {
                 let conn = pool.get()?;
 
                 let rows = conn.execute(
-                    "UPDATE Queue SET Url = $1, State = $2, Name = $3, Chapters = $4, Current = 1 FROM Queue WHERE Site = $5;",
-                    &[&url, &State::Running, &name, &chapters, &site],
+                    "UPDATE Queue SET State = $1 FROM Queue WHERE Id = $2;",
+                    &[&State::Finished, &id],
                 )?;
 
                 Ok(rows)
@@ -146,58 +129,8 @@ impl Queue {
                 let conn = pool.get()?;
 
                 let rows = conn.execute(
-                    "UPDATE Queue SET Url = ?, State = ?, Name = ?, Chapters = ?, Current = 1 FROM Queue WHERE Site = ?;",
-                    rusqlite::params![url, State::Running, name, chapters, site],
-                )?;
-
-                Ok(rows as u64)
-            }
-        }
-    }
-
-    pub fn update(backend: Backend, site: Site, place: u32) -> Result<u64, Error> {
-        match &backend {
-            Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
-
-                let rows = conn.execute(
-                    "UPDATE Queue SET Current = $1 FROM Queue WHERE Site = $2;",
-                    &[&place, &site],
-                )?;
-
-                Ok(rows)
-            }
-            Backend::SQLite { pool } => {
-                let conn = pool.get()?;
-
-                let rows = conn.execute(
-                    "UPDATE Queue SET Current = ? FROM Queue WHERE Site = ?;",
-                    rusqlite::params![place, site],
-                )?;
-
-                Ok(rows as u64)
-            }
-        }
-    }
-
-    pub fn finish(backend: Backend, site: Site) -> Result<u64, Error> {
-        match &backend {
-            Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
-
-                let rows = conn.execute(
-                    "UPDATE Queue SET Url = $1, State = $2, Name = $3, Chapters = $4, Current = 1 FROM Queue WHERE Site = $5;",
-                    &[&"", &State::Finished, &"", &0, &site],
-                )?;
-
-                Ok(rows)
-            }
-            Backend::SQLite { pool } => {
-                let conn = pool.get()?;
-
-                let rows = conn.execute(
-                    "UPDATE Queue SET Url = ?, State = ?, Name = ?, Chapters = ?, Current = 1 FROM Queue WHERE Site = ?;",
-                    rusqlite::params!["", State::Finished, "", 0, site],
+                    "UPDATE Queue SET State = ? FROM Queue WHERE Id = ?;",
+                    rusqlite::params![State::Finished, id],
                 )?;
 
                 Ok(rows as u64)
@@ -234,6 +167,14 @@ pub enum Site {
 }
 
 impl Site {
+    fn from_url(url: &str) -> Option<Self> {
+        url.parse::<Uri>().ok().and_then(|uri| uri.host().map(String::from)).and_then(|host| match host.as_str() {
+            "archiveofourown.org" | "www.archiveofourown.org" => Some(Site::ArchiveOfOurOwn),
+            "fanfiction.net" | "www.fanfiction.net" | "m.fanfiction.net" => Some(Site::FanFiction),
+            _ => None,
+        })
+    }
+
     fn db_str(self) -> &'static str {
         match self {
             Site::ArchiveOfOurOwn => "archive-of-our-own",

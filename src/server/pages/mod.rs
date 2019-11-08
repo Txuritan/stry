@@ -1,3 +1,4 @@
+pub mod dashboard;
 pub mod search;
 pub mod story;
 

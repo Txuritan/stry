@@ -13,6 +13,7 @@ chrono = { version = "0.4", default-features = false, features = ["serde"] }
 futures-preview = "0.3.0-alpha.19"
 futures-util-preview = "0.3.0-alpha.19"
 http = "0.1"
+http_req = "0.5"
 log = { version = "0.4", features = ["std"] }
 postgres = { version = "0.15", features = ["with-chrono"] }
 postgres-derive = "0.3"

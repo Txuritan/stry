@@ -51,16 +51,28 @@ impl Queue {
     pub fn create(backend: Backend, url: &str, name: &str, chapters: u32) -> Result<String, Error> {
         let id = crate::nanoid!();
 
+        let site = Site::from_url(url).ok_or_else(|| Error::UnknownSite)?;
+
         match &backend {
             //#region[rgba(241,153,31,0.1)] PostgreSQL
             Backend::PostgreSQL { pool } => {
-                let conn = pool.get()?;
+                let mut conn = pool.get()?;
+
+                conn.execute(
+                    "INSERT INTO Queue (Id, Site, State, Url, Name, Chapters) VALUES ($1, $2, $3, $4, $5, $6);",
+                    crate::params![p; id, site, State::Queued, url, name, chapters]
+                )?;
             }
             //#endregion
 
             //#region[rgba(51,103,145,0.1)] SQLite
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
+
+                conn.execute(
+                    "INSERT INTO Queue (Id, Site, State, Url, Name, Chapters) VALUES (?, ?, ?, ?, ?, ?);",
+                    crate::params![s; id, site, State::Queued, url, name, chapters]
+                )?;
             }
             //#endregion
         }
@@ -76,7 +88,7 @@ impl Queue {
 
                 let rows = conn.query(
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = $1;",
-                    &[&id],
+                    crate::params![p; id],
                 )?;
 
                 if rows.is_empty() {
@@ -102,7 +114,7 @@ impl Queue {
 
                 let queue = conn.query_row(
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = ?;",
-                    rusqlite::params![id],
+                    crate::params![s; id],
                     |row| {
                         Ok(Self {
                             id: id.to_owned(),
@@ -129,7 +141,7 @@ impl Queue {
 
                 let rows = conn.execute(
                     "UPDATE Queue SET State = $1 FROM Queue WHERE Id = $2;",
-                    &[&State::Finished, &id],
+                    crate::params![p; State::Finished, id],
                 )?;
 
                 Ok(rows)
@@ -142,7 +154,7 @@ impl Queue {
 
                 let rows = conn.execute(
                     "UPDATE Queue SET State = ? FROM Queue WHERE Id = ?;",
-                    rusqlite::params![State::Finished, id],
+                    crate::params![s; State::Finished, id],
                 )?;
 
                 Ok(rows as u64)
@@ -175,6 +187,7 @@ impl Schema for Queue {
 pub enum Site {
     #[postgres(name = "archive-of-our-own")]
     ArchiveOfOurOwn,
+
     #[postgres(name = "fanfiction")]
     FanFiction,
 }
@@ -223,9 +236,9 @@ impl ToSql for Site {
 #[postgres(name = "state")]
 // #[derive(db_derive::Sql)]
 pub enum State {
-    #[postgres(name = "running")]
-    // #[sql(name = "running")]
-    Running,
+    #[postgres(name = "queued")]
+    // #[sql(name = "queued")]
+    Queued,
 
     #[postgres(name = "finished")]
     // #[sql(name = "finished")]
@@ -235,7 +248,7 @@ pub enum State {
 impl State {
     fn db_str(self) -> &'static str {
         match self {
-            State::Running => "running",
+            State::Queued => "queued",
             State::Finished => "finished",
         }
     }
@@ -244,7 +257,7 @@ impl State {
 impl FromSql for State {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
         String::column_result(value).map(|as_str| match as_str.as_str() {
-            "running" => State::Running,
+            "queued" => State::Queued,
             "finished" => State::Finished,
             _ => unreachable!(),
         })
@@ -254,7 +267,7 @@ impl FromSql for State {
 impl ToSql for State {
     fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
         Ok(match self {
-            State::Running => "running",
+            State::Queued => "queued",
             State::Finished => "finished",
         }
         .into())

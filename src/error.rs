@@ -50,6 +50,7 @@ pub enum Error {
     },
 
     NoRowsReturned,
+    UnknownSite,
 
     BoxSS {
         err: Box<dyn std::error::Error + Send + Sync>,
@@ -109,6 +110,10 @@ impl std::fmt::Display for Error {
                 f,
                 "(NoRowsReturned) No rows were returned from the database"
             ),
+            Error::UnknownSite => write!(
+                f,
+                "(UnknownSite) Give URL is not a known site"
+            ),
 
             Error::BoxSS { ref err } => write!(f, "(BoxSS) {}", err),
             Error::Custom { ref err } => write!(f, "(Custom) {}", err),
@@ -139,6 +144,7 @@ impl std::error::Error for Error {
             Error::SQLite { ref err } => Some(err),
 
             Error::NoRowsReturned { .. } => None,
+            Error::UnknownSite { .. } => None,
 
             Error::BoxSS { .. } => None,
             Error::Custom { .. } => None,

@@ -1,6 +1,7 @@
 @import "_variables.scss";
 
 button, input, select, textarea {
+    background-color: transparent;
     border: 1px solid $color__black-800;
     border-radius: $padding--small;
     display: block;
@@ -17,6 +18,7 @@ button[type="button"], input[type="button"] {
 body[theme="light"] {
     button, input, select, textarea {
         border-color: $color__black-800;
+        color: $color__black-800;
     }
 
     button:focus, input:focus, select:focus, textarea:focus,
@@ -36,6 +38,7 @@ body[theme="light"] {
 body[theme="dark"] {
     button, input, select, textarea {
         border-color: $color__gray-500;
+        color: $color__gray-100;
     }
 
     button:focus, input:focus, select:focus, textarea:focus,

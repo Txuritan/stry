@@ -1,7 +1,7 @@
 use {
     crate::{
         error::Error,
-        params,
+        row, execute,
         schema::{Backend, Schema},
     },
     http_req::uri::Uri,
@@ -55,10 +55,10 @@ impl Queue {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                conn.execute(
+                execute!(p[conn] => (
                     "INSERT INTO Queue (Id, Site, State, Url, Name, Chapters) VALUES ($1, $2, $3, $4, $5, $6);",
-                    params!(p => [id, site, State::Queued, url, name, chapters])
-                )?;
+                    [id, site, State::Queued, url, name, chapters]
+                ));
             }
             //#endregion
 
@@ -66,10 +66,10 @@ impl Queue {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                conn.execute(
+                execute!(s[conn] => (
                     "INSERT INTO Queue (Id, Site, State, Url, Name, Chapters) VALUES (?, ?, ?, ?, ?, ?);",
-                    params!(s => [id, site, State::Queued, url, name, chapters])
-                )?;
+                    [id, site, State::Queued, url, name, chapters]
+                ));
             } //#endregion
         }
 
@@ -82,25 +82,20 @@ impl Queue {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let queue = row!(p[conn] => (
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = $1;",
-                    params!(p => [id]),
-                )?;
+                    [id],
+                    |row| Ok(Self {
+                        id: id.to_owned(),
+                        url: row.get("Url"),
+                        site: row.get("Site"),
+                        state: row.get("State"),
+                        name: row.get("Name"),
+                        chapters: row.get("Chapters"),
+                    })
+                ));
 
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let row = rows.get(0).unwrap();
-
-                Ok(Self {
-                    id: id.to_owned(),
-                    url: row.get("Url"),
-                    site: row.get("Site"),
-                    state: row.get("State"),
-                    name: row.get("Name"),
-                    chapters: row.get("Chapters"),
-                })
+                Ok(queue)
             }
             //#endregion
 
@@ -108,20 +103,18 @@ impl Queue {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let queue = conn.query_row(
+                let queue = row!(s[conn] => (
                     "SELECT Url, Site, State, Name, Chapters FROM Queue WHERE Id = ?;",
-                    params!(s => [id]),
-                    |row| {
-                        Ok(Self {
-                            id: id.to_owned(),
-                            url: row.get("Url")?,
-                            site: row.get("Site")?,
-                            state: row.get("State")?,
-                            name: row.get("Name")?,
-                            chapters: row.get("Chapters")?,
-                        })
-                    },
-                )?;
+                    [id],
+                    |row| Ok(Self {
+                        id: id.to_owned(),
+                        url: row.get("Url")?,
+                        site: row.get("Site")?,
+                        state: row.get("State")?,
+                        name: row.get("Name")?,
+                        chapters: row.get("Chapters")?,
+                    })
+                ));
 
                 Ok(queue)
             } //#endregion
@@ -134,10 +127,10 @@ impl Queue {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.execute(
+                let rows = execute!(p[conn] => (
                     "UPDATE Queue SET State = $1 FROM Queue WHERE Id = $2;",
-                    params!(p => [State::Finished, id]),
-                )?;
+                    [State::Finished, id]
+                ));
 
                 Ok(rows)
             }
@@ -147,10 +140,10 @@ impl Queue {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let rows = conn.execute(
+                let rows = execute!(s[conn] => (
                     "UPDATE Queue SET State = ? FROM Queue WHERE Id = ?;",
-                    params!(s => [State::Finished, id]),
-                )?;
+                    [State::Finished, id]
+                ));
 
                 Ok(rows as u64)
             } //#endregion

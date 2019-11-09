@@ -1,7 +1,7 @@
 use {
     crate::{
         models::{Paging, Resource, Story},
-        params,
+        row, rows, execute, params,
         schema::{Backend, Schema},
         Error,
     },
@@ -45,34 +45,21 @@ impl Origin {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let origins = rows!(p[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Origin ORDER BY Name DESC LIMIT $1 OFFSET $2;",
-                    params!(p => [paging.page_size, (paging.page_size * paging.page)]),
-                )?;
-
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let mut origins = Vec::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    origins.push(Self {
+                    [paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Self {
                         id: row.get("Id"),
                         name: row.get("Name"),
                         created: row.get("Created"),
                         updated: row.get("Updated"),
-                    });
-                }
+                    })
+                ));
 
-                let count_rows =
-                    conn.query("SELECT COUNT(Id) as Count FROM Origin;", params!(p => []))?;
-
-                if count_rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let count = count_rows.get(0).unwrap().get("Count");
+                let count = row!(p[conn] => (
+                    "SELECT COUNT(Id) as Count FROM Origin;",
+                    |row| Ok(row.get("Count"))
+                ));
 
                 Ok((count, origins))
             }
@@ -82,33 +69,21 @@ impl Origin {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
+                let origins = rows!(s[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Origin ORDER BY Name DESC LIMIT ? OFFSET ?;",
-                )?;
+                    [paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Self {
+                        id: row.get("Id")?,
+                        name: row.get("Name")?,
+                        created: row.get("Created")?,
+                        updated: row.get("Updated")?,
+                    })
+                ));
 
-                let origin_rows = stmt.query_map(
-                    params!(s => [paging.page_size, paging.page_size * paging.page]),
-                    |row| {
-                        Ok(Self {
-                            id: row.get("Id")?,
-                            name: row.get("Name")?,
-                            created: row.get("Created")?,
-                            updated: row.get("Updated")?,
-                        })
-                    },
-                )?;
-
-                let mut origins = Vec::new();
-
-                for origin in origin_rows {
-                    origins.push(origin?);
-                }
-
-                let count = conn.query_row(
+                let count = row!(s[conn] => (
                     "SELECT COUNT(Id) as Count FROM Origin;",
-                    params!(s => []),
-                    |row| row.get("Count"),
-                )?;
+                    |row| Ok(row.get("Count")?)
+                ));
 
                 Ok((count, origins))
             } //#endregion
@@ -121,23 +96,18 @@ impl Origin {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let origin = row!(p[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Origin WHERE Id = $1;",
-                    params!(p => [id]),
-                )?;
+                    [id],
+                    |row| Ok(Self {
+                        id: row.get("Id"),
+                        name: row.get("Name"),
+                        created: row.get("Created"),
+                        updated: row.get("Updated"),
+                    })
+                ));
 
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let row = rows.get(0).unwrap();
-
-                Ok(Self {
-                    id: row.get("Id"),
-                    name: row.get("Name"),
-                    created: row.get("Created"),
-                    updated: row.get("Updated"),
-                })
+                Ok(origin)
             }
             //#endregion
 
@@ -145,18 +115,16 @@ impl Origin {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let origin = conn.query_row(
+                let origin = row!(s[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Origin WHERE Id = ?;",
-                    params!(s => [id]),
-                    |row| {
-                        Ok(Self {
-                            id: row.get("Id")?,
-                            name: row.get("Name")?,
-                            created: row.get("Created")?,
-                            updated: row.get("Updated")?,
-                        })
-                    },
-                )?;
+                    [id],
+                    |row| Ok(Self {
+                        id: row.get("Id")?,
+                        name: row.get("Name")?,
+                        created: row.get("Created")?,
+                        updated: row.get("Updated")?,
+                    })
+                ));
 
                 Ok(origin)
             } //#endregion
@@ -173,30 +141,17 @@ impl Origin {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let stories = rows!(p[conn] => (
                     "SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $3;",
-                    params!(p => [id, paging.page_size, (paging.page_size * paging.page)]),
-                )?;
+                    [id, paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Story::get(backend.clone(), &row.get::<_, String>("StoryId"))?)
+                ));
 
-                let mut stories = Vec::<Story>::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    stories.push(Story::get(
-                        backend.clone(),
-                        &row.get::<_, String>("StoryId"),
-                    )?);
-                }
-
-                let count_rows = conn.query(
+                let count = row!(p[conn] => (
                     "SELECT COUNT(SO.StoryId) as Count FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = StoryId WHERE SO.OriginId = $1;",
-                    params!(p => [id])
-                )?;
-
-                if count_rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let count = count_rows.get(0).unwrap().get("Count");
+                    [id],
+                    |row| Ok(row.get("Count"))
+                ));
 
                 Ok((count, stories))
             }
@@ -206,26 +161,17 @@ impl Origin {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
-                    "SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = ? ORDER BY S.Updated DESC LIMIT 10 OFFSET ?;"
-                )?;
+                let stories = rows!(s[conn] => (
+                    "SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;",
+                    [id, paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Story::get(backend.clone(), &row.get::<_, String>("StoryId")?)?)
+                ));
 
-                let story_rows = stmt
-                    .query_map(params!(s => [id, paging.page_size * paging.page]), |row| {
-                        row.get::<_, String>("StoryId")
-                    })?;
-
-                let mut stories = Vec::new();
-
-                for story in story_rows {
-                    stories.push(Story::get(backend.clone(), &story?)?);
-                }
-
-                let count = conn.query_row(
+                let count = row!(s[conn] => (
                     "SELECT COUNT(SO.StoryId) as Count FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = StoryId WHERE SO.OriginId = ?;",
-                    params!(s => [id]),
-                    |row| row.get("Count")
-                )?;
+                    [id],
+                    |row| Ok(row.get("Count")?)
+                ));
 
                 Ok((count, stories))
             } //#endregion
@@ -238,25 +184,16 @@ impl Origin {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let origins = rows!(p[conn] => (
                     "SELECT O.Id, O.Name, O.Created, O.Updated FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = $1 ORDER BY O.Name;",
-                    params!(p => [story]),
-                )?;
-
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let mut origins = Vec::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    origins.push(Self {
+                    [story],
+                    |row| Ok(Self {
                         id: row.get("Id"),
                         name: row.get("Name"),
                         created: row.get("Created"),
                         updated: row.get("Updated"),
-                    });
-                }
+                    })
+                ));
 
                 Ok(origins)
             }
@@ -266,20 +203,18 @@ impl Origin {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
-                    "SELECT O.Id, O.Name, O.Created, O.Updated FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = ? ORDER BY O.Name;"
-                )?;
-
-                let origins = stmt.query_map(params!(s => [story]), |row| {
-                    Ok(Self {
+                let origins = rows!(s[conn] => (
+                    "SELECT O.Id, O.Name, O.Created, O.Updated FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = ? ORDER BY O.Name;",
+                    [story],
+                    |row| Ok(Self {
                         id: row.get("Id")?,
                         name: row.get("Name")?,
                         created: row.get("Created")?,
                         updated: row.get("Updated")?,
                     })
-                })?;
+                ));
 
-                origins.map(|a| a.map_err(Error::from)).collect()
+                Ok(origins)
             } //#endregion
         }
     }

@@ -1,6 +1,6 @@
 use {
     crate::{
-        params,
+        row,
         schema::{Backend, Schema},
         Error,
     },
@@ -24,11 +24,11 @@ IF NOT EXISTS
 const SQLITE_TABLE_BRIDGE: &str = "CREATE TABLE
 IF NOT EXISTS
     StoryChapter (
-        StoryId     TEXT    REFERENCES Story(Id)                ON UPDATE CASCADE   NOT NULL,
-        ChapterId   TEXT    REFERENCES Chapter(Id)              ON UPDATE CASCADE   NOT NULL,
-        Place       INTEGER                                                         NOT NULL,
-        Created     TEXT    DEFAULT (DATETIME('now', 'utc'))                        NOT NULL,
-        Updated     TEXT    DEFAULT (DATETIME('now', 'utc'))                        NOT NULL
+        StoryId     TEXT        NOT NULL    REFERENCES Story(Id)                ON UPDATE CASCADE,
+        ChapterId   TEXT        NOT NULL    REFERENCES Chapter(Id)              ON UPDATE CASCADE,
+        Place       INTEGER     NOT NULL                                    ,
+        Created     TEXT        NOT NULL    DEFAULT (DATETIME('now', 'utc')),
+        Updated     TEXT        NOT NULL    DEFAULT (DATETIME('now', 'utc'))
     );";
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
@@ -54,27 +54,22 @@ impl Chapter {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let chapter = row!(p[conn] => (
                     "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = $1 AND SC.Place = $2;",
-                    params!(p => [story, place])
-                )?;
+                    [story, place],
+                    |row| Ok(Self {
+                        id: row.get("Id"),
+                        name: row.get("Name"),
+                        pre: row.get("Pre"),
+                        main: row.get("Main"),
+                        post: row.get("Post"),
+                        words: row.get("Words"),
+                        created: row.get("Created"),
+                        updated: row.get("Updated"),
+                    })
+                ));
 
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let row = rows.get(0).unwrap();
-
-                Ok(Self {
-                    id: row.get("Id"),
-                    name: row.get("Name"),
-                    pre: row.get("Pre"),
-                    main: row.get("Main"),
-                    post: row.get("Post"),
-                    words: row.get("Words"),
-                    created: row.get("Created"),
-                    updated: row.get("Updated"),
-                })
+                Ok(chapter)
             }
             //#endregion
 
@@ -82,22 +77,20 @@ impl Chapter {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let chapter = conn.query_row(
+                let chapter = row!(s[conn] => (
                     "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
-                    params!(s => [story, place]),
-                    |row| {
-                        Ok(Self {
-                            id: row.get("Id")?,
-                            name: row.get("Name")?,
-                            pre: row.get("Pre")?,
-                            main: row.get("Main")?,
-                            post: row.get("Post")?,
-                            words: row.get("Words")?,
-                            created: row.get("Created")?,
-                            updated: row.get("Updated")?,
-                        })
-                    }
-                )?;
+                    [story, place],
+                    |row| Ok(Self {
+                        id: row.get("Id")?,
+                        name: row.get("Name")?,
+                        pre: row.get("Pre")?,
+                        main: row.get("Main")?,
+                        post: row.get("Post")?,
+                        words: row.get("Words")?,
+                        created: row.get("Created")?,
+                        updated: row.get("Updated")?,
+                    })
+                ));
 
                 Ok(chapter)
             } //#endregion

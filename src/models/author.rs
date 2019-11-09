@@ -1,7 +1,7 @@
 use {
     crate::{
         models::{Paging, Resource, Story},
-        params,
+        row, rows,
         schema::{Backend, Schema},
         Error,
     },
@@ -44,34 +44,21 @@ impl Author {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let authors = rows!(p[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Author ORDER BY Name DESC LIMIT $1 OFFSET $2;",
-                    params!(p => [paging.page_size, (paging.page_size * paging.page)])
-                )?;
-
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let mut authors = Vec::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    authors.push(Self {
+                    [paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Self {
                         id: row.get("Id"),
                         name: row.get("Name"),
                         created: row.get("Created"),
                         updated: row.get("Updated"),
-                    });
-                }
+                    })
+                ));
 
-                let count_rows =
-                    conn.query("SELECT COUNT(Id) as Count FROM Author;", params!(p => []))?;
-
-                if count_rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let count = count_rows.get(0).unwrap().get("Count");
+                let count = row!(p[conn] => (
+                    "SELECT COUNT(Id) as Count FROM Author;",
+                    |row| Ok(row.get("Count"))
+                ));
 
                 Ok((count, authors))
             }
@@ -81,33 +68,21 @@ impl Author {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
+                let authors = rows!(s[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Author ORDER BY Name DESC LIMIT ? OFFSET ?;",
-                )?;
+                    [paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Self {
+                        id: row.get("Id")?,
+                        name: row.get("Name")?,
+                        created: row.get("Created")?,
+                        updated: row.get("Updated")?,
+                    })
+                ));
 
-                let author_rows = stmt.query_map(
-                    params!(s => [paging.page_size, paging.page_size * paging.page]),
-                    |row| {
-                        Ok(Self {
-                            id: row.get("Id")?,
-                            name: row.get("Name")?,
-                            created: row.get("Created")?,
-                            updated: row.get("Updated")?,
-                        })
-                    },
-                )?;
-
-                let mut authors = Vec::new();
-
-                for author in author_rows {
-                    authors.push(author?);
-                }
-
-                let count = conn.query_row(
+                let count = row!(s[conn] => (
                     "SELECT COUNT(Id) as Count FROM Author;",
-                    params!(s => []),
-                    |row| row.get("Count"),
-                )?;
+                    |row| Ok(row.get("Count")?)
+                ));
 
                 Ok((count, authors))
             } //#endregion
@@ -120,23 +95,18 @@ impl Author {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let author = row!(p[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Author WHERE Id = $1;",
-                    params!(p => [id]),
-                )?;
+                    [id],
+                    |row| Ok(Self {
+                        id: row.get("Id"),
+                        name: row.get("Name"),
+                        created: row.get("Created"),
+                        updated: row.get("Updated"),
+                    })
+                ));
 
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let row = rows.get(0).unwrap();
-
-                Ok(Self {
-                    id: row.get("Id"),
-                    name: row.get("Name"),
-                    created: row.get("Created"),
-                    updated: row.get("Updated"),
-                })
+                Ok(author)
             }
             //#endregion
 
@@ -144,18 +114,16 @@ impl Author {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let author = conn.query_row(
+                let author = row!(s[conn] => (
                     "SELECT Id, Name, Created, Updated FROM Author WHERE Id = ?;",
-                    params!(s => [id]),
-                    |row| {
-                        Ok(Self {
-                            id: row.get("Id")?,
-                            name: row.get("Name")?,
-                            created: row.get("Created")?,
-                            updated: row.get("Updated")?,
-                        })
-                    },
-                )?;
+                    [id],
+                    |row| Ok(Self {
+                        id: row.get("Id")?,
+                        name: row.get("Name")?,
+                        created: row.get("Created")?,
+                        updated: row.get("Updated")?,
+                    })
+                ));
 
                 Ok(author)
             } //#endregion
@@ -172,34 +140,17 @@ impl Author {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let stories = rows!(p[conn] => (
                     "SELECT SA.StoryId FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = $1 ORDER BY S.Updated DESC LIMIT $2 OFFSET $3;",
-                    params!(p => [id, paging.page_size, (paging.page_size * paging.page)]),
-                )?;
+                    [id, paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Story::get(backend.clone(), &row.get::<_, String>("StoryId"))?)
+                ));
 
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let mut stories = Vec::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    stories.push(Story::get(
-                        backend.clone(),
-                        &row.get::<_, String>("StoryId"),
-                    )?);
-                }
-
-                let count_rows = conn.query(
+                let count = row!(p[conn] => (
                     "SELECT COUNT(SA.StoryId) as Count FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = $1;",
-                    params!(p => [id]),
-                )?;
-
-                if count_rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let count = count_rows.get(0).unwrap().get("Count");
+                    [id],
+                    |row| Ok(row.get("Count"))
+                ));
 
                 Ok((count, stories))
             }
@@ -209,26 +160,17 @@ impl Author {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
+                let stories = rows!(s[conn] => (
                     "SELECT SA.StoryId FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;",
-                )?;
+                    [id, paging.page_size, (paging.page_size * paging.page)],
+                    |row| Ok(Story::get(backend.clone(), &row.get::<_, String>("StoryId")?)?)
+                ));
 
-                let story_rows = stmt.query_map(
-                    params!(s => [id, paging.page_size, paging.page_size * paging.page]),
-                    |row| row.get::<_, String>("StoryId"),
-                )?;
-
-                let mut stories = Vec::new();
-
-                for story in story_rows {
-                    stories.push(Story::get(backend.clone(), &story?)?);
-                }
-
-                let count = conn.query_row(
+                let count = row!(s[conn] => (
                     "SELECT COUNT(SA.StoryId) as Count FROM StoryAuthor SA LEFT JOIN Story S ON S.Id = SA.StoryId WHERE SA.AuthorId = ?;",
-                    params!(s => [id]),
-                    |row| row.get("Count"),
-                )?;
+                    [id],
+                    |row| Ok(row.get("Count")?)
+                ));
 
                 Ok((count, stories))
             } //#endregion
@@ -241,25 +183,16 @@ impl Author {
             Backend::PostgreSQL { pool } => {
                 let mut conn = pool.get()?;
 
-                let rows = conn.query(
+                let authors = rows!(p[conn] => (
                     "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = $1 ORDER BY A.Name;",
-                    params!(p => [story])
-                )?;
-
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let mut authors = Vec::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    authors.push(Self {
+                    [story],
+                    |row| Ok(Self {
                         id: row.get("Id"),
                         name: row.get("Name"),
                         created: row.get("Created"),
                         updated: row.get("Updated"),
-                    });
-                }
+                    })
+                ));
 
                 Ok(authors)
             }
@@ -269,20 +202,18 @@ impl Author {
             Backend::SQLite { pool } => {
                 let conn = pool.get()?;
 
-                let mut stmt = conn.prepare(
-                    "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
-                )?;
-
-                let authors = stmt.query_map(params!(s => [story]), |row| {
-                    Ok(Self {
+                let authors = rows!(s[conn] => (
+                    "SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;",
+                    [story],
+                    |row| Ok(Self {
                         id: row.get("Id")?,
                         name: row.get("Name")?,
                         created: row.get("Created")?,
                         updated: row.get("Updated")?,
                     })
-                })?;
+                ));
 
-                authors.map(|a| a.map_err(Error::from)).collect()
+                Ok(authors)
             } //#endregion
         }
     }

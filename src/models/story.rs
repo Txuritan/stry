@@ -1,7 +1,7 @@
 use {
     crate::{
         models::{Author, Origin, Series, Tag, TagType},
-        params,
+        row, execute, params,
         schema::{Backend, Schema},
         Error,
     },

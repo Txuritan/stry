@@ -10,6 +10,7 @@ build = "build.rs"
 askama = { git = "https://github.com/djc/askama", rev = "81080812777c7a1998f579908f159e383e3c9a31" }
 bcrypt = "0.6"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
+enum-map = "0.6"
 futures-preview = "0.3.0-alpha.19"
 futures-util-preview = "0.3.0-alpha.19"
 http = "0.1"

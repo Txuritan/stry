@@ -4,6 +4,7 @@ pub mod chapter;
 pub mod origin;
 pub mod queue;
 pub mod series;
+pub mod site;
 pub mod story;
 pub mod tag;
 
@@ -18,6 +19,7 @@ pub use self::{
     origin::Origin,
     queue::Queue,
     series::Series,
+    site::Site,
     story::{Language, Rating, Square, State, Story, Warning},
     tag::{Tag, TagType},
 };

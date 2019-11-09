@@ -19,6 +19,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "array-macro"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "askama"
 version = "0.8.0"
 source = "git+https://github.com/djc/askama?rev=81080812777c7a1998f579908f159e383e3c9a31#81080812777c7a1998f579908f159e383e3c9a31"
@@ -348,6 +353,25 @@ dependencies = [
 name = "ego-tree"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "enum-map"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "array-macro 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "enum-map-derive 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "enum-map-derive"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro2 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "fake-simd"
@@ -1711,6 +1735,7 @@ dependencies = [
  "askama 0.8.0 (git+https://github.com/djc/askama?rev=81080812777c7a1998f579908f159e383e3c9a31)",
  "bcrypt 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "enum-map 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-preview 0.3.0-alpha.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-util-preview 0.3.0-alpha.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "http 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2180,6 +2205,7 @@ dependencies = [
 "checksum adler32 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "5d2e7343e7fc9de883d1b0341e0b13970f764c14101234857d2ddafa1cb1cac2"
 "checksum alloc-no-stdlib 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5192ec435945d87bc2f70992b4d818154b5feede43c09fb7592146374eac90a6"
 "checksum alloc-stdlib 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "697ed7edc0f1711de49ce108c541623a0af97c6c60b2f6e2b65229847ac843c2"
+"checksum array-macro 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "7d034edd76d4e7adc314c95400941dedc89bd4337d565bf87f6b69d3b20dc4de"
 "checksum askama 0.8.0 (git+https://github.com/djc/askama?rev=81080812777c7a1998f579908f159e383e3c9a31)" = "<none>"
 "checksum askama_derive 0.8.0 (git+https://github.com/djc/askama?rev=81080812777c7a1998f579908f159e383e3c9a31)" = "<none>"
 "checksum askama_escape 0.2.0 (git+https://github.com/djc/askama?rev=81080812777c7a1998f579908f159e383e3c9a31)" = "<none>"
@@ -2219,6 +2245,8 @@ dependencies = [
 "checksum dtoa 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "ea57b42383d091c85abcc2706240b94ab2a8fa1fc81c10ff23c4de06e2a90b5e"
 "checksum dtoa-short 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "59020b8513b76630c49d918c33db9f4c91638e7d3404a28084083b87e33f76f2"
 "checksum ego-tree 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3a68a4904193147e0a8dec3314640e6db742afd5f6e634f428a6af230d9b3591"
+"checksum enum-map 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "75eb4afb8170adb4120b13700c1af58c3137cd72e4c56e282045af5c29ab5329"
+"checksum enum-map-derive 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)" = "e57001dfb2532f5a103ff869656887fae9a8defa7d236f3e39d2ee86ed629ad7"
 "checksum fake-simd 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 "checksum fallible-iterator 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
 "checksum fallible-streaming-iterator 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)" = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"

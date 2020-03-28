@@ -6,11 +6,7 @@
     <a label l-bg="{{ resource.color().0 }}" d-bg="{{ resource.color().1 }}" href="/{{ typ }}/{{ resource.id() }}">{{ resource.name() }}</a>
 {% endfor %}
 </div>
-<div pagination>
-    <a pager="left {% if prev == 0 %}disabled{% endif %}" href="/explore/{{ typ }}/?page={{ prev }}">prev</a>
-    <p page>{{ page.readable() }} / {{ pages.readable() }}</p>
-    <a pager="right {% if page == pages %}disabled{% endif %}" href="/explore/{{ typ }}/?page={{ next }}">next</a>
-</div>
+{{ pagination|safe }}
 {% endblock %}
 
 {% block script %}{% endblock %}

@@ -1,10 +1,12 @@
-use {
-    crate::{error::Error, schema::Backend},
-    std::thread,
-};
+use crate::worker::{Message, WorkerState};
 
-pub(crate) fn start(backend: Backend) -> thread::JoinHandle<Result<(), Error>> {
-    log::info!("starting scraper");
-
-    thread::spawn({ move || Ok(()) })
+pub fn runner(state: WorkerState, msg: Message) {
+    match &msg {
+        Message::Download { site, .. } => {
+            state.site.store(Some(*site));
+        }
+        Message::Update { site, .. } => {
+            state.site.store(Some(*site));
+        }
+    }
 }

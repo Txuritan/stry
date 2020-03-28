@@ -1,9 +1,5 @@
 use {
-    crate::{
-        params,
-        schema::{Backend, Schema},
-        Error, Pool,
-    },
+    crate::schema::Schema,
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -36,44 +32,44 @@ pub struct Series {
 
     pub summary: String,
 
-    pub place: Option<i32>,
+    pub place: i32,
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
 }
 
-impl Series {
-    pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
-        let conn = pool.get()?;
-
-        let mut stmt = conn.prepare(
-            "SELECT A.Id, A.Name, A.Summary, A.Created, A.Updated FROM StorySeries SA LEFT JOIN Series A ON SA.SeriesId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
-        )?;
-
-        let series = stmt.query_map(params!(s => [&story]), |row| {
-            Ok(Self {
-                id: row.get("Id")?,
-                name: row.get("Name")?,
-                summary: row.get("Summary")?,
-                created: row.get("Created")?,
-                updated: row.get("Updated")?,
-                place: None,
-            })
-        })?;
-
-        series.map(|a| a.map_err(Error::from)).collect()
-    }
-}
+// impl Series {
+//     #[deprecated]
+//     pub fn story(pool: Pool, story: &str) -> Result<Vec<Self>, Error> {
+//         let conn = pool.get()?;
+//
+//         let mut stmt = conn.prepare(
+//             "SELECT A.Id, A.Name, A.Summary, A.Created, A.Updated FROM StorySeries SA LEFT JOIN Series A ON SA.SeriesId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;"
+//         )?;
+//
+//         let series = stmt.query_map(params!(s => [&story]), |row| {
+//             Ok(Self {
+//                 id: row.get("Id")?,
+//                 name: row.get("Name")?,
+//                 summary: row.get("Summary")?,
+//                 created: row.get("Created")?,
+//                 updated: row.get("Updated")?,
+//                 place: None,
+//             })
+//         })?;
+//
+//         series.map(|a| a.map_err(Error::from)).collect()
+//     }
+// }
 
 impl Schema for Series {
-    fn schema(b: Backend, m: &mut impl fmt::Write) -> fmt::Result {
-        match b {
-            Backend::PostgreSQL { .. } => {}
-            Backend::SQLite { .. } => {
-                writeln!(m, "{}", SQLITE_TABLE)?;
-                writeln!(m, "{}", SQLITE_TABLE_BRIDGE)?;
-            }
-        }
+    fn postgres_schema(_buff: &mut impl fmt::Write) -> fmt::Result {
+        Ok(())
+    }
+
+    fn sqlite_schema(buff: &mut impl fmt::Write) -> fmt::Result {
+        writeln!(buff, "{}", SQLITE_TABLE)?;
+        writeln!(buff, "{}", SQLITE_TABLE_BRIDGE)?;
 
         Ok(())
     }

@@ -1,25 +1,14 @@
-use std::fmt;
-
-#[derive(Debug, Clone)]
-pub enum Backend {
-    PostgreSQL {
-        pool: r2d2::Pool<r2d2_postgres::PostgresConnectionManager<postgres::NoTls>>,
-    },
-    SQLite {
-        pool: r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>,
-    },
-}
-
-impl PartialEq for Backend {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Backend::PostgreSQL { .. }, Backend::PostgreSQL { .. }) => true,
-            (Backend::SQLite { .. }, Backend::SQLite { .. }) => true,
-            _ => false,
-        }
-    }
-}
+use {db_derive::PoolKind, std::fmt};
 
 pub trait Schema {
-    fn schema(b: Backend, m: &mut impl fmt::Write) -> fmt::Result;
+    fn schema(conn: impl Into<PoolKind>, buff: &mut impl fmt::Write) -> fmt::Result {
+        match conn.into() {
+            PoolKind::PostgreSQL => Self::postgres_schema(buff),
+            PoolKind::SQLite => Self::sqlite_schema(buff),
+        }
+    }
+
+    fn postgres_schema(buff: &mut impl fmt::Write) -> fmt::Result;
+
+    fn sqlite_schema(buff: &mut impl fmt::Write) -> fmt::Result;
 }

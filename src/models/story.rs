@@ -1,12 +1,9 @@
 use {
     crate::{
-        models::{Author, Origin, Series, Tag, TagType},
-        row, execute, params,
-        schema::{Backend, Schema},
-        Error,
+        models::{Author, Origin, Series, Tag},
+        schema::Schema,
     },
     chrono::{DateTime, Utc},
-    rusqlite::types::{FromSql, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
     std::fmt,
 };
 
@@ -38,7 +35,43 @@ IF NOT EXISTS
         Updated     TEXT    NOT NULL    DEFAULT (DATETIME('now', 'utc'))
     );";
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Debug)]
+#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(db_derive::Table)]
+#[table(schema)]
+pub struct StoryRow {
+    #[table(rename = "Id")]
+    pub id: String,
+
+    #[table(rename = "Url")]
+    pub url: String,
+
+    #[table(rename = "Name")]
+    pub name: String,
+
+    #[table(rename = "Summary")]
+    pub summary: String,
+
+    #[table(rename = "Language")]
+    pub language: Language,
+
+    #[table(rename = "Rating")]
+    pub rating: Rating,
+
+    #[table(rename = "State")]
+    pub state: State,
+
+    #[table(rename = "Created")]
+    pub created: DateTime<Utc>,
+
+    #[table(rename = "Updated")]
+    pub updated: DateTime<Utc>,
+}
+
+#[rustfmt::skip]
+#[derive(Clone, Debug)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Story {
     pub id: String,
 
@@ -62,200 +95,15 @@ pub struct Story {
     pub updated: DateTime<Utc>,
 }
 
-impl Story {
-    pub fn all(backend: Backend, page: u32, limit: u32) -> Result<(u32, Vec<Self>), Error> {
-        match &backend {
-            //#region[rgba(241,153,31,0.1)] PostgreSQL
-            Backend::PostgreSQL { pool } => {
-                let mut conn = pool.get()?;
-
-                let rows = conn.query(
-                    "SELECT Id FROM Story ORDER BY Updated DESC LIMIT $1 OFFSET $2;",
-                    params!(p => [limit, 10 * page]),
-                )?;
-
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let mut stories = Vec::with_capacity(rows.len());
-
-                for row in rows.iter() {
-                    stories.push(Story::get(backend.clone(), &row.get::<_, String>("Id"))?);
-                }
-
-                let count_rows =
-                    conn.query("SELECT COUNT(Id) as Count FROM Story;", params!(p => []))?;
-
-                if count_rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let count = count_rows.get(0).unwrap().get("Count");
-
-                Ok((count, stories))
-            }
-            //#endregion
-
-            //#region[rgba(51,103,145,0.1)] SQLite
-            Backend::SQLite { pool } => {
-                let conn = pool.get()?;
-
-                let mut stmt =
-                    conn.prepare("SELECT Id FROM Story ORDER BY Updated DESC LIMIT ? OFFSET ?;")?;
-
-                let rows = stmt.query_map(params!(s => [limit, 10 * page]), |row| {
-                    row.get::<_, String>("Id")
-                })?;
-
-                let mut stories = Vec::with_capacity(limit as usize);
-
-                for row in rows {
-                    stories.push(Story::get(backend.clone(), &row?)?);
-                }
-
-                let count = conn.query_row(
-                    "SELECT COUNT(Id) as Count FROM Story;",
-                    params!(s => []),
-                    |row| row.get("Count"),
-                )?;
-
-                Ok((count, stories))
-            } //#endregion
-        }
-    }
-
-    pub fn get(backend: Backend, id: &str) -> Result<Self, Error> {
-        match &backend {
-            //#region[rgba(241,153,31,0.1)] PostgreSQL
-            Backend::PostgreSQL { pool } => {
-                let mut conn = pool.get()?;
-
-                let authors = Author::of_story(backend.clone(), id)?;
-                let origins = Origin::of_story(backend.clone(), id)?;
-                let tags = Tag::of_story(backend.clone(), id)?;
-
-                let warn = tags.iter().any(|t| t.typ == TagType::Warning);
-
-                let rows = conn.query(
-                    "SELECT Id, Url, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = $1;",
-                    params!(p => [id]),
-                )?;
-
-                if rows.is_empty() {
-                    return Err(Error::no_rows_returned());
-                }
-
-                let row = rows.get(0).unwrap();
-
-                let story = Self {
-                    id: row.get("Id"),
-                    url: row.get("Url"),
-                    name: row.get("Name"),
-                    summary: row.get("Summary"),
-                    language: row.get("Language"),
-                    chapters: {
-                        let count_rows = conn.query(
-                            "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = $1;",
-                            params!(p => [id]),
-                        )?;
-
-                        if count_rows.is_empty() {
-                            return Err(Error::no_rows_returned());
-                        }
-
-                        count_rows.get(0).unwrap().get("Chapters")
-                    },
-                    words: {
-                        let count_rows = conn.query(
-                            "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = $1;",
-                            params!(p => [id]),
-                        )?;
-
-                        if count_rows.is_empty() {
-                            return Err(Error::no_rows_returned());
-                        }
-
-                        count_rows.get(0).unwrap().get("Words")
-                    },
-                    created: row.get("Created"),
-                    updated: row.get("Updated"),
-                    square: Square {
-                        rating: row.get("Rating"),
-                        warnings: if warn { Warning::Using } else { Warning::None },
-                        state: row.get("State"),
-                    },
-                    series: None,
-                    authors,
-                    origins,
-                    tags,
-                };
-
-                Ok(story)
-            }
-            //#endregion
-
-            //#region[rgba(51,103,145,0.1)] SQLite
-            Backend::SQLite { pool } => {
-                let conn = pool.get()?;
-
-                let authors = Author::of_story(backend.clone(), id)?;
-                let origins = Origin::of_story(backend.clone(), id)?;
-                let tags = Tag::of_story(backend.clone(), id)?;
-
-                let warn = tags.iter().any(|t| t.typ == TagType::Warning);
-
-                let story = conn.query_row(
-                    "SELECT Id, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = ?;",
-                    params!(s => [id]),
-                    |row| {
-                        Ok(Self {
-                            id: row.get("Id")?,
-                            url: row.get("Url")?,
-                            name: row.get("Name")?,
-                            summary: row.get("Summary")?,
-                            language: row.get("Language")?,
-                            chapters: conn.query_row(
-                                "SELECT COUNT(StoryId) as Chapters FROM StoryChapter WHERE StoryId = ?;",
-                                params!(s => [id]),
-                                |row| row.get("Chapters"),
-                            )?,
-                            words: conn.query_row(
-                                "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = ?;",
-                                params!(s => [id]),
-                                |row| row.get("Words"),
-                            )?,
-                            created: row.get("Created")?,
-                            updated: row.get("Updated")?,
-                            square: Square {
-                                rating: row.get("Rating")?,
-                                warnings: if warn { Warning::Using } else { Warning::None },
-                                state: row.get("State")?,
-                            },
-                            series: None,
-                            authors,
-                            origins,
-                            tags,
-                        })
-                    },
-                )?;
-
-                Ok(story)
-            } //#endregion
-        }
-    }
-}
-
 impl Schema for Story {
-    fn schema(b: Backend, m: &mut impl fmt::Write) -> fmt::Result {
-        match b {
-            Backend::PostgreSQL { .. } => {
-                writeln!(m, "{}", POSTGRES_TABLE)?;
-            }
-            Backend::SQLite { .. } => {
-                writeln!(m, "{}", SQLITE_TABLE)?;
-            }
-        }
+    fn postgres_schema(buff: &mut impl fmt::Write) -> fmt::Result {
+        writeln!(buff, "{}", POSTGRES_TABLE)?;
+
+        Ok(())
+    }
+
+    fn sqlite_schema(buff: &mut impl fmt::Write) -> fmt::Result {
+        writeln!(buff, "{}", SQLITE_TABLE)?;
 
         Ok(())
     }
@@ -264,10 +112,9 @@ impl Schema for Story {
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
-#[derive(postgres_derive::FromSql, postgres_derive::ToSql)]
-#[postgres(name = "language")]
+#[derive(db_derive::Kind)]
 pub enum Language {
-    #[postgres(name = "english")]
+    #[kind(rename = "english")]
     #[serde(rename = "english")]
     English,
 }
@@ -284,42 +131,37 @@ impl fmt::Display for Language {
     }
 }
 
-impl FromSql for Language {
-    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
-        String::column_result(value).map(|as_str| match as_str.as_str() {
-            "english" => Language::English,
-            _ => unreachable!(),
-        })
-    }
-}
-
-impl ToSql for Language {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
-        Ok(self.to_string().into())
-    }
-}
-
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
-#[derive(postgres_derive::FromSql, postgres_derive::ToSql)]
-#[postgres(name = "rating")]
+#[derive(db_derive::Kind)]
 pub enum Rating {
-    #[postgres(name = "explicit")]
+    #[kind(rename = "explicit")]
     #[serde(rename = "explicit")]
     Explicit,
 
-    #[postgres(name = "mature")]
+    #[kind(rename = "mature")]
     #[serde(rename = "mature")]
     Mature,
 
-    #[postgres(name = "teen")]
+    #[kind(rename = "teen")]
     #[serde(rename = "teen")]
     Teen,
 
-    #[postgres(name = "general")]
+    #[kind(rename = "general")]
     #[serde(rename = "general")]
     General,
+}
+
+impl Rating {
+    pub fn title(self) -> &'static str {
+        match self {
+            Rating::Explicit => "Explicit",
+            Rating::Mature => "Mature",
+            Rating::Teen => "Teen",
+            Rating::General => "General",
+        }
+    }
 }
 
 impl fmt::Display for Rating {
@@ -328,52 +170,36 @@ impl fmt::Display for Rating {
             f,
             "{}",
             match self {
-                Rating::Explicit => "black-500",
-                Rating::Mature => "red-500",
-                Rating::Teen => "green-600",
-                Rating::General => "gray-700",
+                Rating::Explicit => "background--red",
+                Rating::Mature => "background--yellow",
+                Rating::Teen => "background--green",
+                Rating::General => "background--blue",
             }
         )
-    }
-}
-
-impl FromSql for Rating {
-    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
-        String::column_result(value).map(|as_str| match as_str.as_str() {
-            "explicit" => Rating::Explicit,
-            "mature" => Rating::Mature,
-            "teen" => Rating::Teen,
-            "general" => Rating::General,
-            _ => unreachable!(),
-        })
-    }
-}
-
-impl ToSql for Rating {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
-        Ok(match self {
-            Rating::Explicit => "explicit",
-            Rating::Mature => "mature",
-            Rating::Teen => "teen",
-            Rating::General => "general",
-        }
-        .into())
     }
 }
 
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
-#[derive(postgres_derive::FromSql, postgres_derive::ToSql)]
-#[postgres(name = "warning")]
+#[derive(db_derive::Kind)]
 pub enum Warning {
-    #[postgres(name = "using")]
+    #[kind(rename = "using")]
     #[serde(rename = "using")]
     Using,
 
-    #[postgres(name = "none")]
+    #[kind(rename = "none")]
     #[serde(rename = "none")]
     None,
+}
+
+impl Warning {
+    pub fn title(self) -> &'static str {
+        match self {
+            Warning::Using => "Using",
+            Warning::None => "None",
+        }
+    }
 }
 
 impl fmt::Display for Warning {
@@ -382,54 +208,44 @@ impl fmt::Display for Warning {
             f,
             "{}",
             match self {
-                Warning::Using => "orange-500",
-                Warning::None => "gray-700",
+                Warning::Using => "background--red",
+                Warning::None => "background--gray",
             }
         )
-    }
-}
-
-impl FromSql for Warning {
-    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
-        String::column_result(value).map(|as_str| match as_str.as_str() {
-            "using" => Warning::Using,
-            "none" => Warning::None,
-            _ => unreachable!(),
-        })
-    }
-}
-
-impl ToSql for Warning {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
-        Ok(match self {
-            Warning::Using => "using",
-            Warning::None => "none",
-        }
-        .into())
     }
 }
 
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
-#[derive(postgres_derive::FromSql, postgres_derive::ToSql)]
-#[postgres(name = "state")]
+#[derive(db_derive::Kind)]
 pub enum State {
-    #[postgres(name = "completed")]
+    #[kind(rename = "completed")]
     #[serde(rename = "completed")]
     Completed,
 
-    #[postgres(name = "in-progress")]
+    #[kind(rename = "in-progress")]
     #[serde(rename = "in-progress")]
     InProgress,
 
-    #[postgres(name = "hiatus")]
+    #[kind(rename = "hiatus")]
     #[serde(rename = "hiatus")]
     Hiatus,
 
-    #[postgres(name = "abandoned")]
+    #[kind(rename = "abandoned")]
     #[serde(rename = "abandoned")]
     Abandoned,
+}
+
+impl State {
+    pub fn title(self) -> &'static str {
+        match self {
+            State::Completed => "Completed",
+            State::InProgress => "In Progress",
+            State::Hiatus => "Hiatus",
+            State::Abandoned => "Abandoned",
+        }
+    }
 }
 
 impl fmt::Display for State {
@@ -438,40 +254,18 @@ impl fmt::Display for State {
             f,
             "{}",
             match self {
-                State::Completed => "green-600",
-                State::InProgress => "blue-500",
-                State::Hiatus => "purple-500",
-                State::Abandoned => "red-500",
+                State::Completed => "background--green",
+                State::InProgress => "background--blue",
+                State::Hiatus => "background--purple",
+                State::Abandoned => "background--red",
             }
         )
     }
 }
 
-impl FromSql for State {
-    fn column_result(value: ValueRef) -> FromSqlResult<Self> {
-        String::column_result(value).map(|as_str| match as_str.as_str() {
-            "completed" => State::Completed,
-            "in-progress" => State::InProgress,
-            "hiatus" => State::Hiatus,
-            "abandoned" => State::Abandoned,
-            _ => unreachable!(),
-        })
-    }
-}
-
-impl ToSql for State {
-    fn to_sql(&self) -> rusqlite::Result<ToSqlOutput> {
-        Ok(match self {
-            State::Completed => "completed",
-            State::InProgress => "in-progress",
-            State::Hiatus => "hiatus",
-            State::Abandoned => "abandoned",
-        }
-        .into())
-    }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Square {
     pub rating: Rating,
     pub warnings: Warning,

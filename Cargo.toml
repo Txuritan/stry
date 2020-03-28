@@ -1,36 +1,60 @@
 [package]
 name = "stry"
-version = "2.2.0"
+version = "2.3.0"
 authors = ["Txuritan"]
 edition = "2018"
 
 build = "build.rs"
 
+[features]
+default = ["postgresql", "sqlite"]
+
+postgresql = ["postgres", "postgres-derive", "postgres-types"]
+sqlite = ["rusqlite"]
+
 [dependencies]
-askama = { git = "https://github.com/djc/askama", rev = "81080812777c7a1998f579908f159e383e3c9a31" }
-bcrypt = "0.6"
-chrono = { version = "0.4", default-features = false, features = ["serde"] }
-enum-map = "0.6"
-futures-preview = "0.3.0-alpha.19"
-futures-util-preview = "0.3.0-alpha.19"
-http = "0.1"
-http_req = "0.5"
-log = { version = "0.4", features = ["std"] }
-postgres = { version = "0.17.0-alpha.1", features = ["with-chrono-0_4"] }
-postgres-derive = "0.4.0-alpha.1"
-postgres-types = "0.1.0-alpha.1"
-r2d2 = "0.8"
-r2d2_postgres = "0.16.0-alpha.1"
-r2d2_sqlite = "0.12"
-rand = "0.7"
-rusqlite = { version = "0.20", features = ["bundled", "chrono"] }
+## Core
+anyhow = "1.0"
+crossbeam-channel = "0.4"
+parking_lot = "0.10"
+pin-project = "0.4"
 serde = { version = "1.0", features = ["derive"] }
+tracing = "0.1"
+tracing-log = "0.1"
+tracing-futures = "0.2"
+tracing-subscriber = "0.2"
+
+## Site
+akibisuto-stylus = "0.1"
+deadqueue = "0.1"
+either = { version = "1.5", features = ["serde"] }
+enum-map = "0.6"
+pest = "2.1"
 serde_json = "1.0"
+story-dl = { version = "0.3", default-features = false }
+toml = "0.5"
+
+## Web Server
+askama = { version = "0.9", default-features = false }
+futures = "0.3"
+futures-util = "0.3"
+resource = "0.4"
 serde_urlencoded = "0.6"
-story-dl = { version = "0.1", default-features = false }
-# signal-hook = { version = "0.1", features = ["tokio-support"] } # wait for windows support
-tokio-executor = "=0.2.0-alpha.6"
-warp = { git = "https://github.com/seanmonstar/warp", rev = "b4c022871ca995ee2c29276c5000b20b5fd673c1" }
+tokio = { version = "0.2", features = ["blocking", "macros", "rt-core", "signal", "sync"] }
+tokio-executor = "0.2.0-alpha.6"
+warp = { version = "0.2", default-features = false }
+
+## Database
+chrono = { version = "0.4", default-features = false, features = ["serde"] }
+db-derive = "0.1"
+r2d2 = "0.8"
+rand = "0.7"
+
+postgres = { version = "0.17", features = ["with-chrono-0_4"], optional = true }
+postgres-derive = { version = "0.4", optional = true }
+postgres-types = { version = "0.1", optional = true }
+
+rusqlite = { version = "0.21", features = ["bundled", "chrono"], optional = true }
 
 [profile.release]
 codegen-units = 1

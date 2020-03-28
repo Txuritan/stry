@@ -1,14 +1,14 @@
 # TODO
 
-- Extract CSS to its own crate for use with Stry, CMC, and Akibisuto projects
+- ~~Extract CSS to its own crate for use with Stry, CMC, and Akibisuto projects~~
 - Cut down on dependencies
-  - Wait for everyone to update to Tokio v0.2
-    - The issue is mostly mio and rand
+  - ~~Wait for everyone to update to Tokio v0.2~~
+    - ~~The issue is mostly mio and rand~~
 - Fill out the README
 
 - Server:
   - ~~Logger for the custom server~~
-    - Route logging
+    - ~~Route logging~~
   - Story and chapter edit API routes
   - Clap arguments/config
   - ~~Maybe use Actix or Warp instead~~
@@ -37,11 +37,11 @@
   - Use a script based system instead (loaded by rust)
 
 - Scraper/Sites:
-  - Archive of Our Own
+  - ~~Archive of Our Own~~
   - Wattpad
   - Ficwad
-  - FanFiction.net
-    - Fix downloading stories with only one chapter
+  - ~~FanFiction.net~~
+    - ~~Fix downloading stories with only one chapter~~
 
 - Database:
   - ~~New shorter IDs (nanoID)~~

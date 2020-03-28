@@ -1,6 +1,6 @@
 <div>
   <p align="center">
-    <img align="center" src="./assets/logo.png" alt="stry's home" />
+    <img align="center" src="./assets/apple-touch-icon-120x120-precomposed.png" alt="stry's home" />
     <h3 align="center">stry</h3>
     <div align="center">
       <strong>A mini self-hosted Archive Of Our Own, or a story host with tagging.</strong>
@@ -42,13 +42,12 @@
 
 ## Features
 
-- Dark mode (default)
+- Dark mode
 - Tagging system
 - Search
 - Importer from various sites
-  - Archive Of Our Own
-  - FanFiction.net
-- Single user only, made for phones and raspberry pis
+  - Built upon [story-dl](https://gitlab.com/Txuritan/story-dl)
+- Single user only, made for the phone and raspberry pi
 
 ## Requirements
 
@@ -65,6 +64,6 @@
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ## Acknowledgements

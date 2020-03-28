@@ -1,0 +1,22 @@
+{% extends "../base.html" %}
+
+{% import "../macros.html" as scope %}
+
+{% block content %}
+{% call scope::story(story) %}
+<hr />
+<p>Chapter {{ page }}: {{ chapter.name }}</p>
+<hr />
+<p id="chapter-raw" hidden>{{ chapter.main }}</p>
+<div id="chapter-rendered" pad="p"></div>
+<hr />
+{{ pagination|safe }}
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("chapter-rendered").innerHTML = window.markdownit().render(document.getElementById("chapter-raw").innerText);
+    });
+</script>
+{% endblock %}

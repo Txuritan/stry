@@ -1,15 +1,10 @@
 version: '2'
 
 tasks:
-  css:
+  dot:
     cmds:
-      - rsass --style Compressed ./scss/index.scss > ./css/polygon.css
-    sources:
-      - scss/**/*.scss
-    generates:
-      - css/polygon.css
+      - cargo deps --all-deps --no-transitive-deps --subgraph stry askama crossbeam-channel chrono db-derive log parking_lot serde serde_json serde_urlencoded story-dl rand toml warp > stry.dot
 
-  build:
-    deps: [css]
+  frame:
     cmds:
-      - cargo build --release
+      - dframe http://localhost:8901 --delay 5 --frame "Apple Thunderbolt Display, Microsoft Surface Pro 4, Samsung Galaxy S7" --output assets/pictures

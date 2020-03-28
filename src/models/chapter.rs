@@ -1,9 +1,5 @@
 use {
-    crate::{
-        row,
-        schema::{Backend, Schema},
-        Error,
-    },
+    crate::schema::Schema,
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -31,82 +27,45 @@ IF NOT EXISTS
         Updated     TEXT        NOT NULL    DEFAULT (DATETIME('now', 'utc'))
     );";
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Debug)]
+#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(db_derive::Table)]
+#[table(schema)]
 pub struct Chapter {
+    #[table(rename = "Id")]
     pub id: String,
 
+    #[table(rename = "Name")]
     pub name: String,
 
+    #[table(rename = "Pre")]
     pub pre: String,
+
+    #[table(rename = "Main")]
     pub main: String,
+
+    #[table(rename = "Post")]
     pub post: String,
 
-    pub words: u32,
+    #[table(rename = "Words")]
+    pub words: i64,
 
+    #[table(rename = "Created")]
     pub created: DateTime<Utc>,
+
+    #[table(rename = "Updated")]
     pub updated: DateTime<Utc>,
 }
 
-impl Chapter {
-    pub fn of_story(backend: Backend, story: &str, place: u32) -> Result<Self, Error> {
-        match backend {
-            //#region[rgba(241,153,31,0.1)] PostgreSQL
-            Backend::PostgreSQL { pool } => {
-                let mut conn = pool.get()?;
-
-                let chapter = row!(p[conn] => (
-                    "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = $1 AND SC.Place = $2;",
-                    [story, place],
-                    |row| Ok(Self {
-                        id: row.get("Id"),
-                        name: row.get("Name"),
-                        pre: row.get("Pre"),
-                        main: row.get("Main"),
-                        post: row.get("Post"),
-                        words: row.get("Words"),
-                        created: row.get("Created"),
-                        updated: row.get("Updated"),
-                    })
-                ));
-
-                Ok(chapter)
-            }
-            //#endregion
-
-            //#region[rgba(51,103,145,0.1)] SQLite
-            Backend::SQLite { pool } => {
-                let conn = pool.get()?;
-
-                let chapter = row!(s[conn] => (
-                    "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
-                    [story, place],
-                    |row| Ok(Self {
-                        id: row.get("Id")?,
-                        name: row.get("Name")?,
-                        pre: row.get("Pre")?,
-                        main: row.get("Main")?,
-                        post: row.get("Post")?,
-                        words: row.get("Words")?,
-                        created: row.get("Created")?,
-                        updated: row.get("Updated")?,
-                    })
-                ));
-
-                Ok(chapter)
-            } //#endregion
-        }
-    }
-}
-
 impl Schema for Chapter {
-    fn schema(b: Backend, m: &mut impl fmt::Write) -> fmt::Result {
-        match b {
-            Backend::PostgreSQL { .. } => {}
-            Backend::SQLite { .. } => {
-                writeln!(m, "{}", SQLITE_TABLE)?;
-                writeln!(m, "{}", SQLITE_TABLE_BRIDGE)?;
-            }
-        }
+    fn postgres_schema(_buff: &mut impl fmt::Write) -> fmt::Result {
+        Ok(())
+    }
+
+    fn sqlite_schema(buff: &mut impl fmt::Write) -> fmt::Result {
+        writeln!(buff, "{}", SQLITE_TABLE)?;
+        writeln!(buff, "{}", SQLITE_TABLE_BRIDGE)?;
 
         Ok(())
     }

@@ -1,44 +1,12 @@
+{% import "macros.html" as scope %}
 {% extends "base.html" %}
 
 {% block content %}
-{% for story in stories %}
-<div panel>
-    <div head flex>
-        <div flex flex-item="grow">
-            <div square mar-right="normal">
-                <div part="top left" bg="{{ story.square.rating }}"></div>
-                <div part="top right" bg="{{ story.square.warnings }}"></div>
-                <div part="bottom center" bg="{{ story.square.state }}"></div>
-            </div>
-            <div>
-                <h3><a href="/story/{{ story.id }}/1">{{ story.name }}</a> by {{ story.authors|join(", ")|safe }} <a text="small" href="/story/{{ story.id }}/reviews/1">[reviews]</a></h3>
-                <p>{{ story.origins|join(", ")|safe }}</p>
-            </div>
-        </div>
-        <p flex-item="grow" txt="right">{{ story.updated.format("%b %e, %Y") }}</p>
-    </div>
-    <div body>
-        <p>{{ story.summary }}</p>
-        <div label-list>
-        {% for tag in story.tags %}
-            {{ tag|safe }}
-        {% endfor %}
-        </div>
-    </div>
-    <div foot>
-        <div flex>
-            <p flex-item="grow" txt="small">{% match story.series %}{% when Some with (ss) %}{% match ss.place %}{% when Some with (place) %}book {{ place }} in <a href="/series/{{ ss.id }}">{{ ss.name }}{% when None %}{% endmatch  %}{% when None %}{% endmatch  %}</a></p>
-            <p flex-item="grow" txt="small right">{{ story.language }} | {{ story.words.readable() }} words | {{ story.chapters.readable() }} chapters</p>
-        </div>
-    </div>
-</div>
+{% for s in stories %}
+{% call scope::story(s) %}
 <hr />
 {% endfor %}
-<div pagination>
-    <a pager="left {% if prev == 0 %}disabled{% endif %}" href="/search/?{{ search_url }}&page={{ prev }}">prev</a>
-    <p page>{{ page.readable() }} / {{ pages.readable() }}</p>
-    <a pager="right {% if page == pages %}disabled{% endif %}" href="/search/?{{ search_url }}&page={{ next }}">next</a>
-</div>
+{{ pagination|safe }}
 {% endblock %}
 
 {% block script %}{% endblock %}

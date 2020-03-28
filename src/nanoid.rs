@@ -1,21 +1,14 @@
 use rand::{rngs::StdRng, Rng, SeedableRng};
 
-pub const NO_LOOK_ALIKE: [char; 54] = [
-    '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-    'm', 'n', 'p', 'q', 'r', 's', 't', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-    'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-];
+pub fn nanoid() -> String {
+    let alphabet = &[
+        '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+        'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F',
+        'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    ];
 
-pub fn default(size: usize) -> Vec<u8> {
-    let mut rng = StdRng::from_entropy();
-    let mut result: Vec<u8> = vec![0; size];
+    let size = 6;
 
-    rng.fill(&mut result[..]);
-
-    result
-}
-
-pub fn format(random: fn(usize) -> Vec<u8>, alphabet: &[char], size: usize) -> String {
     assert!(
         alphabet.len() <= u8::max_value() as usize,
         "The alphabet cannot be longer than a `u8` (to comply with the `random` function)"
@@ -29,7 +22,10 @@ pub fn format(random: fn(usize) -> Vec<u8>, alphabet: &[char], size: usize) -> S
     let mut id = String::with_capacity(size);
 
     loop {
-        let bytes = random(step);
+        let mut rng = StdRng::from_entropy();
+        let mut bytes: Vec<u8> = vec![0; step];
+
+        rng.fill(&mut bytes[..]);
 
         for &byte in &bytes {
             let byte = byte as usize & mask;
@@ -43,31 +39,4 @@ pub fn format(random: fn(usize) -> Vec<u8>, alphabet: &[char], size: usize) -> S
             }
         }
     }
-}
-
-#[macro_export]
-macro_rules! nanoid {
-    // simple
-    () => {
-        $crate::nanoid::format($crate::nanoid::default, &$crate::nanoid::NO_LOOK_ALIKE, 6)
-    };
-
-    // generate
-    ($size:tt) => {
-        $crate::nanoid::format(
-            $crate::nanoid::default,
-            &$crate::nanoid::NO_LOOK_ALIKE,
-            $size,
-        )
-    };
-
-    // custom
-    ($size:tt, $alphabet:expr) => {
-        $crate::nanoid::format($crate::nanoid::default, $alphabet, $size)
-    };
-
-    // complex
-    ($size:tt, $alphabet:expr, $random:expr) => {
-        $crate::nanoid::format($random, $alphabet, $size)
-    };
 }

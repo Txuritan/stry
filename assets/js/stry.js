@@ -1,8 +1,8 @@
 function h(tag, attribute, child) {
-    var element = document.createElement(tag);
+    const element = document.createElement(tag);
 
     if (attribute instanceof Array) {
-        for (var i = 0; i < attribute.length; i++) {
+        for (const i = 0; i < attribute.length; i++) {
             if (attribute[i] instanceof Array) {
                 element.setAttribute(attribute[i][0], attribute[i][1]);
             } else if (attribute[i] instanceof String || typeof attribute[i] === "string") {
@@ -12,7 +12,7 @@ function h(tag, attribute, child) {
     }
 
     if (child instanceof Array) {
-        for (var i = 0; i < child.length; i++) {
+        for (const i = 0; i < child.length; i++) {
             if (child[i] instanceof Node) {
                 element.appendChild(child[i]);
             } else {
@@ -24,7 +24,7 @@ function h(tag, attribute, child) {
     return element;
 }
 
-var toaster = {
+const toaster = {
     received: {
         "aaaaaa": {
             title: "download finished",
@@ -44,5 +44,73 @@ var toaster = {
                 window.markdownit().render(body),
             ]),
         ]);
+    },
+};
+
+const keyboardHandlers = {
+    storyListing: function() {
+        const cards = Array.from(document.querySelectorAll("#container > main > article.card"));
+        const cardCount = cards.length - 1;
+
+        let selected = -1;
+
+        function select(index) {
+            const element = cards[index];
+
+            element.classList.add("selected");
+
+            const position = (element.getBoundingClientRect().top - document.body.getBoundingClientRect().top) - 60;
+
+            window.scrollTo({
+                top: position,
+                behavior: "smooth"
+            });
+        }
+
+        Mousetrap.bind("esc", function(event) {
+            event.preventDefault();
+
+            cards.forEach(card => {
+                card.classList.remove("selected");
+            });
+
+            selected = -1;
+        });
+        Mousetrap.bind("enter", function(event) {
+            event.preventDefault();
+
+            const selected = Array.from(document.querySelectorAll("#container > main > article.card.selected > .card__title > .media-object > .media-object__title > .media-object__title--sup > a"));
+
+            const element = selected[0];
+
+            window.location.href = element.getAttribute("href");
+        });
+
+        Mousetrap.bind("ctrl+up", function(event) {
+            event.preventDefault();
+
+            if (selected != 0) {
+                cards.forEach(card => {
+                    card.classList.remove("selected");
+                });
+
+                selected -= 1;
+
+                select(selected);
+            }
+        });
+        Mousetrap.bind("ctrl+down", function(event) {
+            event.preventDefault();
+
+            if (selected != cardCount) {
+                cards.forEach(card => {
+                    card.classList.remove("selected");
+                });
+
+                selected += 1;
+
+                select(selected);
+            }
+        });
     },
 };

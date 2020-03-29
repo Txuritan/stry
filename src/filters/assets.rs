@@ -91,6 +91,7 @@ pub fn css() -> BoxedFilter<(impl Reply,)> {
         .and_then(|file: String| async move {
             match file.as_str() {
                 "easymde.css" => Ok(Css::new(resource!("assets/css/easymde.css"))),
+                "stry.css" => Ok(Css::new(resource!("assets/css/stry.css"))),
                 _ => Err(warp::reject::not_found()),
             }
         })

@@ -10,4 +10,10 @@
 {{ pagination|safe }}
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        keyboardHandlers.storyListing();
+    });
+</script>
+{% endblock %}

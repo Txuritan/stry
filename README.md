@@ -43,12 +43,12 @@
 
 ## Features
 
-- Dark mode
 - Tagging system
 - Search
 - Importer from various sites
   - Built upon [story-dl](https://gitlab.com/Txuritan/story-dl)
 - Single user only, made for the phone and raspberry pi
+- Keyboard controls
 
 ## Requirements
 

@@ -1,0 +1,4 @@
+.selected {
+    outline: 0.1rem solid var(--color-blue-300);
+    outline-offset: 0.5rem;
+}

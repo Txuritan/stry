@@ -28,38 +28,38 @@
 
 ## Table of Contents
 
-- [About the Project](#about-the-project)
+  - [About the Project](#about-the-project)
+    - [Built With](#built-with)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+  - [Usage](#usage)
   - [Built With](#built-with)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
-- [Built With](#built-with)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Acknowledgements](#acknowledgements)
 
 <img src="./assets/screenshots/stry-home.png" alt="stry's home" />
 
 ## Features
 
-- Tagging system
-- Search
-- Importer from various sites
-  - Built upon [story-dl](https://gitlab.com/Txuritan/story-dl)
-- Single user only, made for the phone and raspberry pi
-- Keyboard controls
+  - Tagging system
+  - Search
+  - Importer from various sites
+    - Built upon [story-dl](https://gitlab.com/Txuritan/story-dl)
+  - Single user only, made for the phone and raspberry pi
+  - Keyboard controls
 
 ## Requirements
 
-- Rust
-- SQLite or C/C++ compiler
+  - Rust
+  - SQLite or C/C++ compiler
 
 ## Building
 
-- Clone repository
-- Either install SQLite or use the bundled version (controlled in `Cargo.toml`)
-- Run `cargo build --release`, `stry`'s binary will be in `target/release`
+  - Clone repository
+  - Either install SQLite or use the bundled version (controlled in `Cargo.toml`)
+  - Run `cargo build --release`, `stry`'s binary will be in `target/release`
 
 ## Built With
 

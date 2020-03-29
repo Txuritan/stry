@@ -3,7 +3,7 @@
     <img align="center" src="./assets/apple-touch-icon-120x120-precomposed.png" alt="stry's home" />
     <h3 align="center">stry</h3>
     <div align="center">
-      <strong>A mini self-hosted Archive Of Our Own, or a story host with tagging.</strong>
+      <strong>A mini self-hosted Archive of Our Own, or a story host with tagging.</strong>
     </div>
     <p align="center">
       <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">View Demo</a>
@@ -34,6 +34,7 @@
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
+- [Built With](#built-with)
 - [Contributing](#contributing)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
@@ -57,8 +58,25 @@
 ## Building
 
 - Clone repository
-- Either install SQLite or use the bundled version (controlled in `site/Cargo.toml`)
-- Run `npm install` then `task build`, Stry's binary will be in `target/release` along with the scraper
+- Either install SQLite or use the bundled version (controlled in `Cargo.toml`)
+- Run `npm install` then `task build`, `stry`'s binary will be in `target/release` along with the scraper
+
+## Built With
+
+`stry`, being written in Rust, uses a number of libraries from other developers.
+A list can be found in the `Cargo.toml` file but some notable libraries include:
+
+  - The [Tokio](https://github.com/tokio-rs) team's async runtime [Tokio](https://github.com/tokio-rs/tokio) and application level tracing [Tracing](https://github.com/tokio-rs/tracing)
+  - [Sean McArthur](https://github.com/seanmonstar)'s async web server [Warp](https://github.com/seanmonstar/warp)
+  - [Dirkjan Ochtman](https://github.com/djc)'s compile time template engine [Askama](https://github.com/djc/askama)
+  - [John Gallagher](https://github.com/jgallagher)'s SQLite3 bindings [Rusqlite](https://github.com/jgallagher/rusqlite)
+  - [Steven Fackler](https://github.com/sfackler/rust-postgres)'s native PostgreSQL driver [Rust-Postgres](https://github.com/sfackler/rust-postgres)
+
+Non managed, but bundled, libraries include:
+
+  - The markdown parser and compiler [Marked](https://github.com/markedjs/marked)
+  - [Jeroen Akkerman](https://github.com/Ionaru)'s markdown editor [EasyMDE](https://github.com/Ionaru/easy-markdown-editor)
+  - [Craig Campbell](https://github.com/ccampbell)'s keyboard shortcut handler [Mousetrap](https://github.com/ccampbell/mousetrap)
 
 ## Contributing
 
@@ -67,3 +85,5 @@
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ## Acknowledgements
+
+Thanks to [Archive of Our Own](https://archiveofourown.org/) for being a great inspiration for most of this project, along with being a goal to work towards.

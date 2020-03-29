@@ -77,6 +77,7 @@ Non managed, but bundled, libraries include:
   - The markdown parser and compiler [Marked](https://github.com/markedjs/marked)
   - [Jeroen Akkerman](https://github.com/Ionaru)'s markdown editor [EasyMDE](https://github.com/Ionaru/easy-markdown-editor)
   - [Craig Campbell](https://github.com/ccampbell)'s keyboard shortcut handler [Mousetrap](https://github.com/ccampbell/mousetrap)
+  - [yairEO](https://github.com/yairEO)'s tag input [Tagify](https://github.com/yairEO/tagify)
 
 ## Contributing
 

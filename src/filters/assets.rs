@@ -92,6 +92,7 @@ pub fn css() -> BoxedFilter<(impl Reply,)> {
             match file.as_str() {
                 "easymde.css" => Ok(Css::new(resource!("assets/css/easymde.css"))),
                 "stry.css" => Ok(Css::new(resource!("assets/css/stry.css"))),
+                "tagify.css" => Ok(Css::new(resource!("assets/css/tagify.css"))),
                 _ => Err(warp::reject::not_found()),
             }
         })
@@ -108,6 +109,7 @@ pub fn js() -> BoxedFilter<(impl Reply,)> {
                 "mousetrap.js" => Ok(Js::new(resource!("assets/js/mousetrap.js"))),
                 "stry.js" => Ok(Js::new(resource!("assets/js/stry.js"))),
                 "stry-dashboard.js" => Ok(Js::new(resource!("assets/js/stry-dashboard.js"))),
+                "tagify.js" => Ok(Js::new(resource!("assets/js/tagify.js"))),
                 _ => Err(warp::reject::not_found()),
             }
         })

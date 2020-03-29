@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 mod controllers;
 mod filters;
 mod handlers;
@@ -6,7 +5,6 @@ mod models;
 mod pages;
 mod server;
 
-mod assets;
 // mod aworker;
 mod blocking;
 mod config;

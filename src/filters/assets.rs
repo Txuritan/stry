@@ -79,8 +79,21 @@ pub fn assets() -> BoxedFilter<(impl Reply,)> {
                 .or(embed!(png => "mstile-150x150"))
                 .or(embed!(svg => "safari-pinned-tab"))
                 .or(embed!(webmanifest => "site"))
+                .or(css())
                 .or(js()),
         )
+        .boxed()
+}
+
+pub fn css() -> BoxedFilter<(impl Reply,)> {
+    warp::path("css")
+        .and(warp::path::param::<String>())
+        .and_then(|file: String| async move {
+            match file.as_str() {
+                "easymde.css" => Ok(Css::new(resource!("assets/css/easymde.css"))),
+                _ => Err(warp::reject::not_found()),
+            }
+        })
         .boxed()
 }
 
@@ -89,10 +102,11 @@ pub fn js() -> BoxedFilter<(impl Reply,)> {
         .and(warp::path::param::<String>())
         .and_then(|file: String| async move {
             match file.as_str() {
-                "markdown-it.js" => Ok(Js::new(resource!("js/markdown-it.js"))),
-                "mousetrap.js" => Ok(Js::new(resource!("js/mousetrap.js"))),
-                "stry.js" => Ok(Js::new(resource!("js/stry.js"))),
-                "stry-dashboard.js" => Ok(Js::new(resource!("js/stry-dashboard.js"))),
+                "easymde.js" => Ok(Js::new(resource!("assets/js/easymde.js"))),
+                "marked.js" => Ok(Js::new(resource!("assets/js/marked.js"))),
+                "mousetrap.js" => Ok(Js::new(resource!("assets/js/mousetrap.js"))),
+                "stry.js" => Ok(Js::new(resource!("assets/js/stry.js"))),
+                "stry-dashboard.js" => Ok(Js::new(resource!("assets/js/stry-dashboard.js"))),
                 _ => Err(warp::reject::not_found()),
             }
         })

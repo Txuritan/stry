@@ -14,9 +14,10 @@
 {% endblock %}
 
 {% block script %}
+<script defer src="/js/marked.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById("chapter-rendered").innerHTML = window.markdownit().render(document.getElementById("chapter-raw").innerText);
+        document.getElementById("chapter-rendered").innerHTML = window.marked(document.getElementById("chapter-raw").innerText);
     });
 </script>
 {% endblock %}

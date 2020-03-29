@@ -59,7 +59,7 @@
 
 - Clone repository
 - Either install SQLite or use the bundled version (controlled in `Cargo.toml`)
-- Run `cargo build --release`, `stry`'s binary will be in `target/release` along with the scraper
+- Run `cargo build --release`, `stry`'s binary will be in `target/release`
 
 ## Built With
 

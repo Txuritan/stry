@@ -9,6 +9,7 @@ use {
         pages::{ResourceList, StoryList},
         Blocking,
     },
+    futures::{FutureExt, StreamExt},
     askama::Template,
     db_derive::Pool,
     warp::{Rejection, Reply},
@@ -172,4 +173,20 @@ pub async fn item(
         Ok(rendered)
     })
     .await
+}
+
+pub async fn websocket(
+    ws: warp::ws::Ws,
+    pool: Pool,
+) -> Result<impl Reply, Rejection> {
+    Ok(ws.on_upgrade(move |websocket| {
+        // Just echo all messages back...
+        let (tx, rx) = websocket.split();
+
+        rx.forward(tx).map(|result| {
+            if let Err(e) = result {
+                eprintln!("websocket error: {:?}", e);
+            }
+        })
+    }))
 }

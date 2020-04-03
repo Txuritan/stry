@@ -36,7 +36,7 @@ pub fn all(pool: &Pool, offset: u32, limit: u32) -> anyhow::Result<(u32, Vec<Sto
 pub fn get(pool: &Pool, id: &str) -> anyhow::Result<Story> {
     #[derive(db_derive::Query)]
     #[query(
-        sql = "SELECT Id, Url, Name, Summary, Language, Rating, State, Created, Updated FROM Story WHERE Id = {id};"
+        sql = "SELECT Id, Url, Name, Summary, Language, Read, Rating, State, Created, Updated FROM Story WHERE Id = {id};"
     )]
     struct Get<'q> {
         id: &'q str,
@@ -95,6 +95,7 @@ pub fn get(pool: &Pool, id: &str) -> anyhow::Result<Story> {
             state: row.state,
         },
         chapters,
+        read: row.read,
         words,
         authors,
         origins,

@@ -22,6 +22,7 @@
             {{ tag|safe -}}
         {%- endfor %}
     </ul>
+    <progress class="card__progress" max="{{ s.chapters }}" value="{{ s.read }}"></progress>
     <div class="card__meta">
         <p class="card__meta--left">
             {%- if s.series.is_some() -%}

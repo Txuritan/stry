@@ -53,6 +53,9 @@ pub struct StoryRow {
     #[table(rename = "Summary")]
     pub summary: String,
 
+    #[table(rename = "Read")]
+    pub read: u32,
+
     #[table(rename = "Language")]
     pub language: Language,
 
@@ -83,6 +86,7 @@ pub struct Story {
     pub square: Square,
 
     pub chapters: u32,
+    pub read: u32,
     pub words: u32,
 
     pub authors: Vec<Author>,

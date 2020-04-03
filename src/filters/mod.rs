@@ -70,11 +70,3 @@ pub fn story(state: BoxedFilter<(Pool,)>) -> BoxedFilter<(impl Reply,)> {
         .and(chapter(state.clone()).or(story(state)))
         .boxed()
 }
-
-pub fn websocket(state: BoxedFilter<(Pool,)>) -> BoxedFilter<(impl Reply,)> {
-    warp::path("story")
-        .and(warp::ws())
-        .and(state)
-        .and_then(crate::handlers::websocket)
-        .boxed()
-}

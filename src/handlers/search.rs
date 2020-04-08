@@ -10,7 +10,7 @@ use {
 };
 
 pub async fn index(paging: Paging, search: Search, pool: Pool) -> Result<impl Reply, Rejection> {
-    Blocking::spawn(move || {
+    Blocking::spawn(concat!(module_path!(), "::index"), move || {
         let norm = paging.normalize();
 
         if let Some((stories, pages)) = create_search(&pool, norm, &search.search)? {

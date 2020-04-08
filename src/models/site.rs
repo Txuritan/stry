@@ -58,14 +58,14 @@ impl MutexSite {
     }
 
     pub fn store(&self, site: Option<Site>) {
-        println!("store");
-
         let mut inner = self.inner.lock();
+
         *inner = site;
     }
 
     pub fn empty(&self) {
         let mut inner = self.inner.lock();
+
         *inner = None;
     }
 }

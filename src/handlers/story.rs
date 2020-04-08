@@ -17,7 +17,7 @@ pub async fn chapter(
     mut chapter_page: u32,
     pool: Pool,
 ) -> Result<impl Reply, Rejection> {
-    Blocking::spawn(move || {
+    Blocking::spawn(concat!(module_path!(), "::chapter"), move || {
         if chapter_page == 0 {
             chapter_page = 1;
         }

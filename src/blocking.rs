@@ -13,7 +13,7 @@ pub enum Blocking {
 }
 
 impl Blocking {
-    pub async fn spawn<F, O>(f: F) -> Result<impl Reply, Rejection>
+    pub async fn spawn<F, O>(src: &'static str, f: F) -> Result<impl Reply, Rejection>
     where
         F: FnOnce() -> anyhow::Result<O> + Send + 'static,
         O: Into<Blocking> + Send + 'static,
@@ -42,7 +42,7 @@ impl Blocking {
                 }
             },
             Err(err) => {
-                tracing::error!("{}", err);
+                tracing::error!("error from {}: {}", src, err);
 
                 let mut res = Response::new(Body::empty());
 

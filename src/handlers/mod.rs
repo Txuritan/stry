@@ -9,14 +9,13 @@ use {
         pages::{ResourceList, StoryList},
         Blocking,
     },
-    futures::{FutureExt, StreamExt},
     askama::Template,
     db_derive::Pool,
     warp::{Rejection, Reply},
 };
 
 pub async fn index(paging: Paging, pool: Pool) -> Result<impl Reply, Rejection> {
-    Blocking::spawn(move || {
+    Blocking::spawn(concat!(module_path!(), "::index"), move || {
         let norm = paging.normalize();
 
         let (count, stories) = controllers::story::all(&pool, norm.page, paging.page_size)?;
@@ -38,7 +37,7 @@ pub async fn index(paging: Paging, pool: Pool) -> Result<impl Reply, Rejection> 
 pub async fn explore(typ: String, paging: Paging, pool: Pool) -> Result<impl Reply, Rejection> {
     let rt = RouteType::parse(&typ)?;
 
-    Blocking::spawn({
+    Blocking::spawn(concat!(module_path!(), "::explore"), {
         let pool = pool.clone();
 
         move || {
@@ -119,7 +118,7 @@ pub async fn item(
 ) -> Result<impl Reply, Rejection> {
     let rt = RouteType::parse(&typ)?;
 
-    Blocking::spawn(move || {
+    Blocking::spawn(concat!(module_path!(), "::item"), move || {
         let norm = paging.normalize();
 
         let (title, count, stories, url) = match rt {

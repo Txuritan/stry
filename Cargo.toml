@@ -10,7 +10,7 @@ build = "build.rs"
 default = ["postgresql", "sqlite"]
 
 postgresql = ["postgres", "postgres-derive", "postgres-types"]
-sqlite = ["rusqlite"]
+sqlite = ["rusqlite", "libsqlite3-sys"]
 
 [dependencies]
 ## Core
@@ -54,7 +54,8 @@ postgres = { version = "0.17", features = ["with-chrono-0_4"], optional = true }
 postgres-derive = { version = "0.4", optional = true }
 postgres-types = { version = "0.1", optional = true }
 
-rusqlite = { version = "0.21", features = ["bundled", "chrono"], optional = true }
+rusqlite = { version = "=0.21.0", features = ["bundled", "chrono"], optional = true }
+libsqlite3-sys = { version = "=0.17.3", optional = true }
 
 [profile.release]
 codegen-units = 1

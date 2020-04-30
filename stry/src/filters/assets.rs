@@ -3,8 +3,8 @@ use {
     std::borrow::Cow,
     warp::{
         filters::BoxedFilter,
-        hyper::Body,
         http::header::{HeaderValue, CACHE_CONTROL, CONTENT_TYPE},
+        hyper::Body,
         reply::Response,
         Filter, Reply,
     },
@@ -14,7 +14,7 @@ macro_rules! embed {
     (@internal_bytes => $s:ident, $t:tt, $file:tt) => {
         warp::path(concat!($file, ".", $t)).map(|| $s {
             body: {
-                static CONTENTS: &'static [u8] =  include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/", "assets/", $file, ".", $t));
+                static CONTENTS: &'static [u8] =  include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../", "assets/", $file, ".", $t));
 
                 CONTENTS
             },
@@ -23,7 +23,7 @@ macro_rules! embed {
     (@internal_str => $s:ident, $t:tt, $file:tt) => {
         warp::path(concat!($file, ".", $t)).map(|| $s {
             body: {
-                static CONTENTS: &'static str =  include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/", "assets/", $file, ".", $t));
+                static CONTENTS: &'static str =  include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../", "assets/", $file, ".", $t));
 
                 CONTENTS
             },

@@ -31,8 +31,8 @@ impl<'a> ResourceList<'a> {
         resources: Vec<&'a dyn models::Resource>,
     ) -> Self {
         Self {
-            version: crate::VERSION,
-            git: crate::GIT_VERSION,
+            version: stry_common::VERSION,
+            git: stry_common::GIT_VERSION,
             title: title.into(),
             search: None,
             pagination: Pagination::new(format!("/explore/{}", typ), None, pages, page).to_string(),
@@ -65,8 +65,8 @@ impl StoryList {
         stories: Vec<models::Story>,
     ) -> Self {
         Self {
-            version: crate::VERSION,
-            git: crate::GIT_VERSION,
+            version: stry_common::VERSION,
+            git: stry_common::GIT_VERSION,
             title: title.into(),
             search: None,
             pagination: Pagination::new(url, None, pages, page).to_string(),
@@ -103,8 +103,8 @@ impl Search {
         }
 
         Ok(Self {
-            version: crate::VERSION,
-            git: crate::GIT_VERSION,
+            version: stry_common::VERSION,
+            git: stry_common::GIT_VERSION,
             title: title.into(),
             pagination: Pagination::new(
                 format!(

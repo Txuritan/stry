@@ -27,8 +27,8 @@ impl Chapter {
         chapter: models::Chapter,
     ) -> Self {
         Self {
-            version: crate::VERSION,
-            git: crate::GIT_VERSION,
+            version: stry_common::VERSION,
+            git: stry_common::GIT_VERSION,
             title: title.into(),
             search: None,
             pagination: Pagination::new(

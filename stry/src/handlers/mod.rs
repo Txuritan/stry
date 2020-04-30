@@ -11,7 +11,7 @@ use {
     },
     askama::Template,
     db_derive::Pool,
-    warp::{Rejection, Reply},
+    warp::{reject::not_found, Rejection, Reply},
 };
 
 pub async fn index(paging: Paging, pool: Pool) -> Result<impl Reply, Rejection> {
@@ -32,6 +32,18 @@ pub async fn index(paging: Paging, pool: Pool) -> Result<impl Reply, Rejection> 
         Ok(rendered)
     })
     .await
+}
+
+pub fn parse(typ: &str) -> Result<RouteType, Rejection> {
+    match typ {
+        "authors" => Ok(RouteType::Authors),
+        "characters" => Ok(RouteType::Characters),
+        "origins" => Ok(RouteType::Origins),
+        "pairings" => Ok(RouteType::Pairings),
+        "tags" => Ok(RouteType::Tags),
+        "warnings" => Ok(RouteType::Warnings),
+        _ => Err(not_found()),
+    }
 }
 
 pub async fn explore(typ: String, paging: Paging, pool: Pool) -> Result<impl Reply, Rejection> {

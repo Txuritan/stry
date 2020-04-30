@@ -1,0 +1,22 @@
+[package]
+name = "stry-common"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+build = "build.rs"
+
+workspace = ".."
+
+[dependencies]
+# Core
+anyhow = "1.0"
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+
+# Database
+chrono = { version = "0.4", default-features = false, features = ["serde"] }
+sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "chrono" ] }
+
+# Search
+pest = "2.1"

@@ -1,0 +1,24 @@
+[package]
+name = "stry-migrate"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+workspace = ".."
+
+[lib]
+name = "stry_migrate"
+path = "src/lib.rs"
+
+[[bin]]
+name = "stry-migrate"
+path = "src/main.rs"
+
+[dependencies]
+stry-common = { path = "../stry-common" }
+
+anyhow = "1.0"
+clap = "2.33"
+serde = { version = "1.0", features = ["derive"] }
+ron = "0.5"
+

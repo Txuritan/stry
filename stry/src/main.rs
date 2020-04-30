@@ -15,9 +15,6 @@ mod schema;
 // mod scraper;
 // mod worker;
 
-pub(crate) const GIT_VERSION: &str = env!("GIT_VERSION");
-pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 pub(crate) use crate::{blocking::Blocking, nanoid::nanoid, pagination::Pagination};
 
 use {crate::config::Config, db_derive::Pool, std::fmt};

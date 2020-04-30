@@ -8,3 +8,9 @@ tasks:
   frame:
     cmds:
       - dframe http://localhost:8901 --delay 5 --frame "Apple Thunderbolt Display, Microsoft Surface Pro 4, Samsung Galaxy S7" --output assets/pictures
+
+  generate-ddl:
+    cmds:
+      - cargo build --bin stry-migrate
+      - cargo run --bin stry-migrate -- ddl generate --style postgres schema.ron stry-backend-postgres/schema.sql
+      - cargo run --bin stry-migrate -- ddl generate --style sqlite schema.ron stry-backend-sqlite/schema.sql

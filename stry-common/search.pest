@@ -1,0 +1,17 @@
+search = { ( category ~ "," )* ~ ( category ~ ( "," )? )? }
+
+category = { category_inner }
+category_inner = _{ ( not )? ~ ( rating | pairing | value ) }
+
+pairing = { "[" ~ ( value ~ ",")+ ~ ( value ~ ( "," )? )? ~ "]" }
+
+
+rating = { ( "rating" | "r" ) ~ ":" ~ rating_inner }
+rating_inner = { ( ( "explicit" | "e" ) | ( "mature" | "m" ) | ( "teen" | "t" ) | ( "general" | "g" ) ) }
+
+not = @{ "-" }
+
+value = @{ char+ }
+char = { ASCII_ALPHANUMERIC | WHITESPACE }
+
+WHITESPACE = _{ " " }

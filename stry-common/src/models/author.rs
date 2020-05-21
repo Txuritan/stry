@@ -9,10 +9,10 @@ use {
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Author {
     pub id: String,
+
     pub name: String,
 
     pub created: DateTime<Utc>,
-
     pub updated: DateTime<Utc>,
 }
 

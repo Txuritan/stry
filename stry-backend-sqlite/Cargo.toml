@@ -9,14 +9,17 @@ build = "build.rs"
 workspace = ".."
 
 [dependencies]
-stry-common = { path = "../stry-common" }
+stry-common = { path = "../stry-common", features = [ "sqlite-types" ] }
 
 # Core
 anyhow = "1.0"
 async-trait = "0.1"
 serde = { version = "1.0", features = [ "derive" ] }
+tokio = { version = "0.2", features = [ "blocking" ] }
 tracing = "0.1"
 
 # Database
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
-sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "sqlite", "chrono" ] }
+r2d2 = "0.8"
+r2d2_sqlite = "0.15"
+rusqlite = { version = "0.22", features = [ "bundled", "chrono" ] }

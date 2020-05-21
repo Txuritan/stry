@@ -20,7 +20,7 @@ pub use self::{
     origin::Origin,
     series::Series,
     site::Site,
-    story::{Language, Rating, Square, State, Story, Warning},
+    story::{Rating, Square, State, Story, Warning},
     tag::{Tag, TagType},
 };
 
@@ -39,14 +39,19 @@ pub trait Schema {
 
 #[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct List<T> {
-    total: u32,
-    items: Vec<T>,
+    pub total: u32,
+    pub items: Vec<T>,
 }
 
 impl<T> List<T> {
     pub fn into_parts(self) -> (u32, Vec<T>) {
         (self.total, self.items)
     }
+}
+
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+pub struct Entity {
+    pub id: String,
 }
 
 #[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize)]

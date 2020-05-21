@@ -4,26 +4,37 @@ pub mod origin;
 pub mod story;
 pub mod tag;
 
+
 use {
-    sqlx::{pool::PoolConnection, SqliteConnection, SqlitePool},
+    r2d2::Pool,
+    r2d2_sqlite::SqliteConnectionManager,
     stry_common::{Backend, BackendConnection},
 };
 
 #[derive(Clone, Debug)]
-pub struct SqliteBackend(SqlitePool);
+pub struct SqliteBackend(Pool<SqliteConnectionManager>);
+
+impl SqliteBackend {
+    pub fn new() -> anyhow::Result<Self> {
+        let manager = SqliteConnectionManager::file("stry.db");
+
+        let pool = Pool::new(manager)?;
+
+        Ok(Self(pool))
+    }
+}
 
 #[async_trait::async_trait]
 impl Backend for SqliteBackend {
     type Connection = SqlitePoolConnection;
 
     async fn conn(&self) -> anyhow::Result<Self::Connection> {
-        let conn = self.0.acquire().await?;
-
-        Ok(SqlitePoolConnection(conn))
+        Ok(SqlitePoolConnection(self.0.clone()))
     }
 }
 
-pub struct SqlitePoolConnection(PoolConnection<SqliteConnection>);
+#[derive(Clone)]
+pub struct SqlitePoolConnection(Pool<SqliteConnectionManager>);
 
 #[async_trait::async_trait]
 impl BackendConnection for SqlitePoolConnection {}

@@ -1,10 +1,7 @@
-use {crate::ddl::ToSql, std::io};
-
-pub enum Schema {
-    MySQL,
-    PostgreSQL,
-    SQLite,
-}
+use {
+    crate::ddl::{DatabaseType, ToSql},
+    std::io,
+};
 
 #[derive(serde::Deserialize, Debug)]
 pub enum Types {
@@ -33,9 +30,9 @@ pub enum Types {
 }
 
 impl Types {
-    fn name(&self, schema: Schema) -> &str {
-        match schema {
-            Schema::MySQL => match self {
+    fn name(&self, typ: DatabaseType) -> &str {
+        match typ {
+            DatabaseType::MySQL => match self {
                 Types::Boolean => "BOOLEAN",
                 Types::Char => "CHAR",
                 Types::Varchar => "VARCHAR",
@@ -51,7 +48,7 @@ impl Types {
                 Types::DateTime => "INTEGER",
                 Types::Raw(raw) => raw.as_str(),
             },
-            Schema::PostgreSQL => match self {
+            DatabaseType::PostgreSQL => match self {
                 Types::Boolean => "BOOLEAN",
                 Types::Char => "CHAR",
                 Types::Varchar => "VARCHAR",
@@ -67,13 +64,17 @@ impl Types {
                 Types::DateTime => "TIMESTAMP WITHOUT TIME ZONE",
                 Types::Raw(raw) => raw.as_str(),
             },
-            Schema::SQLite => match self {
-                Types::String | Types::Char | Types::Varchar | Types::Text => "TEXT",
-                Types::Number | Types::SmallInt | Types::MediumInt | Types::BigInt | Types::Int | Types::Serial => {
+            DatabaseType::SQLite => match self {
+                Types::String | Types::Char | Types::Text => "TEXT",
+                Types::Varchar => "VARCHAR",
+                Types::Number | Types::SmallInt | Types::MediumInt | Types::Int | Types::Serial => {
                     "INTEGER"
                 }
-                Types::Float | Types::Real | Types::Numeric | Types::Decimal => "REAL",
-                Types::Boolean | Types::DateTime => "NUMERIC",
+                Types::BigInt => "BIGINT",
+                Types::Float | Types::Real | Types::Numeric => "REAL",
+                Types::Decimal => "DECIMAL",
+                Types::DateTime => "DATETIME",
+                Types::Boolean => "BOOLEAN",
                 Types::Raw(raw) => raw.as_str(),
             },
         }
@@ -94,9 +95,14 @@ impl Default for TypeDefault {
     }
 }
 
+pub struct Params {
+    pub(crate) multiple_primary: bool,
+    pub(crate) is_last: bool,
+}
+
 #[derive(serde::Deserialize, Debug)]
 pub struct Column {
-    name: String,
+    pub(crate) name: String,
 
     #[serde(rename = "type")]
     typ: Types,
@@ -105,7 +111,7 @@ pub struct Column {
     required: bool,
 
     #[serde(default = "Default::default")]
-    primary: bool,
+    pub(crate) primary: bool,
 
     #[serde(default = "Default::default")]
     size: u32,
@@ -114,23 +120,38 @@ pub struct Column {
     default: TypeDefault,
 }
 
-impl<W: io::Write> ToSql<W> for Column {
-    fn to_mysql(&self, writer: &mut W, _is_last: bool) -> io::Result<()> {
+impl Column {
+    fn to_mysql(
+        &self,
+        _writer: &mut impl io::Write,
+        _typ: DatabaseType,
+        _params: Params,
+    ) -> anyhow::Result<()> {
         Ok(())
     }
 
-    fn to_postgresql(&self, writer: &mut W, _is_last: bool) -> io::Result<()> {
+    fn to_postgresql(
+        &self,
+        _writer: &mut impl io::Write,
+        _typ: DatabaseType,
+        _params: Params,
+    ) -> anyhow::Result<()> {
         Ok(())
     }
 
-    fn to_sqlite(&self, writer: &mut W, is_last: bool) -> io::Result<()> {
-        write!(writer, "    {} {}",self.name, self.typ.name(Schema::SQLite))?;
+    fn to_sqlite(
+        &self,
+        writer: &mut impl io::Write,
+        typ: DatabaseType,
+        params: Params,
+    ) -> anyhow::Result<()> {
+        write!(writer, "  {} {}", self.name, self.typ.name(typ))?;
 
-        if self.required {
+        if self.required || self.primary {
             write!(writer, " NOT NULL")?;
         }
 
-        if self.primary {
+        if self.primary && !params.multiple_primary {
             write!(writer, " PRIMARY KEY")?;
         }
 
@@ -140,10 +161,10 @@ impl<W: io::Write> ToSql<W> for Column {
             match &self.default {
                 TypeDefault::Now => {
                     write!(writer, " (DATETIME('now', 'utc'))")?;
-                },
+                }
                 TypeDefault::Null => {
                     write!(writer, " NULL")?;
-                },
+                }
                 TypeDefault::Raw(raw) => {
                     write!(writer, " {}", raw)?;
                 }
@@ -151,11 +172,30 @@ impl<W: io::Write> ToSql<W> for Column {
             }
         }
 
-        if !is_last {
+        if !params.is_last || params.multiple_primary {
             write!(writer, ",")?;
         }
 
         writeln!(writer)?;
+
+        Ok(())
+    }
+}
+
+impl<W: io::Write> ToSql<W> for Column {
+    type Params = Params;
+
+    fn to_sql(
+        &self,
+        writer: &mut W,
+        typ: DatabaseType,
+        params: Self::Params,
+    ) -> anyhow::Result<()> {
+        match typ {
+            DatabaseType::MySQL => self.to_mysql(writer, typ, params)?,
+            DatabaseType::PostgreSQL => self.to_postgresql(writer, typ, params)?,
+            DatabaseType::SQLite => self.to_sqlite(writer, typ, params)?,
+        }
 
         Ok(())
     }

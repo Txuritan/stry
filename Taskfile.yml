@@ -12,5 +12,5 @@ tasks:
   generate-ddl:
     cmds:
       - cargo build --bin stry-migrate
-      - cargo run --bin stry-migrate -- ddl generate --style postgres schema.ron stry-backend-postgres/schema.sql
-      - cargo run --bin stry-migrate -- ddl generate --style sqlite schema.ron stry-backend-sqlite/schema.sql
+      - cargo run --bin stry-migrate -- ddl generate --style postgres stry-common/schema.ron stry-backend-postgres/schema.sql
+      - cargo run --bin stry-migrate -- ddl generate --style sqlite stry-common/schema.ron stry-backend-sqlite/schema.sql

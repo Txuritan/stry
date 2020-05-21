@@ -81,3 +81,30 @@ impl fmt::Display for TagType {
         write!(f, "{}", self.str())
     }
 }
+
+#[cfg(feature = "sqlite-types")]
+impl rusqlite::types::FromSql for TagType {
+    fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
+        value
+            .as_str()
+            .and_then(|s| match s.to_lowercase().as_str() {
+                "warning" => Ok(TagType::Warning),
+                "pairing" => Ok(TagType::Pairing),
+                "character" => Ok(TagType::Character),
+                "general" => Ok(TagType::General),
+                _ => Err(rusqlite::types::FromSqlError::InvalidType),
+            })
+    }
+}
+
+#[cfg(feature = "sqlite-types")]
+impl rusqlite::types::ToSql for TagType {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
+        match self {
+            TagType::Warning => Ok("warning".into()),
+            TagType::Pairing => Ok("pairing".into()),
+            TagType::Character => Ok("character".into()),
+            TagType::General => Ok("general".into()),
+        }
+    }
+}

@@ -1,5 +1,7 @@
-pub mod backend;
 pub mod models;
+
+pub mod backend;
+pub mod utils;
 
 pub use crate::backend::{
     Backend, BackendAuthor, BackendChapter, BackendConnection, BackendOrigin, BackendStory,

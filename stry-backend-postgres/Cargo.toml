@@ -19,4 +19,3 @@ tracing = "0.1"
 
 # Database
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
-sqlx = { version = "0.3", default-features = false, features = [ "runtime-tokio", "macros", "postgres", "chrono" ] }

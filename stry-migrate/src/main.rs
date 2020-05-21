@@ -43,27 +43,25 @@ fn main() -> anyhow::Result<()> {
         .get_matches();
 
     match matches.subcommand() {
-        ("ddl", Some(ddl_matches)) => {
-            match ddl_matches.subcommand() {
-                ("generate", Some(generate_matches)) => {
-                    match (
-                        generate_matches.value_of("input"),
-                        generate_matches.value_of("output"),
-                        generate_matches.value_of("style"),
-                    ) {
-                        (Some(file), Some(output), Some(style)) => {
-                            ddl::generate(file, output, style)?;
-                        }
-                        _ => {
-                            println!("{}", generate_matches.usage());
-                        }
+        ("ddl", Some(ddl_matches)) => match ddl_matches.subcommand() {
+            ("generate", Some(generate_matches)) => {
+                match (
+                    generate_matches.value_of("input"),
+                    generate_matches.value_of("output"),
+                    generate_matches.value_of("style"),
+                ) {
+                    (Some(file), Some(output), Some(style)) => {
+                        ddl::generate(file, output, style)?;
+                    }
+                    _ => {
+                        println!("{}", generate_matches.usage());
                     }
                 }
-                _ => {
-                    println!("{}", ddl_matches.usage());
-                }
             }
-        }
+            _ => {
+                println!("{}", ddl_matches.usage());
+            }
+        },
         _ => {
             println!("{}", matches.usage());
         }

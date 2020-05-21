@@ -1,0 +1,314 @@
+Database(
+    name: "stry",
+    version: "3.0.0",
+    tables: [
+        // Core Tables
+        Table(
+            name: "settings",
+            not_exists: true,
+            columns: [
+                Column( name: "key",            type: String,         required: true,     primary: true, ),
+                Column( name: "value",          type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+
+
+        // story Tables
+        Table(
+            name: "author",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "chapter",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "pre",            type: String,         required: true, ),
+                Column( name: "main",           type: String,         required: true, ),
+                Column( name: "post",           type: String,         required: true, ),
+                Column( name: "words",          type: Number,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "story",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "summary",        type: String,         required: true, ),
+                Column( name: "rating",         type: String,         required: true, ),
+                Column( name: "state",          type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+
+
+        // Tag Tables
+        Table(
+            name: "character",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "origin",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "pairing",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "tag",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "type",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "warning",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "type",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+
+
+        // Linking Tables
+        Table(
+            name: "pairing_character",
+            not_exists: true,
+            columns: [
+                Column( name: "pairing_id",         type: String,           required: true,     primary: true, ),
+                Column( name: "character_id",       type: String,           required: true,     primary: true, ),
+                Column( name: "created",            type: DateTime,         required: true, ),
+                Column( name: "updated",            type: DateTime,         required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "Pairing",       local: "pairing_id",     foreign: "id", ),
+                ForeignKey( table: "character",     local: "character_id",   foreign: "id", ),
+            ],
+        ),
+        Table(
+            name: "story_author",
+            not_exists: true,
+            columns: [
+                Column( name: "story_id",       type: String,         required: true,     primary: true, ),
+                Column( name: "author_id",      type: String,         required: true,     primary: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "story",     local: "story_id",       foreign: "id", ),
+                ForeignKey( table: "author",    local: "author_id",      foreign: "id", ),
+            ],
+        ),
+        Table(
+            name: "story_chapter",
+            not_exists: true,
+            columns: [
+                Column( name: "story_id",       type: String,         required: true,     primary: true, ),
+                Column( name: "chapter_id",     type: String,         required: true,     primary: true, ),
+                Column( name: "place",          type: Number,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "story",     local: "story_id",       foreign: "id", ),
+                ForeignKey( table: "chapter",   local: "chapter_id",     foreign: "id", ),
+            ],
+        ),
+        Table(
+            name: "story_origin",
+            not_exists: true,
+            columns: [
+                Column( name: "story_id",       type: String,         required: true,     primary: true, ),
+                Column( name: "origin_id",      type: String,         required: true,     primary: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "story",     local: "story_id",       foreign: "id", ),
+                ForeignKey( table: "origin",    local: "origin_id",      foreign: "id", ),
+            ],
+        ),
+        Table(
+            name: "story_tag",
+            not_exists: true,
+            columns: [
+                Column( name: "story_id",       type: String,         required: true,     primary: true, ),
+                Column( name: "tag_id",         type: String,         required: true,     primary: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "story",     local: "story_id",       foreign: "id", ),
+                ForeignKey( table: "tag",       local: "tag_id",         foreign: "id", ),
+            ],
+        ),
+
+
+
+
+
+
+
+
+        // Worker Tables
+        Table(
+            name: "worker_task",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "site",           type: String,         required: true, ),
+                Column( name: "url",            type: String,         required: true, ),
+                Column( name: "chapter",        type: Number,         required: true, ),
+                Column( name: "completed",      type: Boolean,        required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker",
+            not_exists: true,
+            columns: [
+                Column( name: "site",           type: String,         required: true,     primary: true, ),
+                Column( name: "task",           type: String, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "worker_task",    local: "task",       foreign: "id", ),
+            ],
+        ),
+
+
+        // Worker story Tables
+        Table(
+            name: "worker_author",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker_chapter",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "pre",            type: String,         required: true, ),
+                Column( name: "main",           type: String,         required: true, ),
+                Column( name: "post",           type: String,         required: true, ),
+                Column( name: "words",          type: Number,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker_story",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "summary",        type: String,         required: true, ),
+                Column( name: "rating",         type: String,         required: true, ),
+                Column( name: "state",          type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+
+
+        // Worker Tag Tables
+        Table(
+            name: "worker_character",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker_origin",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker_pairing",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker_tag",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "type",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+        Table(
+            name: "worker_warning",
+            not_exists: true,
+            columns: [
+                Column( name: "id",             type: String,         required: true,     primary: true, ),
+                Column( name: "name",           type: String,         required: true, ),
+                Column( name: "type",           type: String,         required: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+        ),
+    ],
+)

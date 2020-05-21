@@ -1,0 +1,216 @@
+// Core
+table Settings {
+    Id text [primary key]
+
+    Key text [unique]
+    Value text
+}
+
+
+
+
+
+
+
+
+// Story
+table Author {
+    Id text [primary key]
+
+    Name text
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table Chapter {
+    Id text [primary key]
+
+    Name text
+
+    Pre text
+    Main text
+    Post text
+
+    Words number
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table Story {
+    Id text [primary key]
+
+    Name text
+
+    Summary text
+
+    Rating Rating
+    State State
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+
+enum Rating {
+    Explicit
+    Mature
+    Teen
+    General
+}
+
+enum State {
+    Complete
+    InProgress
+    Hiatus
+    Abandoned
+}
+
+
+
+
+
+
+
+
+// Tags
+table Character {
+    Id text [primary key]
+
+    Name text
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table Origin {
+    Id text [primary key]
+
+    Name text
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table Pairing {
+    Id text [primary key]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table Tag {
+    Id text [primary key]
+
+    Name text
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table Warning {
+    Id text [primary key]
+
+    Name text
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+
+
+
+
+
+
+
+// Workers
+table Task {
+    Id text [primary key]
+
+    Site text
+    Url text
+    Chapter number
+
+    Completed bool
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+Table Worker {
+    Site text [primary key]
+
+    Task text [ref: Task.Id]
+
+    Created datetime [default: now()]
+    Updated datetime [default: now()]
+}
+
+
+
+
+
+
+
+
+// Linking tables
+table PairingCharacter {
+    PairingId text [primary key, ref: Pairing.Id]
+    CharacterId text [primary key, ref: Character.Id]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+
+table StoryAuthor {
+    StoryId text [primary key, ref: Story.Id]
+    AuthorId text [primary key, ref: Author.Id]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table StoryChapter {
+    StoryId text [primary key, ref: Story.Id]
+    ChapterId text [primary key, ref: Chapter.Id]
+
+    Place number
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table StoryCharacter {
+    StoryId text [primary key, ref: Story.Id]
+    CharacterId text [primary key, ref: Character.Id]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table StoryOrigin {
+    StoryId text [primary key, ref: Story.Id]
+    OriginId text [primary key, ref: Origin.Id]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table StoryPairing {
+    StoryId text [primary key, ref: Story.Id]
+    PairingId text [primary key, ref: Pairing.Id]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}
+
+table StoryTag {
+    StoryId text [primary key, ref: Story.Id]
+    TagId text [primary key, ref: Tag.Id]
+
+    Created dateTime [default: now()]
+    Updated dateTime [default: now()]
+}

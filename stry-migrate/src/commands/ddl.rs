@@ -1,20 +1,19 @@
 use {
-    crate::ddl::{Database, ToSql},
+    crate::ddl::{Database, DatabaseType, ToSql},
     std::fs,
 };
 
 pub fn generate(file: &str, output: &str, style: &str) -> anyhow::Result<()> {
-    let file_buff = fs::read(file)?;
-    let database: Database = ron::de::from_bytes(&file_buff)?;
+    let database = Database::read_from(file)?;
 
     let mut output_buff = Vec::new();
 
     match style {
         "postgres" => {
-            database.to_postgresql(&mut output_buff, true)?;
+            database.to_sql(&mut output_buff, DatabaseType::PostgreSQL, ())?;
         }
         "sqlite" => {
-            database.to_sqlite(&mut output_buff, true)?;
+            database.to_sql(&mut output_buff, DatabaseType::SQLite, ())?;
         }
         _ => unreachable!(),
     }

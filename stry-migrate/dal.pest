@@ -1,0 +1,19 @@
+schema = { SOI ~ ( declaration_table | declaration_enum )+ ~ EOI }
+
+declaration_table = { "table" ~ value ~ "{" ~ ( column )+ ~ "}" }
+
+column = { column_name ~ column_type ~ ( column_settings )? }
+column_name = @{ value }
+column_type = @{ value }
+column_settings = { "[" ~ ( ( settings ~ "," )+ ~ settings | settings ) ~ "]" }
+
+settings = _{ ( setting_primary | setting_unique ) }
+setting_primary = { "primary key" }
+setting_unique = { "unique" }
+
+declaration_enum = { "enum" ~ value ~ "{" ~ ( value )+ ~ "}" }
+
+value = @{ char+ }
+char = { ASCII_ALPHANUMERIC | "_" | "-" }
+
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }

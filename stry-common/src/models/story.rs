@@ -13,11 +13,9 @@ pub struct Story {
     pub name: String,
     pub summary: String,
 
-    pub language: Language,
     pub square: Square,
 
     pub chapters: u32,
-    pub read: u32,
     pub words: u32,
 
     pub authors: Vec<Author>,
@@ -30,24 +28,17 @@ pub struct Story {
     pub updated: DateTime<Utc>,
 }
 
-#[rustfmt::skip]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
-pub enum Language {
-    #[serde(rename = "english")]
-    English,
-}
+pub struct StoryPart {
+    pub id: String,
 
-impl fmt::Display for Language {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Language::English => "english",
-            }
-        )
-    }
+    pub name: String,
+    pub summary: String,
+
+    pub rating: Rating,
+    pub state: State,
+
+    pub created: DateTime<Utc>,
+    pub updated: DateTime<Utc>,
 }
 
 #[rustfmt::skip]
@@ -87,6 +78,33 @@ impl fmt::Display for Rating {
                 Rating::General => "background--blue",
             }
         )
+    }
+}
+
+#[cfg(feature = "sqlite-types")]
+impl rusqlite::types::FromSql for Rating {
+    fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
+        value
+            .as_str()
+            .and_then(|s| match s.to_lowercase().as_str() {
+                "explicit" => Ok(Rating::Explicit),
+                "mature" => Ok(Rating::Mature),
+                "teen" => Ok(Rating::Teen),
+                "general" => Ok(Rating::General),
+                _ => Err(rusqlite::types::FromSqlError::InvalidType),
+            })
+    }
+}
+
+#[cfg(feature = "sqlite-types")]
+impl rusqlite::types::ToSql for Rating {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
+        match self {
+            Rating::Explicit => Ok("explicit".into()),
+            Rating::Mature => Ok("mature".into()),
+            Rating::Teen => Ok("teen".into()),
+            Rating::General => Ok("general".into()),
+        }
     }
 }
 
@@ -159,6 +177,33 @@ impl fmt::Display for State {
                 State::Abandoned => "background--red",
             }
         )
+    }
+}
+
+#[cfg(feature = "sqlite-types")]
+impl rusqlite::types::FromSql for State {
+    fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
+        value
+            .as_str()
+            .and_then(|s| match s.to_lowercase().as_str() {
+                "completed" => Ok(State::Completed),
+                "in-progress" => Ok(State::InProgress),
+                "hiatus" => Ok(State::Hiatus),
+                "abandoned" => Ok(State::Abandoned),
+                _ => Err(rusqlite::types::FromSqlError::InvalidType),
+            })
+    }
+}
+
+#[cfg(feature = "sqlite-types")]
+impl rusqlite::types::ToSql for State {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
+        match self {
+            State::Completed => Ok("completed".into()),
+            State::InProgress => Ok("in-progress".into()),
+            State::Hiatus => Ok("hiatus".into()),
+            State::Abandoned => Ok("abandoned".into()),
+        }
     }
 }
 

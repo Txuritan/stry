@@ -1,5 +1,5 @@
 use {
-    crate::PostgresPoolConnection,
+    crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
         models::{List, Origin, Story},
@@ -8,7 +8,7 @@ use {
 };
 
 #[async_trait::async_trait]
-impl BackendOrigin for PostgresPoolConnection {
+impl BackendOrigin for PostgresBackend {
     async fn all_origins(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
         let inner = self.clone();
         let conn = inner.0.get().await?;

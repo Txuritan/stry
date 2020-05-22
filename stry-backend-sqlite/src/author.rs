@@ -1,5 +1,5 @@
 use {
-    crate::SqlitePoolConnection,
+    crate::SqliteBackend,
     std::borrow::Cow,
     stry_common::{
         models::{Author, Entity, List, Story},
@@ -8,7 +8,7 @@ use {
 };
 
 #[async_trait::async_trait]
-impl BackendAuthor for SqlitePoolConnection {
+impl BackendAuthor for SqliteBackend {
     async fn all_authors(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
         let mut inner = self.clone();
 

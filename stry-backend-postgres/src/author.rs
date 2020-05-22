@@ -1,5 +1,5 @@
 use {
-    crate::{PostgresPoolConnection, PostgresPooledConnection},
+    crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
         models::{Author, List, Story},
@@ -8,10 +8,10 @@ use {
 };
 
 #[async_trait::async_trait]
-impl BackendAuthor for PostgresPoolConnection {
+impl BackendAuthor for PostgresBackend {
     async fn all_authors(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
         let inner = self.clone();
-        let conn: PostgresPooledConnection<'_> = inner.0.get().await?;
+        let conn = inner.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT id FROM author ORDER BY name DESC LIMIT $1 OFFSET $2;")
@@ -70,7 +70,7 @@ impl BackendAuthor for PostgresPoolConnection {
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
         let inner = self.clone();
-        let conn: PostgresPooledConnection<'_> = inner.0.get().await?;
+        let conn = inner.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT SA.story_id FROM story_author SA LEFT JOIN story S ON S.id = SA.story_id WHERE SA.author_id = $1 ORDER BY S.updated DESC LIMIT $2 OFFSET $3;")

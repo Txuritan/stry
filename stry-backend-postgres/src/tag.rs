@@ -1,14 +1,14 @@
 use {
-    crate::PostgresPoolConnection,
+    crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
         models::{List, Story, Tag},
-        BackendTag, BackendStory
+        BackendStory, BackendTag,
     },
 };
 
 #[async_trait::async_trait]
-impl BackendTag for PostgresPoolConnection {
+impl BackendTag for PostgresBackend {
     async fn all_tags(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
         let inner = self.clone();
         let conn = inner.0.get().await?;

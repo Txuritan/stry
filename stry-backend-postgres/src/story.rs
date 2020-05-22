@@ -1,5 +1,5 @@
 use {
-    crate::PostgresPoolConnection,
+    crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
         models::{story::StoryPart, List, Square, Story, TagType, Warning},
@@ -8,7 +8,7 @@ use {
 };
 
 #[async_trait::async_trait]
-impl BackendStory for PostgresPoolConnection {
+impl BackendStory for PostgresBackend {
     async fn all_stories(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
         let inner = self.clone();
         let conn = inner.0.get().await?;

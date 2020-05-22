@@ -1,11 +1,11 @@
 use {
-    crate::SqlitePoolConnection,
+    crate::SqliteBackend,
     std::borrow::Cow,
     stry_common::{models::Chapter, BackendChapter},
 };
 
 #[async_trait::async_trait]
-impl BackendChapter for SqlitePoolConnection {
+impl BackendChapter for SqliteBackend {
     async fn get_chapter(
         &mut self,
         story_id: Cow<'static, str>,

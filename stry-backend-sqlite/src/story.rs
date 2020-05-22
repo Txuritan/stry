@@ -1,5 +1,5 @@
 use {
-    crate::SqlitePoolConnection,
+    crate::SqliteBackend,
     std::borrow::Cow,
     stry_common::{
         models::{story::StoryPart, tag::TagType, Entity, List, Square, Story, Warning},
@@ -8,7 +8,7 @@ use {
 };
 
 #[async_trait::async_trait]
-impl BackendStory for SqlitePoolConnection {
+impl BackendStory for SqliteBackend {
     async fn all_stories(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
         let mut inner = self.clone();
 

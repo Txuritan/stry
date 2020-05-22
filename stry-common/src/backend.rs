@@ -4,13 +4,7 @@ use {
 };
 
 #[async_trait::async_trait]
-pub trait Backend {
-    type Connection: BackendConnection;
-
-    async fn conn(&self) -> anyhow::Result<Self::Connection>;
-}
-
-pub trait BackendConnection:
+pub trait Backend:
     BackendAuthor + BackendChapter + BackendOrigin + BackendStory + BackendTag
 {
 }

@@ -1,5 +1,5 @@
 use {
-    crate::SqlitePoolConnection,
+    crate::SqliteBackend,
     std::borrow::Cow,
     stry_common::{
         models::{Entity, List, Origin, Story},
@@ -8,7 +8,7 @@ use {
 };
 
 #[async_trait::async_trait]
-impl BackendOrigin for SqlitePoolConnection {
+impl BackendOrigin for SqliteBackend {
     async fn all_origins(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
         let mut inner = self.clone();
 

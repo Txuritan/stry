@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "stry",
+    "stry-backend",
     "stry-backend-postgres",
     "stry-backend-sqlite",
     "stry-common",

@@ -1884,6 +1884,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "stry-backend"
+version = "2.3.0"
+dependencies = [
+ "anyhow 1.0.31 (registry+https://github.com/rust-lang/crates.io-index)",
+ "async-trait 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
+ "stry-backend-postgres 2.3.0",
+ "stry-backend-sqlite 2.3.0",
+ "stry-common 2.3.0",
+]
+
+[[package]]
 name = "stry-backend-postgres"
 version = "2.3.0"
 dependencies = [

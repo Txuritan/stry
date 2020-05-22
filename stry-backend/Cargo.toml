@@ -1,0 +1,18 @@
+[package]
+name = "stry-backend"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+workspace = ".."
+
+[dependencies]
+stry-common = { path = "../stry-common" }
+
+# Core
+anyhow = "1.0"
+async-trait = "0.1"
+
+# Database
+stry-backend-postgres = { path = "../stry-backend-postgres" }
+stry-backend-sqlite = { path = "../stry-backend-sqlite" }

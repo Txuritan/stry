@@ -54,14 +54,20 @@ impl fmt::Display for Tag {
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "types-postgres", derive(postgres_types::ToSql, postgres_types::FromSql))]
+#[cfg_attr(feature = "types-postgres", postgres(name = "tag_type"))]
 pub enum TagType {
     #[serde(rename = "warning")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "warning"))]
     Warning,
     #[serde(rename = "pairing")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "pairing"))]
     Pairing,
     #[serde(rename = "character")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "character"))]
     Character,
     #[serde(rename = "general")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "general"))]
     General,
 }
 

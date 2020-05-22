@@ -9,11 +9,9 @@ use {
 
 #[async_trait::async_trait]
 impl BackendAuthor for SqliteBackend {
-    async fn all_authors(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
-        let mut inner = self.clone();
-
+    async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -43,7 +41,7 @@ impl BackendAuthor for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_author(id.into()).await?;
+            let story = self.get_author(id.into()).await?;
 
             items.push(story);
         }
@@ -51,28 +49,29 @@ impl BackendAuthor for SqliteBackend {
         Ok(List { total, items })
     }
 
-    async fn get_author(&mut self, id: Cow<'static, str>) -> anyhow::Result<Author> {
-        let inner = self.clone();
+    async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Author> {
+        let res = tokio::task::spawn_blocking({
+            let inner = self.clone();
+            move || -> anyhow::Result<Author> {
+                let conn = inner.0.get()?;
 
-        let res = tokio::task::spawn_blocking(move || -> anyhow::Result<Author> {
-            let conn = inner.0.get()?;
+                let row = conn.query_row(
+                    "SELECT id, name, created, updated FROM author WHERE id = ?;",
+                    rusqlite::params![id],
+                    |row| {
+                        Ok(Author {
+                            id: row.get(0)?,
 
-            let row = conn.query_row(
-                "SELECT id, name, created, updated FROM author WHERE id = ?;",
-                rusqlite::params![id],
-                |row| {
-                    Ok(Author {
-                        id: row.get(0)?,
+                            name: row.get(1)?,
 
-                        name: row.get(1)?,
+                            created: row.get(2)?,
+                            updated: row.get(3)?,
+                        })
+                    },
+                )?;
 
-                        created: row.get(2)?,
-                        updated: row.get(3)?,
-                    })
-                },
-            )?;
-
-            Ok(row)
+                Ok(row)
+            }
         })
         .await??;
 
@@ -80,15 +79,13 @@ impl BackendAuthor for SqliteBackend {
     }
 
     async fn author_stories(
-        &mut self,
+        &self,
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
-        let mut inner = self.clone();
-
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -113,7 +110,7 @@ impl BackendAuthor for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_story(id.into()).await?;
+            let story = self.get_story(id.into()).await?;
 
             items.push(story);
         }

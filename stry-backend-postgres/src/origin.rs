@@ -9,9 +9,8 @@ use {
 
 #[async_trait::async_trait]
 impl BackendOrigin for PostgresBackend {
-    async fn all_origins(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT id FROM origin ORDER BY name DESC LIMIT $1 OFFSET $2;")
@@ -41,7 +40,7 @@ impl BackendOrigin for PostgresBackend {
         Ok(list)
     }
 
-    async fn get_origin(&mut self, id: Cow<'static, str>) -> anyhow::Result<Origin> {
+    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Origin> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -64,13 +63,12 @@ impl BackendOrigin for PostgresBackend {
     }
 
     async fn origin_stories(
-        &mut self,
+        &self,
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT SO.story_id FROM story_origin SO LEFT JOIN story S ON S.id = SO.story_id WHERE SO.origin_id = $1 ORDER BY S.updated DESC LIMIT $2 OFFSET $3;")

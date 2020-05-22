@@ -9,9 +9,8 @@ use {
 
 #[async_trait::async_trait]
 impl BackendAuthor for PostgresBackend {
-    async fn all_authors(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+    async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT id FROM author ORDER BY name DESC LIMIT $1 OFFSET $2;")
@@ -41,7 +40,7 @@ impl BackendAuthor for PostgresBackend {
         Ok(list)
     }
 
-    async fn get_author(&mut self, id: Cow<'static, str>) -> anyhow::Result<Author> {
+    async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Author> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -64,13 +63,12 @@ impl BackendAuthor for PostgresBackend {
     }
 
     async fn author_stories(
-        &mut self,
+        &self,
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT SA.story_id FROM story_author SA LEFT JOIN story S ON S.id = SA.story_id WHERE SA.author_id = $1 ORDER BY S.updated DESC LIMIT $2 OFFSET $3;")

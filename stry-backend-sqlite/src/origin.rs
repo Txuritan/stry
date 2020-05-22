@@ -9,11 +9,9 @@ use {
 
 #[async_trait::async_trait]
 impl BackendOrigin for SqliteBackend {
-    async fn all_origins(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
-        let mut inner = self.clone();
-
+    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -43,7 +41,7 @@ impl BackendOrigin for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_origin(id.into()).await?;
+            let story = self.get_origin(id.into()).await?;
 
             items.push(story);
         }
@@ -51,28 +49,30 @@ impl BackendOrigin for SqliteBackend {
         Ok(List { total, items })
     }
 
-    async fn get_origin(&mut self, id: Cow<'static, str>) -> anyhow::Result<Origin> {
-        let inner = self.clone();
+    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Origin> {
+        let res = tokio::task::spawn_blocking({
+            let inner = self.clone();
 
-        let res = tokio::task::spawn_blocking(move || -> anyhow::Result<Origin> {
-            let conn = inner.0.get()?;
+            move || -> anyhow::Result<Origin> {
+                let conn = inner.0.get()?;
 
-            let row = conn.query_row(
-                "SELECT id, name, created, updated FROM origin WHERE id = ?;",
-                rusqlite::params![id],
-                |row| {
-                    Ok(Origin {
-                        id: row.get(0)?,
+                let row = conn.query_row(
+                    "SELECT id, name, created, updated FROM origin WHERE id = ?;",
+                    rusqlite::params![id],
+                    |row| {
+                        Ok(Origin {
+                            id: row.get(0)?,
 
-                        name: row.get(1)?,
+                            name: row.get(1)?,
 
-                        created: row.get(2)?,
-                        updated: row.get(3)?,
-                    })
-                },
-            )?;
+                            created: row.get(2)?,
+                            updated: row.get(3)?,
+                        })
+                    },
+                )?;
 
-            Ok(row)
+                Ok(row)
+            }
         })
         .await??;
 
@@ -80,15 +80,13 @@ impl BackendOrigin for SqliteBackend {
     }
 
     async fn origin_stories(
-        &mut self,
+        &self,
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
-        let mut inner = self.clone();
-
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -113,7 +111,7 @@ impl BackendOrigin for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_story(id.into()).await?;
+            let story = self.get_story(id.into()).await?;
 
             items.push(story);
         }

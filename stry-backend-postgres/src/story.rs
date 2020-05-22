@@ -9,9 +9,8 @@ use {
 
 #[async_trait::async_trait]
 impl BackendStory for PostgresBackend {
-    async fn all_stories(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT id FROM story ORDER BY name DESC LIMIT $1 OFFSET $2;")
@@ -41,9 +40,8 @@ impl BackendStory for PostgresBackend {
         Ok(list)
     }
 
-    async fn get_story(&mut self, id: Cow<'static, str>) -> anyhow::Result<Story> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+    async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Story> {
+        let conn = self.0.get().await?;
 
         let author_stmt = conn
             .prepare("SELECT A.id FROM story_author SA LEFT JOIN author A ON SA.author_id = A.id WHERE SA.story_id = $1 ORDER BY A.name;")

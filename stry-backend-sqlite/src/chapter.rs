@@ -7,13 +7,14 @@ use {
 #[async_trait::async_trait]
 impl BackendChapter for SqliteBackend {
     async fn get_chapter(
-        &mut self,
+        &self,
         story_id: Cow<'static, str>,
         chapter_number: u32,
     ) -> anyhow::Result<Chapter> {
-        let inner = self.clone();
+        let res = tokio::task::spawn_blocking({
+            let inner = self.clone();
 
-        let res = tokio::task::spawn_blocking(move || -> anyhow::Result<Chapter> {
+            move || -> anyhow::Result<Chapter> {
             let conn = inner.0.get()?;
 
             let row = conn.query_row(
@@ -38,6 +39,7 @@ impl BackendChapter for SqliteBackend {
             )?;
 
             Ok(row)
+        }
         })
         .await??;
 

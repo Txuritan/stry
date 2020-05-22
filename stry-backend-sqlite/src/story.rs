@@ -9,11 +9,9 @@ use {
 
 #[async_trait::async_trait]
 impl BackendStory for SqliteBackend {
-    async fn all_stories(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
-        let mut inner = self.clone();
-
+    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -43,7 +41,7 @@ impl BackendStory for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_story(id.into()).await?;
+            let story = self.get_story(id.into()).await?;
 
             items.push(story);
         }
@@ -51,13 +49,11 @@ impl BackendStory for SqliteBackend {
         Ok(List { total, items })
     }
 
-    async fn get_story(&mut self, id: Cow<'static, str>) -> anyhow::Result<Story> {
+    async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Story> {
         type StoryParts = (StoryPart, u32, u32, Vec<Entity>, Vec<Entity>, Vec<Entity>);
 
-        let mut inner = self.clone();
-
         let (story_part, chapters, words, author_entities, origin_entities, tag_entities) = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<StoryParts> {
                 let conn = inner.0.get()?;
@@ -108,7 +104,7 @@ impl BackendStory for SqliteBackend {
         let mut authors = Vec::with_capacity(author_entities.len());
 
         for Entity { id } in author_entities {
-            let author = inner.get_author(id.into()).await?;
+            let author = self.get_author(id.into()).await?;
 
             authors.push(author);
         }
@@ -116,7 +112,7 @@ impl BackendStory for SqliteBackend {
         let mut origins = Vec::with_capacity(origin_entities.len());
 
         for Entity { id } in origin_entities {
-            let origin = inner.get_origin(id.into()).await?;
+            let origin = self.get_origin(id.into()).await?;
 
             origins.push(origin);
         }
@@ -124,7 +120,7 @@ impl BackendStory for SqliteBackend {
         let mut tags = Vec::with_capacity(tag_entities.len());
 
         for Entity { id } in tag_entities {
-            let tag = inner.get_tag(id.into()).await?;
+            let tag = self.get_tag(id.into()).await?;
 
             tags.push(tag);
         }

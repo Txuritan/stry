@@ -9,9 +9,8 @@ use {
 
 #[async_trait::async_trait]
 impl BackendTag for PostgresBackend {
-    async fn all_tags(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT id FROM tag ORDER BY name DESC LIMIT $1 OFFSET $2;")
@@ -41,7 +40,7 @@ impl BackendTag for PostgresBackend {
         Ok(list)
     }
 
-    async fn get_tag(&mut self, id: Cow<'static, str>) -> anyhow::Result<Tag> {
+    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Tag> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -66,13 +65,12 @@ impl BackendTag for PostgresBackend {
     }
 
     async fn tag_stories(
-        &mut self,
+        &self,
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
-        let inner = self.clone();
-        let conn = inner.0.get().await?;
+        let conn = self.0.get().await?;
 
         let stmt = conn
             .prepare("SELECT ST.story_id FROM story_tag ST LEFT JOIN story S ON S.id = ST.story_id WHERE ST.tag_id = $1 ORDER BY S.updated DESC LIMIT $2 OFFSET $3;")

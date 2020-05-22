@@ -9,11 +9,9 @@ use {
 
 #[async_trait::async_trait]
 impl BackendTag for SqliteBackend {
-    async fn all_tags(&mut self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
-        let mut inner = self.clone();
-
+    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -43,7 +41,7 @@ impl BackendTag for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_tag(id.into()).await?;
+            let story = self.get_tag(id.into()).await?;
 
             items.push(story);
         }
@@ -51,29 +49,31 @@ impl BackendTag for SqliteBackend {
         Ok(List { total, items })
     }
 
-    async fn get_tag(&mut self, id: Cow<'static, str>) -> anyhow::Result<Tag> {
-        let inner = self.clone();
+    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Tag> {
+        let res = tokio::task::spawn_blocking({
+            let inner = self.clone();
 
-        let res = tokio::task::spawn_blocking(move || -> anyhow::Result<Tag> {
-            let conn = inner.0.get()?;
+            move || -> anyhow::Result<Tag> {
+                let conn = inner.0.get()?;
 
-            let row = conn.query_row(
-                "SELECT id, name, typ, created, updated FROM tag WHERE id = ?;",
-                rusqlite::params![id],
-                |row| {
-                    Ok(Tag {
-                        id: row.get(0)?,
-                        name: row.get(1)?,
+                let row = conn.query_row(
+                    "SELECT id, name, typ, created, updated FROM tag WHERE id = ?;",
+                    rusqlite::params![id],
+                    |row| {
+                        Ok(Tag {
+                            id: row.get(0)?,
+                            name: row.get(1)?,
 
-                        typ: row.get(2)?,
+                            typ: row.get(2)?,
 
-                        created: row.get(3)?,
-                        updated: row.get(4)?,
-                    })
-                },
-            )?;
+                            created: row.get(3)?,
+                            updated: row.get(4)?,
+                        })
+                    },
+                )?;
 
-            Ok(row)
+                Ok(row)
+            }
         })
         .await??;
 
@@ -81,15 +81,13 @@ impl BackendTag for SqliteBackend {
     }
 
     async fn tag_stories(
-        &mut self,
+        &self,
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<List<Story>> {
-        let mut inner = self.clone();
-
         let ids = tokio::task::spawn_blocking({
-            let inner = inner.clone();
+            let inner = self.clone();
 
             move || -> anyhow::Result<List<Entity>> {
                 let conn = inner.0.get()?;
@@ -114,7 +112,7 @@ impl BackendTag for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = inner.get_story(id.into()).await?;
+            let story = self.get_story(id.into()).await?;
 
             items.push(story);
         }

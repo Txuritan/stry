@@ -44,14 +44,20 @@ pub struct StoryPart {
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "types-postgres", derive(postgres_types::ToSql, postgres_types::FromSql))]
+#[cfg_attr(feature = "types-postgres", postgres(name = "rating"))]
 pub enum Rating {
     #[serde(rename = "explicit")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "explicit"))]
     Explicit,
     #[serde(rename = "mature")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "mature"))]
     Mature,
     #[serde(rename = "teen")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "teen"))]
     Teen,
     #[serde(rename = "general")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "general"))]
     General,
 }
 
@@ -143,14 +149,20 @@ impl fmt::Display for Warning {
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "types-postgres", derive(postgres_types::ToSql, postgres_types::FromSql))]
+#[cfg_attr(feature = "types-postgres", postgres(name = "state"))]
 pub enum State {
     #[serde(rename = "completed")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "completed"))]
     Completed,
     #[serde(rename = "in-progress")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "in-progress"))]
     InProgress,
     #[serde(rename = "hiatus")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "hiatus"))]
     Hiatus,
     #[serde(rename = "abandoned")]
+    #[cfg_attr(feature = "types-postgres", postgres(name = "abandoned"))]
     Abandoned,
 }
 

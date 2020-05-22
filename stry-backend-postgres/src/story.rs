@@ -100,7 +100,7 @@ impl BackendStory for PostgresPoolConnection {
             authors.push(author);
         }
 
-        let origin_rows = conn.query(&author_stmt, &[&id]).await?;
+        let origin_rows = conn.query(&origin_stmt, &[&id]).await?;
 
         let mut origins = Vec::with_capacity(origin_rows.len());
 
@@ -112,7 +112,7 @@ impl BackendStory for PostgresPoolConnection {
             origins.push(origin);
         }
 
-        let tag_rows = conn.query(&author_stmt, &[&id]).await?;
+        let tag_rows = conn.query(&tag_stmt, &[&id]).await?;
 
         let mut tags = Vec::with_capacity(tag_rows.len());
 

@@ -82,7 +82,7 @@ impl fmt::Display for TagType {
     }
 }
 
-#[cfg(feature = "sqlite-types")]
+#[cfg(feature = "types-sqlite")]
 impl rusqlite::types::FromSql for TagType {
     fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
         value
@@ -97,7 +97,7 @@ impl rusqlite::types::FromSql for TagType {
     }
 }
 
-#[cfg(feature = "sqlite-types")]
+#[cfg(feature = "types-sqlite")]
 impl rusqlite::types::ToSql for TagType {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
         match self {

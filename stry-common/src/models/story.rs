@@ -81,7 +81,7 @@ impl fmt::Display for Rating {
     }
 }
 
-#[cfg(feature = "sqlite-types")]
+#[cfg(feature = "types-sqlite")]
 impl rusqlite::types::FromSql for Rating {
     fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
         value
@@ -96,7 +96,7 @@ impl rusqlite::types::FromSql for Rating {
     }
 }
 
-#[cfg(feature = "sqlite-types")]
+#[cfg(feature = "types-sqlite")]
 impl rusqlite::types::ToSql for Rating {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
         match self {
@@ -180,7 +180,7 @@ impl fmt::Display for State {
     }
 }
 
-#[cfg(feature = "sqlite-types")]
+#[cfg(feature = "types-sqlite")]
 impl rusqlite::types::FromSql for State {
     fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
         value
@@ -195,7 +195,7 @@ impl rusqlite::types::FromSql for State {
     }
 }
 
-#[cfg(feature = "sqlite-types")]
+#[cfg(feature = "types-sqlite")]
 impl rusqlite::types::ToSql for State {
     fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
         match self {

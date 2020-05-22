@@ -9,7 +9,7 @@ build = "build.rs"
 workspace = ".."
 
 [dependencies]
-stry-common = { path = "../stry-common", features = [ "sqlite-types" ] }
+stry-common = { path = "../stry-common", features = [ "types-sqlite" ] }
 
 # Core
 anyhow = "1.0"

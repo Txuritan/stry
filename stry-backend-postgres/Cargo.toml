@@ -9,7 +9,7 @@ build = "build.rs"
 workspace = ".."
 
 [dependencies]
-stry-common = { path = "../stry-common" }
+stry-common = { path = "../stry-common", features = [ "types-postgres" ] }
 
 # Core
 anyhow = "1.0"
@@ -19,3 +19,6 @@ tracing = "0.1"
 
 # Database
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+bb8 = "0.4"
+bb8-postgres = "0.4"
+tokio-postgres = "0.5"

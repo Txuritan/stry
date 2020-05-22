@@ -9,7 +9,8 @@ build = "build.rs"
 workspace = ".."
 
 [features]
-sqlite-types = [ "rusqlite" ]
+types-postgres = [ "postgres-types" ]
+types-sqlite = [ "rusqlite" ]
 
 [dependencies]
 # Core
@@ -19,6 +20,7 @@ serde = { version = "1.0", features = ["derive"] }
 
 # Database
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
+postgres-types = { version = "0.1", optional = true }
 rusqlite = { version = "0.22", features = [ "bundled" ], optional = true }
 
 # Search

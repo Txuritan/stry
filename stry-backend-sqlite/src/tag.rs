@@ -58,7 +58,7 @@ impl BackendTag for SqlitePoolConnection {
             let conn = inner.0.get()?;
 
             let row = conn.query_row(
-                "SELECT id, name, created, updated FROM tag WHERE id = ?;",
+                "SELECT id, name, typ, created, updated FROM tag WHERE id = ?;",
                 rusqlite::params![id],
                 |row| {
                     Ok(Tag {

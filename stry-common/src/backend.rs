@@ -5,7 +5,7 @@ use {
 
 #[async_trait::async_trait]
 pub trait Backend:
-    BackendAuthor + BackendChapter + BackendOrigin + BackendStory + BackendTag
+    BackendAuthor + BackendChapter + BackendOrigin + BackendStory + BackendTag + Clone
 {
 }
 

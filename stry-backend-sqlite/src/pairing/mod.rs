@@ -6,7 +6,7 @@ use {
     anyhow::Context,
     std::borrow::Cow,
     stry_common::{
-        backend::{BackendPairing, BackendStory},
+        backend::BackendPairing,
         models::{pairing::PairingPart, Character, List, Pairing, Story},
     },
 };
@@ -20,8 +20,8 @@ impl BackendPairing for SqliteBackend {
             move || -> anyhow::Result<Option<List<Pairing>>> {
                 let conn = inner.0.get()?;
 
-                let mut pairing_stmt = conn.prepare("SELECT P.Id, P.Platonic, P.Created, P.Updated FROM Pairing P ORDER BY (SELECT GROUP_CONCAT(C.Name, '/') FROM PairingCharacter PC LEFT JOIN Character C ON C.Id = PC.CharacterId WHERE PC.PairingId = P.Id) LIMIT ? OFFSET ?;")?;
-                let mut character_stmt = conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM Pairing P LEFT JOIN PairingCharacter PC ON PC.PairingId = P.Id LEFT JOIN Character C ON PC.CharacterId = C.Id WHERE P.Id = ? ORDER BY C.Name ASC;")?;
+                let mut pairing_stmt = conn.prepare(include_str!("all-items.sql"))?;
+                let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
 
                 let item_parts: Vec<PairingPart> = match pairing_stmt.query_map_anyhow(
                     rusqlite::params![limit, offset * limit],
@@ -72,7 +72,7 @@ impl BackendPairing for SqliteBackend {
                 }
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(Id) as Count FROM Pairing;",
+                    include_str!("all-count.sql"),
                     rusqlite::params![],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for pairing count")?),
                 )? {
@@ -94,10 +94,10 @@ impl BackendPairing for SqliteBackend {
             move || -> anyhow::Result<Option<Pairing>> {
                 let conn = inner.0.get()?;
 
-                let mut character_stmt = conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM Pairing P LEFT JOIN PairingCharacter PC ON PC.PairingId = P.Id LEFT JOIN Character C ON PC.CharacterId = C.Id WHERE P.Id = ? ORDER BY C.Name ASC;")?;
+                let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
 
                 let part = match conn.query_row_anyhow(
-                    "SELECT Id, Platonic, Created, Updated FROM Pairing WHERE Id = ?;",
+                    include_str!("get-item.sql"),
                     rusqlite::params![id],
                     |row| {
                         Ok(PairingPart {
@@ -146,9 +146,9 @@ impl BackendPairing for SqliteBackend {
 
     async fn pairing_stories(
         &self,
-        id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        _id: Cow<'static, str>,
+        _offset: u32,
+        _limit: u32,
     ) -> anyhow::Result<Option<List<Story>>> {
         todo!()
     }

@@ -21,7 +21,7 @@ impl BackendWarning for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let mut stmt =
-                    conn.prepare("SELECT Id, Name, Created, Updated FROM Warning ORDER BY Name ASC LIMIT ? OFFSET ?;")?;
+                    conn.prepare(include_str!("all-items.sql"))?;
 
                 let items = match stmt
                     .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
@@ -41,7 +41,7 @@ impl BackendWarning for SqliteBackend {
                     };
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(Id) as Count FROM Warning;",
+                    include_str!("all-count.sql"),
                     rusqlite::params![],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for warning count")?),
                 )? {
@@ -65,7 +65,7 @@ impl BackendWarning for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let row = conn.query_row_anyhow(
-                    "SELECT Id, Name, Created, Updated FROM Warning WHERE Id = ?;",
+                    include_str!("get-item.sql"),
                     rusqlite::params![id],
                     |row| {
                         Ok(Warning {
@@ -107,7 +107,7 @@ impl BackendWarning for SqliteBackend {
             move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare("SELECT SW.StoryId FROM StoryWarning SW LEFT JOIN Story S ON S.Id = SW.StoryId WHERE SW.WarningId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;")?;
+                let mut stmt = conn.prepare(include_str!("stories-items.sql"))?;
 
                 let items: Vec<Entity> = match stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| Ok(Entity {
                     id: row.get(0).context("Attempting to get row index 0 for warning story id")?,
@@ -119,7 +119,7 @@ impl BackendWarning for SqliteBackend {
                 };
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(SW.StoryId) as Count FROM StoryWarning SW LEFT JOIN Story S ON S.Id = SW.StoryId WHERE SW.WarningId = ?;",
+                    include_str!("stories-count.sql"),
                     rusqlite::params![id],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for warning story count")?)
                 )? {

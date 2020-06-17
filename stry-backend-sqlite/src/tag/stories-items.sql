@@ -1,0 +1,1 @@
+SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = ST.StoryId WHERE ST.TagId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;

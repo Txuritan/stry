@@ -21,7 +21,7 @@ impl BackendTag for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let mut stmt =
-                    conn.prepare("SELECT Id, Name, Created, Updated FROM Tag ORDER BY Name ASC LIMIT ? OFFSET ?;")?;
+                    conn.prepare(include_str!("all-items.sql"))?;
 
                 let items = match stmt
                     .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
@@ -42,7 +42,7 @@ impl BackendTag for SqliteBackend {
                     };
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(Id) as Count FROM Tag;",
+                    include_str!("all-count.sql"),
                     rusqlite::params![],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for tag count")?),
                 )? {
@@ -66,7 +66,7 @@ impl BackendTag for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let row = conn.query_row_anyhow(
-                    "SELECT Id, Name, Created, Updated FROM Tag WHERE Id = ?;",
+                    include_str!("get-item.sql"),
                     rusqlite::params![id],
                     |row| {
                         Ok(Tag {
@@ -108,7 +108,7 @@ impl BackendTag for SqliteBackend {
             move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare("SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = ST.StoryId WHERE ST.TagId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;")?;
+                let mut stmt = conn.prepare(include_str!("stories-items.sql"))?;
 
                 let items: Vec<Entity> = match stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| Ok(Entity {
                     id: row.get(0).context("Attempting to get row index 0 for tag story id")?,
@@ -120,7 +120,7 @@ impl BackendTag for SqliteBackend {
                 };
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(ST.StoryId) as Count FROM StoryTag ST LEFT JOIN Story S ON S.Id = ST.StoryId WHERE ST.TagId = ?;",
+                    include_str!("stories-count.sql"),
                     rusqlite::params![id],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for tag story count")?),
                 )? {

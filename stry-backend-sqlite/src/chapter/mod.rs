@@ -19,7 +19,7 @@ impl BackendChapter for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let row = conn.query_row_anyhow(
-                    "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
+                    include_str!("get-item.sql"),
                     rusqlite::params![story_id, chapter_number],
                     |row| {
                         Ok(Chapter {

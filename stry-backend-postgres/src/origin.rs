@@ -2,14 +2,14 @@ use {
     crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
+        backend::{BackendOrigin, BackendStory},
         models::{List, Origin, Story},
-        BackendOrigin, BackendStory,
     },
 };
 
 #[async_trait::async_trait]
 impl BackendOrigin for PostgresBackend {
-    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
+    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -23,7 +23,10 @@ impl BackendOrigin for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let origin = self.get_origin(id.into()).await?;
+            let origin = match self.get_origin(id.into()).await? {
+                Some(origin) => origin,
+                None => return Ok(None),
+            };
 
             items.push(origin);
         }
@@ -37,10 +40,10 @@ impl BackendOrigin for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 
-    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Origin> {
+    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -59,7 +62,7 @@ impl BackendOrigin for PostgresBackend {
             updated: row.try_get(3)?,
         };
 
-        Ok(origin)
+        Ok(Some(origin))
     }
 
     async fn origin_stories(
@@ -67,7 +70,7 @@ impl BackendOrigin for PostgresBackend {
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
-    ) -> anyhow::Result<List<Story>> {
+    ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -81,7 +84,10 @@ impl BackendOrigin for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let story = self.get_story(id.into()).await?;
+            let story = match self.get_story(id.into()).await? {
+                Some(story) => story,
+                None => return Ok(None),
+            };
 
             items.push(story);
         }
@@ -95,6 +101,6 @@ impl BackendOrigin for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 }

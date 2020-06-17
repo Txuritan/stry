@@ -5,7 +5,7 @@ use {
 };
 
 #[rustfmt::skip]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Author {
     pub id: String,

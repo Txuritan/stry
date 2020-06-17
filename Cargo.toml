@@ -1,11 +1,18 @@
 [workspace]
 members = [
     "stry",
+    "stry-frontend",
+    "stry-frontend-api",
+    "stry-frontend-user",
+    "stry-frontend-common",
+    "stry-downloader",
     "stry-backend",
     "stry-backend-postgres",
     "stry-backend-sqlite",
     "stry-common",
+    "stry-common-helpers",
     "stry-migrate",
+    "stry-migrate-common",
 ]
 
 [profile.release]

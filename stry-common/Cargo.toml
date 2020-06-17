@@ -4,11 +4,15 @@ version = "2.3.0"
 authors = [ "Txuritan <txuritan@protonmail.com>" ]
 edition = "2018"
 
+license = "MIT OR Apache-2.0"
+
 build = "build.rs"
 
 workspace = ".."
 
 [features]
+nanoid = [ "rand" ]
+
 types-postgres = [ "postgres-types" ]
 types-sqlite = [ "rusqlite" ]
 
@@ -16,12 +20,14 @@ types-sqlite = [ "rusqlite" ]
 # Core
 anyhow = "1.0"
 async-trait = "0.1"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = [ "derive" ] }
+tracing = "0.1"
 
 # Database
-chrono = { version = "0.4", default-features = false, features = ["serde"] }
+chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 postgres-types = { version = "0.1", features = [ "derive" ], optional = true }
-rusqlite = { version = "0.22", features = [ "bundled" ], optional = true }
+rand = { version = "0.7", optional = true }
+rusqlite = { version = "0.23", features = [ "bundled" ], optional = true }
 
 # Search
 pest = "2.1"

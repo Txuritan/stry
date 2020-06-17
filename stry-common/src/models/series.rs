@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Series {
     pub id: String,
 

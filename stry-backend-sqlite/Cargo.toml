@@ -4,6 +4,8 @@ version = "2.3.0"
 authors = [ "Txuritan <txuritan@protonmail.com>" ]
 edition = "2018"
 
+license = "MIT OR Apache-2.0"
+
 build = "build.rs"
 
 workspace = ".."
@@ -14,6 +16,7 @@ stry-common = { path = "../stry-common", features = [ "types-sqlite" ] }
 # Core
 anyhow = "1.0"
 async-trait = "0.1"
+futures = "0.3"
 serde = { version = "1.0", features = [ "derive" ] }
 tokio = { version = "0.2", features = [ "blocking" ] }
 tracing = "0.1"
@@ -21,5 +24,38 @@ tracing = "0.1"
 # Database
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 r2d2 = "0.8"
-r2d2_sqlite = "0.15"
-rusqlite = { version = "0.22", features = [ "bundled", "chrono" ] }
+r2d2_sqlite = "0.16"
+rusqlite = { version = "0.23", features = [ "bundled", "chrono" ] }
+
+[dev-dependencies]
+stry-common-helpers = { path = "../stry-common-helpers" }
+
+pretty_assertions = "0.6"
+
+[[test]]
+name = "author"
+path = "tests/author.rs"
+
+[[test]]
+name = "chapter"
+path = "tests/chapter.rs"
+
+[[test]]
+name = "character"
+path = "tests/character.rs"
+
+[[test]]
+name = "origin"
+path = "tests/origin.rs"
+
+[[test]]
+name = "pairing"
+path = "tests/pairing.rs"
+
+[[test]]
+name = "story"
+path = "tests/story.rs"
+
+[[test]]
+name = "tag"
+path = "tests/tag.rs"

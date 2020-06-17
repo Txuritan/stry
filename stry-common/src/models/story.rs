@@ -1,11 +1,11 @@
 use {
-    crate::models::{Author, Origin, Series, Tag},
+    crate::models::{Author, Character, Origin, Pairing, Series, Tag, Warning},
     chrono::{DateTime, Utc},
     std::fmt,
 };
 
 #[rustfmt::skip]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Story {
     pub id: String,
@@ -20,9 +20,26 @@ pub struct Story {
 
     pub authors: Vec<Author>,
     pub origins: Vec<Origin>,
+
+    pub warnings: Vec<Warning>,
+    pub pairings: Vec<Pairing>,
+    pub characters: Vec<Character>,
     pub tags: Vec<Tag>,
 
     pub series: Option<Series>,
+
+    pub created: DateTime<Utc>,
+    pub updated: DateTime<Utc>,
+}
+
+pub struct StoryRow {
+    pub id: String,
+
+    pub name: String,
+    pub summary: String,
+
+    pub rating: Rating,
+    pub state: State,
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
@@ -37,12 +54,23 @@ pub struct StoryPart {
     pub rating: Rating,
     pub state: State,
 
+    pub chapters: u32,
+    pub words: u32,
+
+    pub authors: Vec<Author>,
+    pub origins: Vec<Origin>,
+
+    pub warnings: Vec<Warning>,
+    pub pairings: Vec<Pairing>,
+    pub characters: Vec<Character>,
+    pub tags: Vec<Tag>,
+
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
 }
 
 #[rustfmt::skip]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 #[cfg_attr(feature = "types-postgres", derive(postgres_types::ToSql, postgres_types::FromSql))]
 #[cfg_attr(feature = "types-postgres", postgres(name = "rating"))]
@@ -50,12 +78,15 @@ pub enum Rating {
     #[serde(rename = "explicit")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "explicit"))]
     Explicit,
+
     #[serde(rename = "mature")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "mature"))]
     Mature,
+
     #[serde(rename = "teen")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "teen"))]
     Teen,
+
     #[serde(rename = "general")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "general"))]
     General,
@@ -115,39 +146,7 @@ impl rusqlite::types::ToSql for Rating {
 }
 
 #[rustfmt::skip]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
-pub enum Warning {
-    #[serde(rename = "using")]
-    Using,
-    #[serde(rename = "none")]
-    None,
-}
-
-impl Warning {
-    pub fn title(self) -> &'static str {
-        match self {
-            Warning::Using => "Using",
-            Warning::None => "None",
-        }
-    }
-}
-
-impl fmt::Display for Warning {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Warning::Using => "background--red",
-                Warning::None => "background--gray",
-            }
-        )
-    }
-}
-
-#[rustfmt::skip]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 #[cfg_attr(feature = "types-postgres", derive(postgres_types::ToSql, postgres_types::FromSql))]
 #[cfg_attr(feature = "types-postgres", postgres(name = "state"))]
@@ -155,12 +154,15 @@ pub enum State {
     #[serde(rename = "completed")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "completed"))]
     Completed,
+
     #[serde(rename = "in-progress")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "in-progress"))]
     InProgress,
+
     #[serde(rename = "hiatus")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "hiatus"))]
     Hiatus,
+
     #[serde(rename = "abandoned")]
     #[cfg_attr(feature = "types-postgres", postgres(name = "abandoned"))]
     Abandoned,
@@ -202,7 +204,10 @@ impl rusqlite::types::FromSql for State {
                 "in-progress" => Ok(State::InProgress),
                 "hiatus" => Ok(State::Hiatus),
                 "abandoned" => Ok(State::Abandoned),
-                _ => Err(rusqlite::types::FromSqlError::InvalidType),
+                invalid => {
+                    tracing::debug!("Invalid state value: {}", invalid);
+                    Err(rusqlite::types::FromSqlError::InvalidType)
+                }
             })
     }
 }
@@ -220,10 +225,10 @@ impl rusqlite::types::ToSql for State {
 }
 
 #[rustfmt::skip]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Square {
     pub rating: Rating,
-    pub warnings: Warning,
+    pub warnings: bool,
     pub state: State,
 }

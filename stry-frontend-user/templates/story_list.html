@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% import "macros.html" as scope %}
+
+{% block content %}
+{% for s in stories %}
+{% call scope::story(s) %}
+{% endfor %}
+{{ pagination|safe }}
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        keyboardHandlers.storyListing();
+    });
+</script>
+{% endblock %}

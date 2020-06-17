@@ -1,7 +1,7 @@
 use {
     crate::PostgresBackend,
     std::borrow::Cow,
-    stry_common::{models::Chapter, BackendChapter},
+    stry_common::{backend::BackendChapter, models::Chapter},
 };
 
 #[async_trait::async_trait]
@@ -10,7 +10,7 @@ impl BackendChapter for PostgresBackend {
         &self,
         story_id: Cow<'static, str>,
         chapter_number: u32,
-    ) -> anyhow::Result<Chapter> {
+    ) -> anyhow::Result<Option<Chapter>> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -35,6 +35,6 @@ impl BackendChapter for PostgresBackend {
             updated: row.try_get(7)?,
         };
 
-        Ok(chapter)
+        Ok(Some(chapter))
     }
 }

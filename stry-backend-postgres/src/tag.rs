@@ -2,14 +2,14 @@ use {
     crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
+        backend::{BackendStory, BackendTag},
         models::{List, Story, Tag},
-        BackendStory, BackendTag,
     },
 };
 
 #[async_trait::async_trait]
 impl BackendTag for PostgresBackend {
-    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
+    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Tag>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -23,7 +23,10 @@ impl BackendTag for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let tag = self.get_tag(id.into()).await?;
+            let tag = match self.get_tag(id.into()).await? {
+                Some(tag) => tag,
+                None => return Ok(None),
+            };
 
             items.push(tag);
         }
@@ -37,10 +40,10 @@ impl BackendTag for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 
-    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Tag> {
+    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -55,13 +58,11 @@ impl BackendTag for PostgresBackend {
 
             name: row.try_get(1)?,
 
-            typ: row.try_get(2)?,
-
-            created: row.try_get(3)?,
-            updated: row.try_get(4)?,
+            created: row.try_get(2)?,
+            updated: row.try_get(3)?,
         };
 
-        Ok(tag)
+        Ok(Some(tag))
     }
 
     async fn tag_stories(
@@ -69,7 +70,7 @@ impl BackendTag for PostgresBackend {
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
-    ) -> anyhow::Result<List<Story>> {
+    ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -83,7 +84,10 @@ impl BackendTag for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let story = self.get_story(id.into()).await?;
+            let story = match self.get_story(id.into()).await? {
+                Some(story) => story,
+                None => return Ok(None),
+            };
 
             items.push(story);
         }
@@ -97,6 +101,6 @@ impl BackendTag for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 }

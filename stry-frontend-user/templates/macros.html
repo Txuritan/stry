@@ -1,0 +1,43 @@
+{% macro story(s) %}
+<article class="card">
+    <div class="card__title">
+        <div class="media-object">
+            <div class="media-object__left">
+                <div class="tiles">
+                    <div class="tile__top tile__left {{ s.square.rating }}" aria-label="Rating: {{ s.square.rating.title() }}"></div>
+                    <div class="tile__top tile__right {% if s.square.warnings %}background--red{% else %}background--gray{% endif %}" aria-label="Warnings: {% if s.square.warnings %}Using{% else %}None{% endif %}"></div>
+                    <div class="tile__bottom tile__center {{ s.square.state }}" aria-label="State: {{ s.square.state.title() }}"></div>
+                </div>
+            </div>
+            <div class="media-object__title">
+                <h2 class="media-object__title--sup"><a href="/story/{{ s.id }}/1">{{ s.name }}</a> by {{ s.authors|join(", ")|safe }}</h2>
+                <p class="media-object__title--sub">{{ s.origins|join(", ")|safe }}</p>
+            </div>
+            <p class="media-object__meta media-object__meta--text">{{ s.updated.format("%b %e, %Y") }}</p>
+        </div>
+    </div>
+    <p class="card__summary">{{ s.summary }}</p>
+    <ul class="card__list label__list">
+        {%- for warning in s.warnings %}
+            {{ warning|safe -}}
+        {%- endfor %}
+        {%- for pairing in s.pairings %}
+            {{ pairing|safe -}}
+        {%- endfor %}
+        {%- for character in s.characters %}
+            {{ character|safe -}}
+        {%- endfor %}
+        {%- for tag in s.tags %}
+            {{ tag|safe -}}
+        {%- endfor %}
+    </ul>
+    <div class="card__meta">
+        <p class="card__meta--left">
+            {%- if s.series.is_some() -%}
+            {% let ss = s.series.as_ref().unwrap() %}book {{ ss.place }} in <a href="/series/{{ ss.id }}">{{ ss.name }}</a>
+            {%- endif -%}
+        </p>
+        <p class="card__meta--right">{{ s.words.readable() }} words | {{ s.chapters.readable() }} chapters</p>
+    </div>
+</article>
+{% endmacro %}

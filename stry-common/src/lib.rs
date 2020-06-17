@@ -1,11 +1,12 @@
 pub mod models;
 
 pub mod backend;
+pub mod config;
+pub mod search;
 pub mod utils;
 
-pub use crate::backend::{
-    Backend, BackendAuthor, BackendChapter, BackendOrigin, BackendStory, BackendTag,
-};
+#[cfg(feature = "nanoid")]
+pub mod nanoid;
 
 pub const GIT_VERSION: &str = env!("GIT_VERSION");
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

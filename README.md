@@ -1,6 +1,6 @@
 <div>
   <p align="center">
-    <img align="center" src="./assets/apple-touch-icon-120x120-precomposed.png" alt="stry's home" />
+    <img align="center" src="./assets/icon.png" alt="stry's home" />
     <h3 align="center">stry</h3>
     <div align="center">
       <strong>A mini self-hosted Archive of Our Own, or a story host with tagging.</strong>

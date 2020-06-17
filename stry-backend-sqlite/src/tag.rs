@@ -1,73 +1,89 @@
 use {
-    crate::SqliteBackend,
+    crate::{
+        utils::{SqliteExt, SqliteStmtExt},
+        SqliteBackend,
+    },
+    anyhow::Context,
     std::borrow::Cow,
     stry_common::{
+        backend::{BackendStory, BackendTag},
         models::{Entity, List, Story, Tag},
-        BackendStory, BackendTag,
     },
 };
 
 #[async_trait::async_trait]
 impl BackendTag for SqliteBackend {
-    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<List<Tag>> {
-        let ids = tokio::task::spawn_blocking({
+    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Tag>>> {
+        let tags = tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<List<Entity>> {
+            move || -> anyhow::Result<Option<List<Tag>>> {
                 let conn = inner.0.get()?;
 
                 let mut stmt =
-                    conn.prepare("SELECT id FROM tag ORDER BY name DESC LIMIT ? OFFSET ?;")?;
+                    conn.prepare("SELECT Id, Name, Created, Updated FROM Tag ORDER BY Name ASC LIMIT ? OFFSET ?;")?;
 
-                let items = stmt
-                    .query_map(rusqlite::params![limit, offset], |row| {
-                        Ok(Entity { id: row.get(0)? })
+                let items = match stmt
+                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
+                        Ok(Tag {
+                            id: row.get(0).context("Attempting to get row index 0 for tag")?,
+
+                            name: row.get(1).context("Attempting to get row index 1 for tag")?,
+
+                            created: row.get(2).context("Attempting to get row index 2 for tag")?,
+                            updated: row.get(3).context("Attempting to get row index 3 for tag")?,
+                        })
                     })?
-                    .collect::<Result<_, _>>()?;
+                    .map(|tags| {
+                        tags.collect::<Result<_, _>>()
+                    }) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
 
-                let total = conn.query_row(
-                    "SELECT COUNT(id) as count FROM tag;",
+                let total = match conn.query_row_anyhow(
+                    "SELECT COUNT(Id) as Count FROM Tag;",
                     rusqlite::params![],
-                    |row| Ok(row.get(0)?),
-                )?;
+                    |row| Ok(row.get(0).context("Attempting to get row index 0 for tag count")?),
+                )? {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
 
-                Ok(List { total, items })
+                Ok(Some(List { total, items }))
             }
         })
         .await??;
 
-        let (total, entities) = ids.into_parts();
-
-        let mut items = Vec::with_capacity(limit as usize);
-
-        for Entity { id } in entities {
-            let story = self.get_tag(id.into()).await?;
-
-            items.push(story);
-        }
-
-        Ok(List { total, items })
+        Ok(tags)
     }
 
-    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Tag> {
+    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<Tag> {
+            move || -> anyhow::Result<Option<Tag>> {
                 let conn = inner.0.get()?;
 
-                let row = conn.query_row(
-                    "SELECT id, name, typ, created, updated FROM tag WHERE id = ?;",
+                let row = conn.query_row_anyhow(
+                    "SELECT Id, Name, Created, Updated FROM Tag WHERE Id = ?;",
                     rusqlite::params![id],
                     |row| {
                         Ok(Tag {
-                            id: row.get(0)?,
-                            name: row.get(1)?,
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for tag")?,
 
-                            typ: row.get(2)?,
+                            name: row
+                                .get(1)
+                                .context("Attempting to get row index 1 for tag")?,
 
-                            created: row.get(3)?,
-                            updated: row.get(4)?,
+                            created: row
+                                .get(2)
+                                .context("Attempting to get row index 2 for tag")?,
+                            updated: row
+                                .get(3)
+                                .context("Attempting to get row index 3 for tag")?,
                         })
                     },
                 )?;
@@ -85,38 +101,56 @@ impl BackendTag for SqliteBackend {
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
-    ) -> anyhow::Result<List<Story>> {
-        let ids = tokio::task::spawn_blocking({
+    ) -> anyhow::Result<Option<List<Story>>> {
+        let ids = match tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<List<Entity>> {
+            move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare("SELECT ST.story_id FROM story_tag ST LEFT JOIN story S ON S.id = ST.story_id WHERE ST.tag_id = ? ORDER BY S.updated DESC LIMIT ? OFFSET ?;")?;
+                let mut stmt = conn.prepare("SELECT ST.StoryId FROM StoryTag ST LEFT JOIN Story S ON S.Id = ST.StoryId WHERE ST.TagId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;")?;
 
-                let items: Vec<Entity> = stmt.query_map(rusqlite::params![id, limit, offset], |row| Ok(Entity {
-                    id: row.get(0)?,
-                }))?.collect::<Result<_, _>>()?;
+                let items: Vec<Entity> = match stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| Ok(Entity {
+                    id: row.get(0).context("Attempting to get row index 0 for tag story id")?,
+                }))?.map(|items| {
+                    items.collect::<Result<_, _>>()
+                }) {
+                    Some(items) => items?,
+                    None => return Ok(None),
+                };
 
-                let total = conn.query_row("SELECT COUNT(ST.story_id) as id FROM story_tag ST LEFT JOIN story S ON S.id = ST.story_id WHERE ST.tag_id = ?;", rusqlite::params![id], |row| Ok(row.get(0)?))?;
+                let total = match conn.query_row_anyhow(
+                    "SELECT COUNT(ST.StoryId) as Count FROM StoryTag ST LEFT JOIN Story S ON S.Id = ST.StoryId WHERE ST.TagId = ?;",
+                    rusqlite::params![id],
+                    |row| Ok(row.get(0).context("Attempting to get row index 0 for tag story count")?),
+                )? {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
 
-                Ok(List {
+                Ok(Some(List {
                     total,
                     items,
-                })
+                }))
             }
-        }).await??;
+        }).await?? {
+            Some(ids) => ids,
+            None => return Ok(None),
+        };
 
         let (total, entities) = ids.into_parts();
 
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = self.get_story(id.into()).await?;
+            let story = match self.get_story(id.into()).await? {
+                Some(story) => story,
+                None => return Ok(None),
+            };
 
             items.push(story);
         }
 
-        Ok(List { total, items })
+        Ok(Some(List { total, items }))
     }
 }

@@ -1,11 +1,11 @@
 use chrono::{DateTime, Utc};
 
 #[rustfmt::skip]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Notification {
     pub id: String,
-    
+
     #[serde(rename = "level")]
     pub level: Level,
 
@@ -17,7 +17,7 @@ pub struct Notification {
 }
 
 #[rustfmt::skip]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub enum Level {
     #[serde(rename = "error")]

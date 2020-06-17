@@ -1,0 +1,33 @@
+{% extends "../base.html" %}
+
+{% import "../macros.html" as scope %}
+
+{% block content %}
+{% call scope::story(story) %}
+<hr />
+<p>Chapter {{ page }}: {{ chapter.name }}</p>
+<hr />
+<p id="chapter-raw" hidden>{{ chapter.main }}</p>
+<div id="chapter-rendered" pad="p"></div>
+<hr />
+{{ pagination|safe }}
+{% endblock %}
+
+{% block script %}
+<script defer src="/js/marked.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("chapter-rendered").innerHTML = window.marked(document.getElementById("chapter-raw").innerText);
+    });
+
+    window.onscroll = function() {
+        var pageHeight = document.documentElement.offsetHeight;
+        var windowHeight = window.innerHeight;
+        var scrollPosition = window.scrollY || window.pageYOffset || document.body.scrollTop + (document.documentElement && document.documentElement.scrollTop || 0);
+
+        if (pageHeight <= windowHeight + scrollPosition) {
+            alert('At the bottom');
+        }
+    };
+</script>
+{% endblock %}

@@ -5,11 +5,11 @@ use {
 };
 
 #[rustfmt::skip]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Origin {
     pub id: String,
-    
+
     pub name: String,
 
     pub created: DateTime<Utc>,

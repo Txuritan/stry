@@ -2,14 +2,14 @@ use {
     crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
+        backend::{BackendAuthor, BackendStory},
         models::{Author, List, Story},
-        BackendAuthor, BackendStory,
     },
 };
 
 #[async_trait::async_trait]
 impl BackendAuthor for PostgresBackend {
-    async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<List<Author>> {
+    async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Author>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -23,7 +23,10 @@ impl BackendAuthor for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let author = self.get_author(id.into()).await?;
+            let author = match self.get_author(id.into()).await? {
+                Some(author) => author,
+                None => return Ok(None),
+            };
 
             items.push(author);
         }
@@ -37,10 +40,10 @@ impl BackendAuthor for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 
-    async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Author> {
+    async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -59,7 +62,7 @@ impl BackendAuthor for PostgresBackend {
             updated: row.try_get(3)?,
         };
 
-        Ok(author)
+        Ok(Some(author))
     }
 
     async fn author_stories(
@@ -67,7 +70,7 @@ impl BackendAuthor for PostgresBackend {
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
-    ) -> anyhow::Result<List<Story>> {
+    ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -81,7 +84,10 @@ impl BackendAuthor for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let story = self.get_story(id.into()).await?;
+            let story = match self.get_story(id.into()).await? {
+                Some(story) => story,
+                None => return Ok(None),
+            };
 
             items.push(story);
         }
@@ -95,6 +101,6 @@ impl BackendAuthor for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 }

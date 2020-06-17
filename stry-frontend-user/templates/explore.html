@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div label-list>
+{% for resource in resources %}
+    <a label l-bg="{{ resource.color().0 }}" d-bg="{{ resource.color().1 }}" href="/{{ typ }}/{{ resource.id() }}">{{ resource.name() }}</a>
+{% endfor %}
+</div>
+{{ pagination|safe }}
+{% endblock %}
+
+{% block script %}{% endblock %}

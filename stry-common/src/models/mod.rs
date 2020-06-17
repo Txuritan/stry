@@ -1,12 +1,15 @@
 pub mod api;
 pub mod author;
 pub mod chapter;
+pub mod character;
 pub mod notification;
 pub mod origin;
+pub mod pairing;
 pub mod series;
 pub mod site;
 pub mod story;
 pub mod tag;
+pub mod warning;
 
 use {
     chrono::{DateTime, Utc},
@@ -16,12 +19,15 @@ use {
 pub use self::{
     author::Author,
     chapter::Chapter,
+    character::Character,
     notification::{Level, Notification},
     origin::Origin,
+    pairing::Pairing,
     series::Series,
     site::Site,
-    story::{Rating, Square, State, Story, Warning},
-    tag::{Tag, TagType},
+    story::{Rating, Square, State, Story},
+    tag::Tag,
+    warning::Warning,
 };
 
 pub trait Resource {
@@ -37,7 +43,9 @@ pub trait Schema {
     fn schema(m: &mut impl fmt::Write) -> fmt::Result;
 }
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct List<T> {
     pub total: u32,
     pub items: Vec<T>,
@@ -49,7 +57,9 @@ impl<T> List<T> {
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Entity {
     pub id: String,
 }
@@ -84,7 +94,9 @@ impl Default for Paging {
     }
 }
 
-#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+#[rustfmt::skip]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Search {
     pub search: String,
 }

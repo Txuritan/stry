@@ -1,19 +1,24 @@
 use {
     crate::PostgresBackend,
+    futures::try_join,
     std::borrow::Cow,
     stry_common::{
-        models::{story::StoryPart, List, Square, Story, TagType, Warning},
-        BackendAuthor, BackendOrigin, BackendStory, BackendTag,
+        backend::{BackendAuthor, BackendOrigin, BackendStory, BackendTag},
+        models::{
+            story::{StoryPart, StoryRow},
+            Author, Character, Entity, List, Origin, Pairing, Square, Story, Tag, Warning,
+        },
+        search::SearchParser,
     },
 };
 
 #[async_trait::async_trait]
 impl BackendStory for PostgresBackend {
-    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<List<Story>> {
+    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
-            .prepare("SELECT id FROM story ORDER BY name DESC LIMIT $1 OFFSET $2;")
+            .prepare("SELECT Id FROM Story ORDER BY Name DESC LIMIT $1 OFFSET $2;")
             .await?;
 
         let id_rows = conn.query(&stmt, &[&limit, &offset]).await?;
@@ -23,13 +28,16 @@ impl BackendStory for PostgresBackend {
         for id_row in id_rows {
             let id: String = id_row.try_get(0)?;
 
-            let story = self.get_story(id.into()).await?;
+            let story = match self.get_story(id.into()).await? {
+                Some(story) => story,
+                None => return Ok(None),
+            };
 
             items.push(story);
         }
 
         let total = conn
-            .query_one("SELECT COUNT(id) as count FROM story;", &[])
+            .query_one("SELECT COUNT(Id) as Count FROM Story;", &[])
             .await?;
 
         let list = List {
@@ -37,120 +45,209 @@ impl BackendStory for PostgresBackend {
             items,
         };
 
-        Ok(list)
+        Ok(Some(list))
     }
 
-    async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Story> {
+    async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
         let conn = self.0.get().await?;
 
-        let author_stmt = conn
-            .prepare("SELECT A.id FROM story_author SA LEFT JOIN author A ON SA.author_id = A.id WHERE SA.story_id = $1 ORDER BY A.name;")
-            .await?;
+        let id_params = &[&id as &(dyn tokio_postgres::types::ToSql + Sync)]
+            as &[&(dyn tokio_postgres::types::ToSql + Sync)];
 
-        let origin_stmt = conn
-            .prepare("SELECT O.id FROM story_origin SO LEFT JOIN origin O ON SO.origin_id = O.id WHERE SO.story_id = $1 ORDER BY O.name;")
-            .await?;
+        let (
+            author_stmt, origin_stmt,
+            warning_stmt, character_stmt, tag_stmt,
+            story_pairings_stmt, pairing_stmt,
+            story_row,
+            chapter_row, word_row,
+        ) = try_join!(
+            // author_stmt
+            conn.prepare("SELECT A.Id FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = $1 ORDER BY A.Name;"),
+            // origin_stmt
+            conn.prepare("SELECT O.Id FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = $1 ORDER BY O.Name;"),
+            // warning_stmt
+            conn.prepare("SELECT W.Id, W.Name, W.Created, W.Updated FROM StoryWarning SW LEFT JOIN Warning W ON SW.WarningId = W.Id WHERE SW.StoryId = $1 ORDER BY W.Name;"),
+            // character_stmt
+            conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM StoryCharacter SC LEFT JOIN Character C ON SC.CharacterId = C.Id WHERE SC.StoryId = $1 ORDER BY C.Name;"),
+            // tag_stmt
+            conn.prepare("SELECT T.Id, T.Name, T.Created, T.Updated FROM StoryTag ST LEFT JOIN Tag T ON ST.TagId = T.Id WHERE ST.StoryId = $1 ORDER BY T.Name;"),
+            // story_pairings_stmt
+            conn.prepare("SELECT PairingId FROM StoryPairing WHERE StoryId = $1;"),
+            // pairing_stmt
+            conn.prepare("SELECT C.Id, C.Platonic, C.Created, C.Updated FROM Pairing P LEFT JOIN PairingCharacter PC ON PC.PairingId = P.Id LEFT JOIN Character C ON PC.CharacterId = C.Id WHERE P.Id = $1 ORDER BY C.Name ASC;"),
+            // story_row
+            conn.query_one("SELECT Id, Name, Summary, Rating, State, Created, Updated FROM Story WHERE Id = $1;", id_params),
+            // chapter_row
+            conn.query_one(
+                "SELECT COUNT(StoryId) as Count FROM StoryChapter WHERE StoryId = $1;",
+                id_params,
+            ),
+            // word_row
+            conn.query_one("SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Cd = SC.ChapterId WHERE SC.StoryId = $1;", id_params),
+        )?;
 
-        let tag_stmt = conn
-            .prepare("SELECT T.id FROM story_tag ST LEFT JOIN tag T ON ST.tag_id = T.id WHERE ST.story_id = $1 ORDER BY T.name;")
-            .await?;
+        let (author_rows, origin_rows, warning_rows, pairing_rows, character_rows, tag_rows) = try_join!(
+            // author_rows
+            conn.query(&author_stmt, id_params),
+            // origin_rows
+            conn.query(&origin_stmt, id_params),
+            // warning_rows
+            conn.query(&warning_stmt, id_params),
+            // pairing_rows
+            conn.query(&pairing_stmt, id_params),
+            // character_rows
+            conn.query(&character_stmt, id_params),
+            // tag_rows
+            conn.query(&tag_stmt, id_params),
+        )?;
 
-        let row = conn
-            .query_one("SELECT id, name, summary, rating, state, created, updated FROM story WHERE id = $1;", &[&id])
-            .await?;
+        let authors = author_rows
+            .into_iter()
+            .map(|row| -> Result<Author, tokio_postgres::Error> {
+                Ok(Author {
+                    id: row.try_get(0)?,
 
-        let story_part = StoryPart {
-            id: row.try_get(0)?,
+                    name: row.try_get(1)?,
 
-            name: row.try_get(1)?,
+                    created: row.try_get(2)?,
+                    updated: row.try_get(3)?,
+                })
+            })
+            .collect::<Result<_, _>>()?;
 
-            summary: row.try_get(2)?,
+        let origins = origin_rows
+            .into_iter()
+            .map(|row| -> Result<Origin, tokio_postgres::Error> {
+                Ok(Origin {
+                    id: row.try_get(0)?,
 
-            rating: row.try_get(3)?,
-            state: row.try_get(4)?,
+                    name: row.try_get(1)?,
 
-            created: row.try_get(5)?,
-            updated: row.try_get(6)?,
-        };
+                    created: row.try_get(2)?,
+                    updated: row.try_get(3)?,
+                })
+            })
+            .collect::<Result<_, _>>()?;
 
-        let chapters = conn
-            .query_one(
-                "SELECT COUNT(story_id) as count FROM story_chapter WHERE story_id = ?;",
-                &[&id],
-            )
-            .await?
-            .try_get(0)?;
+        let warnings = warning_rows
+            .into_iter()
+            .map(|row| -> Result<Warning, tokio_postgres::Error> {
+                Ok(Warning {
+                    id: row.try_get(0)?,
 
-        let words = conn
-            .query_one("SELECT SUM(C.words) as words FROM story_chapter SC LEFT JOIN chapter C ON C.id = SC.chapter_id WHERE SC.story_id = ?;", &[&id])
-            .await?
-            .try_get(0)?;
+                    name: row.try_get(1)?,
 
-        let author_rows = conn.query(&author_stmt, &[&id]).await?;
+                    created: row.try_get(2)?,
+                    updated: row.try_get(3)?,
+                })
+            })
+            .collect::<Result<Vec<Warning>, _>>()?;
 
-        let mut authors = Vec::with_capacity(author_rows.len());
+        let mut pairings = Vec::with_capacity(pairing_rows.len());
 
-        for id_row in author_rows {
-            let id: String = id_row.try_get(0)?;
+        for row in pairing_rows {
+            let pairing_id: String = row.try_get(0)?;
 
-            let author = self.get_author(id.into()).await?;
+            let characters = conn
+                .query(&pairing_stmt, &[&pairing_id])
+                .await?
+                .into_iter()
+                .map(|row| -> Result<Character, tokio_postgres::Error> {
+                    Ok(Character {
+                        id: row.try_get(0)?,
 
-            authors.push(author);
+                        name: row.try_get(1)?,
+
+                        created: row.try_get(2)?,
+                        updated: row.try_get(3)?,
+                    })
+                })
+                .collect::<Result<_, _>>()?;
+
+            pairings.push(Pairing {
+                id: pairing_id,
+
+                characters,
+
+                platonic: row.try_get(1)?,
+
+                created: row.try_get(2)?,
+                updated: row.try_get(3)?,
+            });
         }
 
-        let origin_rows = conn.query(&origin_stmt, &[&id]).await?;
+        let characters = character_rows
+            .into_iter()
+            .map(|row| -> Result<Character, tokio_postgres::Error> {
+                Ok(Character {
+                    id: row.try_get(0)?,
 
-        let mut origins = Vec::with_capacity(origin_rows.len());
+                    name: row.try_get(1)?,
 
-        for id_row in origin_rows {
-            let id: String = id_row.try_get(0)?;
+                    created: row.try_get(2)?,
+                    updated: row.try_get(3)?,
+                })
+            })
+            .collect::<Result<_, _>>()?;
 
-            let origin = self.get_origin(id.into()).await?;
+        let tags = tag_rows
+            .into_iter()
+            .map(|row| -> Result<Tag, tokio_postgres::Error> {
+                Ok(Tag {
+                    id: row.try_get(0)?,
 
-            origins.push(origin);
-        }
+                    name: row.try_get(1)?,
 
-        let tag_rows = conn.query(&tag_stmt, &[&id]).await?;
-
-        let mut tags = Vec::with_capacity(tag_rows.len());
-
-        for id_row in tag_rows {
-            let id: String = id_row.try_get(0)?;
-
-            let tag = self.get_tag(id.into()).await?;
-
-            tags.push(tag);
-        }
+                    created: row.try_get(2)?,
+                    updated: row.try_get(3)?,
+                })
+            })
+            .collect::<Result<_, _>>()?;
 
         let story = Story {
-            id: story_part.id,
+            id: story_row.try_get(0)?,
 
-            name: story_part.name,
-            summary: story_part.summary,
+            name: story_row.try_get(1)?,
+            summary: story_row.try_get(2)?,
 
             square: Square {
-                rating: story_part.rating,
-                warnings: if tags.iter().any(|t| t.typ == TagType::Warning) {
-                    Warning::Using
-                } else {
-                    Warning::None
-                },
-                state: story_part.state,
+                rating: story_row.try_get(3)?,
+                warnings: !warnings.is_empty(),
+                state: story_row.try_get(4)?,
             },
 
-            chapters,
-            words,
+            chapters: chapter_row.try_get(0)?,
+            words: word_row.try_get(0)?,
 
             authors,
             origins,
+
+            warnings,
+            pairings,
+            characters,
             tags,
+
             // TODO
             series: None,
 
-            created: story_part.created,
-            updated: story_part.updated,
+            created: story_row.try_get(5)?,
+            updated: story_row.try_get(6)?,
         };
 
-        Ok(story)
+        Ok(Some(story))
+    }
+
+    async fn search_stories(
+        &self,
+        input: Cow<'static, str>,
+        offset: u32,
+        limit: u32,
+    ) -> anyhow::Result<Option<List<Story>>> {
+        // TODO: maybe wrap this in a blocking call
+        let values = SearchParser::parse_to_structure(input.as_ref())?;
+
+        let conn = self.0.get().await?;
+
+        todo!()
     }
 }

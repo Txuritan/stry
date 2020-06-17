@@ -1,72 +1,88 @@
 use {
-    crate::SqliteBackend,
+    crate::{
+        utils::{SqliteExt, SqliteStmtExt},
+        SqliteBackend,
+    },
+    anyhow::Context,
     std::borrow::Cow,
     stry_common::{
+        backend::{BackendOrigin, BackendStory},
         models::{Entity, List, Origin, Story},
-        BackendOrigin, BackendStory,
     },
 };
 
 #[async_trait::async_trait]
 impl BackendOrigin for SqliteBackend {
-    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<List<Origin>> {
-        let ids = tokio::task::spawn_blocking({
+    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
+        let origins = tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<List<Entity>> {
+            move || -> anyhow::Result<Option<List<Origin>>> {
                 let conn = inner.0.get()?;
 
                 let mut stmt =
-                    conn.prepare("SELECT id FROM origin ORDER BY name DESC LIMIT ? OFFSET ?;")?;
+                    conn.prepare("SELECT Id, Name, Created, Updated FROM Origin ORDER BY Name ASC LIMIT ? OFFSET ?;")?;
 
-                let items = stmt
-                    .query_map(rusqlite::params![limit, offset], |row| {
-                        Ok(Entity { id: row.get(0)? })
-                    })?
-                    .collect::<Result<_, _>>()?;
+                let items = match stmt
+                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
+                        Ok(Origin {
+                            id: row.get(0).context("Attempting to get row index 0 for origin")?,
 
-                let total = conn.query_row(
-                    "SELECT COUNT(id) as count FROM origin;",
+                            name: row.get(1).context("Attempting to get row index 1 for origin")?,
+
+                            created: row.get(2).context("Attempting to get row index 2 for origin")?,
+                            updated: row.get(3).context("Attempting to get row index 3 for origin")?,
+                        })
+                    })?.map(|tags| {
+                        tags.collect::<Result<_, _>>()
+                    }) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
+
+                let total = match conn.query_row_anyhow(
+                    "SELECT COUNT(Id) as Count FROM Origin;",
                     rusqlite::params![],
-                    |row| Ok(row.get(0)?),
-                )?;
+                    |row| Ok(row.get(0).context("Attempting to get row index 0 for origin count")?),
+                )? {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
 
-                Ok(List { total, items })
+                Ok(Some(List { total, items }))
             }
         })
         .await??;
 
-        let (total, entities) = ids.into_parts();
-
-        let mut items = Vec::with_capacity(limit as usize);
-
-        for Entity { id } in entities {
-            let story = self.get_origin(id.into()).await?;
-
-            items.push(story);
-        }
-
-        Ok(List { total, items })
+        Ok(origins)
     }
 
-    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Origin> {
+    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<Origin> {
+            move || -> anyhow::Result<Option<Origin>> {
                 let conn = inner.0.get()?;
 
-                let row = conn.query_row(
-                    "SELECT id, name, created, updated FROM origin WHERE id = ?;",
+                let row = conn.query_row_anyhow(
+                    "SELECT Id, Name, Created, Updated FROM Origin WHERE Id = ?;",
                     rusqlite::params![id],
                     |row| {
                         Ok(Origin {
-                            id: row.get(0)?,
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for origin")?,
 
-                            name: row.get(1)?,
+                            name: row
+                                .get(1)
+                                .context("Attempting to get row index 1 for origin")?,
 
-                            created: row.get(2)?,
-                            updated: row.get(3)?,
+                            created: row
+                                .get(2)
+                                .context("Attempting to get row index 2 for origin")?,
+                            updated: row
+                                .get(3)
+                                .context("Attempting to get row index 3 for origin")?,
                         })
                     },
                 )?;
@@ -84,38 +100,56 @@ impl BackendOrigin for SqliteBackend {
         id: Cow<'static, str>,
         offset: u32,
         limit: u32,
-    ) -> anyhow::Result<List<Story>> {
-        let ids = tokio::task::spawn_blocking({
+    ) -> anyhow::Result<Option<List<Story>>> {
+        let ids = match tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<List<Entity>> {
+            move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare("SELECT SO.story_id FROM story_origin SO LEFT JOIN story S ON S.id = SO.story_id WHERE SO.origin_id = ? ORDER BY S.updated DESC LIMIT ? OFFSET ?;")?;
+                let mut stmt = conn.prepare("SELECT SO.StoryId FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;")?;
 
-                let items: Vec<Entity> = stmt.query_map(rusqlite::params![id, limit, offset], |row| Ok(Entity {
-                    id: row.get(0)?,
-                }))?.collect::<Result<_, _>>()?;
+                let items: Vec<Entity> = match stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| Ok(Entity {
+                    id: row.get(0).context("Attempting to get row index 0 for origin story id")?,
+                }))?.map(|items| {
+                    items.collect::<Result<_, _>>()
+                }) {
+                    Some(items) => items?,
+                    None => return Ok(None),
+                };
 
-                let total = conn.query_row("SELECT COUNT(SO.story_id) as id FROM story_origin SO LEFT JOIN story S ON S.id = SO.story_id WHERE SO.origin_id = ?;", rusqlite::params![id], |row| Ok(row.get(0)?))?;
+                let total = match conn.query_row_anyhow(
+                    "SELECT COUNT(SO.StoryId) as Id FROM StoryOrigin SO LEFT JOIN Story S ON S.Id = SO.StoryId WHERE SO.OriginId = ?;",
+                    rusqlite::params![id],
+                    |row| Ok(row.get(0).context("Attempting to get row index 0 for origin story count")?),
+                )? {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
 
-                Ok(List {
+                Ok(Some(List {
                     total,
                     items,
-                })
+                }))
             }
-        }).await??;
+        }).await?? {
+            Some(ids) => ids,
+            None => return Ok(None),
+        };
 
         let (total, entities) = ids.into_parts();
 
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = self.get_story(id.into()).await?;
+            let story = match self.get_story(id.into()).await? {
+                Some(story) => story,
+                None => return Ok(None),
+            };
 
             items.push(story);
         }
 
-        Ok(List { total, items })
+        Ok(Some(List { total, items }))
     }
 }

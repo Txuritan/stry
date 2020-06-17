@@ -15,7 +15,7 @@ Database(
         ),
 
 
-        // story Tables
+        // Story Tables
         Table(
             name: "author",
             not_exists: true,
@@ -181,6 +181,20 @@ Database(
                 ForeignKey( table: "tag",       local: "tag_id",         foreign: "id", ),
             ],
         ),
+        Table(
+            name: "story_warning",
+            not_exists: true,
+            columns: [
+                Column( name: "story_id",       type: String,         required: true,     primary: true, ),
+                Column( name: "warning_id",     type: String,         required: true,     primary: true, ),
+                Column( name: "created",        type: DateTime,       required: true, ),
+                Column( name: "updated",        type: DateTime,       required: true, ),
+            ],
+            foreign_keys: [
+                ForeignKey( table: "story",     local: "story_id",       foreign: "id", ),
+                ForeignKey( table: "tag",       local: "warning_id",     foreign: "id", ),
+            ],
+        ),
 
 
 
@@ -218,7 +232,7 @@ Database(
         ),
 
 
-        // Worker story Tables
+        // Worker Story Tables
         Table(
             name: "worker_author",
             not_exists: true,

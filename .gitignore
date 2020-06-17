@@ -1,10 +1,7 @@
 /target
 /.idea
 **/*.rs.bk
-*.sql
 *.json
 *.log
-*.db
 *.exe
 *.dot
-stry.toml

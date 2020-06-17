@@ -1,0 +1,22 @@
+[package]
+name = "stry-downloader"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT OR Apache-2.0"
+
+workspace = ".."
+
+[dependencies]
+stry-common = { path = "../stry-common" }
+stry-backend = { path = "../stry-backend" }
+
+# Core
+anyhow = "1.0"
+tracing = "0.1"
+
+# Crate
+pin-project = "0.4"
+story-dl = { version = "0.4", default-features = false }
+tokio = { version = "0.2", default-features = false, features = [ "sync" ] }

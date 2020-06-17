@@ -1,7 +1,8 @@
 use {
-    crate::SqliteBackend,
+    crate::{utils::SqliteExt, SqliteBackend},
+    anyhow::Context,
     std::borrow::Cow,
-    stry_common::{models::Chapter, BackendChapter},
+    stry_common::{backend::BackendChapter, models::Chapter},
 };
 
 #[async_trait::async_trait]
@@ -10,36 +11,36 @@ impl BackendChapter for SqliteBackend {
         &self,
         story_id: Cow<'static, str>,
         chapter_number: u32,
-    ) -> anyhow::Result<Chapter> {
+    ) -> anyhow::Result<Option<Chapter>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<Chapter> {
-            let conn = inner.0.get()?;
+            move || -> anyhow::Result<Option<Chapter>> {
+                let conn = inner.0.get()?;
 
-            let row = conn.query_row(
-                "SELECT C.id, C.name, C.pre, C.main, C.post, C.words, C.created, C.updated FROM story_chapter SC LEFT JOIN chapter C ON SC.chapter_id = C.Id WHERE SC.story_id = ? AND SC.place = ?;",
-                rusqlite::params![story_id, chapter_number],
-                |row| {
-                    Ok(Chapter {
-                        id: row.get(0)?,
+                let row = conn.query_row_anyhow(
+                    "SELECT C.Id, C.Name, C.Pre, C.Main, C.Post, C.Words, C.Created, C.Updated FROM StoryChapter SC LEFT JOIN Chapter C ON SC.ChapterId = C.Id WHERE SC.StoryId = ? AND SC.Place = ?;",
+                    rusqlite::params![story_id, chapter_number],
+                    |row| {
+                        Ok(Chapter {
+                            id: row.get(0).context("Attempting to get row index 0 for chapter")?,
 
-                        name: row.get(1)?,
+                            name: row.get(1).context("Attempting to get row index 1 for chapter")?,
 
-                        pre: row.get(2)?,
-                        main: row.get(3)?,
-                        post: row.get(4)?,
+                            pre: row.get(2).context("Attempting to get row index 2 for chapter")?,
+                            main: row.get(3).context("Attempting to get row index 3 for chapter")?,
+                            post: row.get(4).context("Attempting to get row index 4 for chapter")?,
 
-                        words: row.get(5)?,
+                            words: row.get(5).context("Attempting to get row index 5 for chapter")?,
 
-                        created: row.get(6)?,
-                        updated: row.get(7)?,
-                    })
-                },
-            )?;
+                            created: row.get(6).context("Attempting to get row index 6 for chapter")?,
+                            updated: row.get(7).context("Attempting to get row index 7 for chapter")?,
+                        })
+                    },
+                ).context("Unable to get story chapter")?;
 
-            Ok(row)
-        }
+                Ok(row)
+            }
         })
         .await??;
 

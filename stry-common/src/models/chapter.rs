@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 
 #[rustfmt::skip]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Chapter {
     pub id: String,
@@ -13,7 +13,7 @@ pub struct Chapter {
     pub post: String,
 
     pub words: i64,
-    
+
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
 }

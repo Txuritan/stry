@@ -1,0 +1,20 @@
+[package]
+name = "stry-migrate-common"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT OR Apache-2.0"
+
+workspace = ".."
+
+[dependencies]
+stry-common = { path = "../stry-common" }
+
+anyhow = "1.0"
+serde = { version = "1.0", features = [ "derive" ] }
+tracing = "0.1"
+
+pest = "2.1"
+pest_derive = "2.1"
+

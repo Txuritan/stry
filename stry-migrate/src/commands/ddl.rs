@@ -1,24 +1,23 @@
 use {
-    crate::ddl::{Database, DatabaseType, ToSql},
-    std::fs,
+    std::{fs, io::BufWriter, str::FromStr},
+    stry_migrate_common::{
+        backend::{DatabaseType, ToSql},
+        ddl::Database,
+        models::Schema,
+    },
 };
 
 pub fn generate(file: &str, output: &str, style: &str) -> anyhow::Result<()> {
-    let database = Database::read_from(file)?;
+    let file_buff = fs::read(file)?;
+    let database: Database = ron::de::from_bytes(&file_buff)?;
 
-    let mut output_buff = Vec::new();
+    let schema: Schema = database.into();
 
-    match style {
-        "postgres" => {
-            database.to_sql(&mut output_buff, DatabaseType::PostgreSQL, ())?;
-        }
-        "sqlite" => {
-            database.to_sql(&mut output_buff, DatabaseType::SQLite, ())?;
-        }
-        _ => unreachable!(),
-    }
+    let mut buff = BufWriter::new(Vec::new());
 
-    fs::write(output, output_buff)?;
+    schema.to_sql(&mut buff, DatabaseType::from_str(style)?)?;
+
+    fs::write(output, &buff.into_inner()?)?;
 
     Ok(())
 }

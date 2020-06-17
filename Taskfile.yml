@@ -9,8 +9,12 @@ tasks:
     cmds:
       - dframe http://localhost:8901 --delay 5 --frame "Apple Thunderbolt Display, Microsoft Surface Pro 4, Samsung Galaxy S7" --output assets/pictures
 
-  generate-ddl:
+  generate-dal:
     cmds:
       - cargo build --bin stry-migrate
-      - cargo run --bin stry-migrate -- ddl generate --style postgres stry-common/schema.ron stry-backend-postgres/schema.sql
-      - cargo run --bin stry-migrate -- ddl generate --style sqlite stry-common/schema.ron stry-backend-sqlite/schema.sql
+#      - cargo run --bin stry-migrate -- dal generate --style postgres stry-common/schema.dal stry-backend-postgres/schema.sql
+      - cargo run --bin stry-migrate -- dal generate --style sqlite stry-common/schema.dal stry-backend-sqlite/schema.sql
+
+  test:
+    cmds:
+      - cargo test --package stry-backend-sqlite

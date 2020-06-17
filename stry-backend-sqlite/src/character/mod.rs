@@ -25,7 +25,7 @@ impl BackendCharacter for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let mut stmt =
-                    conn.prepare("SELECT Id, Name, Created, Updated FROM Character ORDER BY Name ASC LIMIT ? OFFSET ?;")?;
+                    conn.prepare(include_str!("all-items.sql"))?;
 
                 let items = match stmt
                     .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
@@ -45,7 +45,7 @@ impl BackendCharacter for SqliteBackend {
                     };
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(Id) as Count FROM Character;",
+                    include_str!("all-count.sql"),
                     rusqlite::params![],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for character count")?),
                 ).context("Unable to get total character count")? {
@@ -69,7 +69,7 @@ impl BackendCharacter for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let row = conn.query_row_anyhow(
-                    "SELECT Id, Name, Created, Updated FROM Character WHERE Id = ?;",
+                    include_str!("get-item.sql"),
                     rusqlite::params![id],
                     |row| {
                         Ok(Character {
@@ -111,7 +111,7 @@ impl BackendCharacter for SqliteBackend {
             move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare("SELECT SC.StoryId FROM StoryCharacter SC LEFT JOIN Story S ON S.Id = SC.StoryId WHERE SC.CharacterId = ? ORDER BY S.Updated DESC LIMIT ? OFFSET ?;")?;
+                let mut stmt = conn.prepare(include_str!("stories-items.sql"))?;
 
                 let items: Vec<Entity> = match stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| Ok(Entity {
                     id: row.get(0).context("Attempting to get row index 0 for character story")?,
@@ -123,7 +123,7 @@ impl BackendCharacter for SqliteBackend {
                 };
 
                 let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(SC.StoryId) as Count FROM StoryCharacter SC LEFT JOIN Story S ON S.Id = SC.StoryId WHERE SC.CharacterId = ?;",
+                    include_str!("stories-count.sql"),
                     rusqlite::params![id],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for character story count")?)
                 )? {

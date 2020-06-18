@@ -1641,6 +1641,7 @@ dependencies = [
  "stry-common-helpers 2.3.0",
  "tokio 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing-futures 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

@@ -34,7 +34,7 @@ impl Resource for Author {
     }
 
     fn color(&self) -> (&str, &str) {
-        ("blue-700", "blue-500")
+        ("background--blue", "background--blue")
     }
 }
 

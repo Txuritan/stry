@@ -1,4 +1,5 @@
 use {
+    crate::models::Resource,
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -13,6 +14,28 @@ pub struct Warning {
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+impl Resource for Warning {
+    fn id(&self) -> &str {
+        &self.id
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn created(&self) -> &DateTime<Utc> {
+        &self.created
+    }
+
+    fn updated(&self) -> &DateTime<Utc> {
+        &self.updated
+    }
+
+    fn color(&self) -> (&str, &str) {
+        ("background--red", "background--red")
+    }
 }
 
 impl fmt::Display for Warning {

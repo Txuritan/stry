@@ -9,10 +9,13 @@ use {
         pages::{ResourceList, StoryList},
         utils::wrap,
     },
+    anyhow::Context,
     askama::Template,
     std::borrow::Cow,
     stry_backend::DataBackend,
-    stry_common::backend::{BackendAuthor, BackendOrigin, BackendStory, BackendTag},
+    stry_common::backend::{
+        BackendAuthor, BackendCharacter, BackendOrigin, BackendStory, BackendTag, BackendWarning,
+    },
     stry_common::models::{Paging, Resource, RouteType},
     warp::{reject::not_found, Rejection, Reply},
 };
@@ -94,6 +97,28 @@ pub async fn explore(
                     }
                 }
             }
+            RouteType::Characters => {
+                match backend.all_characters(norm.page, norm.page_size).await? {
+                    Some(list) => {
+                        let (count, characters) = list.into_parts();
+
+                        let rendered: String = ResourceList::new(
+                            format!("{} | characters | explore", paging.page),
+                            rt,
+                            paging.page,
+                            (count + (norm.page_size - 1)) / norm.page_size,
+                            characters.iter().map(|a| a as &dyn Resource).collect(),
+                        )
+                        .render()?;
+
+                        Ok(rendered)
+                    }
+                    None => {
+                        // TODO: return 404 page
+                        todo!()
+                    }
+                }
+            }
             RouteType::Origins => {
                 match backend.all_origins(norm.page, norm.page_size).await? {
                     Some(list) => {
@@ -116,35 +141,53 @@ pub async fn explore(
                     }
                 }
             }
-            RouteType::Characters | RouteType::Pairings | RouteType::Tags | RouteType::Warnings => {
-                // let (count, tags) = backend
-                //     .all_tags_of_type(
-                //         match rt {
-                //             RouteType::Characters => TagType::Character,
-                //             RouteType::Pairings => TagType::Pairing,
-                //             RouteType::Tags => TagType::General,
-                //             RouteType::Warnings => TagType::Warning,
-                //             _ => unreachable!(),
-                //         },
-                //         norm.page,
-                //         norm.page_size,
-                //     )
-                //     .await?
-                //     .into_parts();
-
-                // let rendered: String = ResourceList::new(
-                //     format!("{} | {} | explore", paging.page, rt),
-                //     rt,
-                //     paging.page,
-                //     (count + (norm.page_size - 1)) / norm.page_size,
-                //     tags.iter().map(|a| a as &dyn Resource).collect(),
-                // )
-                // .render()?;
-
-                // Ok(rendered)
-
-                // TODO: separate now that these are different tables
+            RouteType::Pairings => {
+                // TODO: finish the backend handle for this
                 todo!()
+            }
+            RouteType::Tags => {
+                match backend.all_tags(norm.page, norm.page_size).await? {
+                    Some(list) => {
+                        let (count, tags) = list.into_parts();
+
+                        let rendered: String = ResourceList::new(
+                            format!("{} | tags | explore", paging.page),
+                            rt,
+                            paging.page,
+                            (count + (norm.page_size - 1)) / norm.page_size,
+                            tags.iter().map(|a| a as &dyn Resource).collect(),
+                        )
+                        .render()?;
+
+                        Ok(rendered)
+                    }
+                    None => {
+                        // TODO: return 404 page
+                        todo!()
+                    }
+                }
+            }
+            RouteType::Warnings => {
+                match backend.all_warnings(norm.page, norm.page_size).await? {
+                    Some(list) => {
+                        let (count, warnings) = list.into_parts();
+
+                        let rendered: String = ResourceList::new(
+                            format!("{} | warnings | explore", paging.page),
+                            rt,
+                            paging.page,
+                            (count + (norm.page_size - 1)) / norm.page_size,
+                            warnings.iter().map(|a| a as &dyn Resource).collect(),
+                        )
+                        .render()?;
+
+                        Ok(rendered)
+                    }
+                    None => {
+                        // TODO: return 404 page
+                        todo!()
+                    }
+                }
             }
         }
     })
@@ -168,7 +211,8 @@ pub async fn item(
             RouteType::Authors => {
                 match backend
                     .author_stories(id.clone(), norm.page, norm.page_size)
-                    .await?
+                    .await
+                    .context("Unable to search backend for authors stories")?
                 {
                     Some(list) => {
                         let (count, stories) = list.into_parts();
@@ -189,10 +233,36 @@ pub async fn item(
                     }
                 }
             }
+            RouteType::Characters => {
+                match backend
+                    .character_stories(id.clone(), norm.page, norm.page_size)
+                    .await
+                    .context("Unable to search backend for character stories")?
+                {
+                    Some(list) => {
+                        let (count, stories) = list.into_parts();
+
+                        // UNWRAP: database wouldn't return any stories if the origin didn't exist
+                        let character = backend.get_character(id.clone()).await?.unwrap();
+
+                        (
+                            format!("{} | {} | characters", paging.page, character.name),
+                            count,
+                            stories,
+                            format!("/characters/{}", id),
+                        )
+                    }
+                    None => {
+                        // TODO: return 404 page
+                        todo!()
+                    }
+                }
+            }
             RouteType::Origins => {
                 match backend
                     .origin_stories(id.clone(), norm.page, norm.page_size)
-                    .await?
+                    .await
+                    .context("Unable to search backend for origin stories")?
                 {
                     Some(list) => {
                         let (count, stories) = list.into_parts();
@@ -213,23 +283,59 @@ pub async fn item(
                     }
                 }
             }
-            RouteType::Characters | RouteType::Pairings | RouteType::Tags | RouteType::Warnings => {
-                // let (count, stories) = backend
-                //     .tag_stories(id.clone(), norm.page, norm.page_size)
-                //     .await?
-                //     .into_parts();
-
-                // let tag = backend.get_tag(id.clone()).await?;
-
-                // (
-                //     format!("{} | {} | {}", paging.page, tag.name, rt),
-                //     count,
-                //     stories,
-                //     format!("/{}/{}", rt, id),
-                // )
-
-                // TODO: separate now that these are different tables
+            RouteType::Pairings => {
+                // TODO: finish the backend handle for this
                 todo!()
+            }
+            RouteType::Tags => {
+                match backend
+                    .tag_stories(id.clone(), norm.page, norm.page_size)
+                    .await
+                    .context("Unable to search backend for tag stories")?
+                {
+                    Some(list) => {
+                        let (count, stories) = list.into_parts();
+
+                        // UNWRAP: database wouldn't return any stories if the origin didn't exist
+                        let tag = backend.get_tag(id.clone()).await?.unwrap();
+
+                        (
+                            format!("{} | {} | tags", paging.page, tag.name),
+                            count,
+                            stories,
+                            format!("/tags/{}", id),
+                        )
+                    }
+                    None => {
+                        // TODO: return 404 page
+                        todo!()
+                    }
+                }
+            }
+            RouteType::Warnings => {
+                match backend
+                    .warning_stories(id.clone(), norm.page, norm.page_size)
+                    .await
+                    .context("Unable to search backend for warning stories")?
+                {
+                    Some(list) => {
+                        let (count, stories) = list.into_parts();
+
+                        // UNWRAP: database wouldn't return any stories if the origin didn't exist
+                        let warning = backend.get_warning(id.clone()).await?.unwrap();
+
+                        (
+                            format!("{} | {} | warnings", paging.page, warning.name),
+                            count,
+                            stories,
+                            format!("/warnings/{}", id),
+                        )
+                    }
+                    None => {
+                        // TODO: return 404 page
+                        todo!()
+                    }
+                }
             }
         };
 
@@ -240,7 +346,8 @@ pub async fn item(
             (count + (norm.page_size - 1)) / norm.page_size,
             stories,
         )
-        .render()?;
+        .render()
+        .context("Unable to render item page")?;
 
         Ok(rendered)
     })

@@ -47,24 +47,7 @@ impl BackendOrigin for SqliteBackend {
                 let mut stmt = conn.prepare(include_str!("all-items.sql"))?;
 
                 let items = match stmt
-                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
-                        Ok(Origin {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for origin")?,
-
-                            name: row
-                                .get(1)
-                                .context("Attempting to get row index 1 for origin")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 2 for origin")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 3 for origin")?,
-                        })
-                    })?
+                    .type_query_map_anyhow::<Origin, _>(rusqlite::params![limit, offset * limit])?
                     .map(|tags| tags.collect::<Result<_, _>>())
                 {
                     Some(items) => items?,
@@ -99,27 +82,9 @@ impl BackendOrigin for SqliteBackend {
             move || -> anyhow::Result<Option<Origin>> {
                 let conn = inner.0.get()?;
 
-                let row = conn.query_row_anyhow(
+                let row = conn.type_query_row_anyhow::<Origin, _>(
                     include_str!("get-item.sql"),
                     rusqlite::params![id],
-                    |row| {
-                        Ok(Origin {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for origin")?,
-
-                            name: row
-                                .get(1)
-                                .context("Attempting to get row index 1 for origin")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 2 for origin")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 3 for origin")?,
-                        })
-                    },
                 )?;
 
                 Ok(row)

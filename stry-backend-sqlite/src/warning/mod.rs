@@ -47,24 +47,7 @@ impl BackendWarning for SqliteBackend {
                 let mut stmt = conn.prepare(include_str!("all-items.sql"))?;
 
                 let items = match stmt
-                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
-                        Ok(Warning {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for warning")?,
-
-                            name: row
-                                .get(1)
-                                .context("Attempting to get row index 1 for warning")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 2 for warning")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 3 for warning")?,
-                        })
-                    })?
+                    .type_query_map_anyhow::<Warning, _>(rusqlite::params![limit, offset * limit])?
                     .map(|items| items.collect::<Result<_, _>>())
                 {
                     Some(items) => items?,
@@ -99,27 +82,9 @@ impl BackendWarning for SqliteBackend {
             move || -> anyhow::Result<Option<Warning>> {
                 let conn = inner.0.get()?;
 
-                let row = conn.query_row_anyhow(
+                let row = conn.type_query_row_anyhow::<Warning, _>(
                     include_str!("get-item.sql"),
                     rusqlite::params![id],
-                    |row| {
-                        Ok(Warning {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for warning")?,
-
-                            name: row
-                                .get(1)
-                                .context("Attempting to get row index 1 for warning")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 2 for warning")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 3 for warning")?,
-                        })
-                    },
                 )?;
 
                 Ok(row)

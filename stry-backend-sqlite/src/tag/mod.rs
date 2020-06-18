@@ -1,6 +1,6 @@
 use {
     crate::{
-        utils::{SqliteExt, SqliteStmtExt},
+        utils::{SqliteExt, SqliteStmtExt, FromRow},
         SqliteBackend,
     },
     anyhow::Context,
@@ -10,6 +10,22 @@ use {
         models::{Entity, List, Story, Tag},
     },
 };
+
+impl FromRow for Tag {
+    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Tag {
+            id: row.get(0).context("Attempting to get row index 0 for tag")?,
+
+            name: row.get(1).context("Attempting to get row index 1 for tag")?,
+
+            created: row.get(2).context("Attempting to get row index 2 for tag")?,
+            updated: row.get(3).context("Attempting to get row index 3 for tag")?,
+        })
+    }
+}
 
 #[async_trait::async_trait]
 impl BackendTag for SqliteBackend {

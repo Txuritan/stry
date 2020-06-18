@@ -1,6 +1,6 @@
 use {
     crate::{
-        utils::{SqliteExt, SqliteStmtExt},
+        utils::{SqliteExt, SqliteStmtExt, FromRow},
         SqliteBackend,
     },
     anyhow::Context,
@@ -10,6 +10,22 @@ use {
         models::{Entity, List, Origin, Story},
     },
 };
+
+impl FromRow for Origin {
+    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Origin {
+            id: row.get(0).context("Attempting to get row index 0 for origin")?,
+
+            name: row.get(1).context("Attempting to get row index 1 for origin")?,
+
+            created: row.get(2).context("Attempting to get row index 2 for origin")?,
+            updated: row.get(3).context("Attempting to get row index 3 for origin")?,
+        })
+    }
+}
 
 #[async_trait::async_trait]
 impl BackendOrigin for SqliteBackend {

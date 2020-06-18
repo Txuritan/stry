@@ -23,21 +23,27 @@ impl BackendPairing for SqliteBackend {
                 let mut pairing_stmt = conn.prepare(include_str!("all-items.sql"))?;
                 let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
 
-                let item_parts: Vec<PairingPart> = match pairing_stmt.query_map_anyhow(
-                    rusqlite::params![limit, offset * limit],
-                    |row| {
+                let item_parts: Vec<PairingPart> = match pairing_stmt
+                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
                         Ok(PairingPart {
-                            id: row.get(0).context("Attempting to get row index 0 for pairing")?,
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for pairing")?,
 
-                            platonic: row.get(1).context("Attempting to get row index 0 for pairing")?,
+                            platonic: row
+                                .get(1)
+                                .context("Attempting to get row index 0 for pairing")?,
 
-                            created: row.get(2).context("Attempting to get row index 0 for pairing")?,
-                            updated: row.get(3).context("Attempting to get row index 0 for pairing")?,
+                            created: row
+                                .get(2)
+                                .context("Attempting to get row index 0 for pairing")?,
+                            updated: row
+                                .get(3)
+                                .context("Attempting to get row index 0 for pairing")?,
                         })
-                    }
-                )?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
+                    })?
+                    .map(|items| items.collect::<Result<_, _>>())
+                {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
@@ -45,16 +51,27 @@ impl BackendPairing for SqliteBackend {
                 let mut items = Vec::with_capacity(item_parts.len());
 
                 for part in item_parts {
-                    let characters = match character_stmt.query_map_anyhow(rusqlite::params![part.id], |row| Ok(Character {
-                        id: row.get(0).context("Attempting to get row index 0 for pairing character")?,
+                    let characters = match character_stmt
+                        .query_map_anyhow(rusqlite::params![part.id], |row| {
+                            Ok(Character {
+                                id: row.get(0).context(
+                                    "Attempting to get row index 0 for pairing character",
+                                )?,
 
-                        name: row.get(1).context("Attempting to get row index 1 for pairing character")?,
+                                name: row.get(1).context(
+                                    "Attempting to get row index 1 for pairing character",
+                                )?,
 
-                        created: row.get(2).context("Attempting to get row index 2 for pairing character")?,
-                        updated: row.get(3).context("Attempting to get row index 3 for pairing character")?,
-                    }))?.map(|items| {
-                        items.collect::<Result<_, _>>()
-                    }) {
+                                created: row.get(2).context(
+                                    "Attempting to get row index 2 for pairing character",
+                                )?,
+                                updated: row.get(3).context(
+                                    "Attempting to get row index 3 for pairing character",
+                                )?,
+                            })
+                        })?
+                        .map(|items| items.collect::<Result<_, _>>())
+                    {
                         Some(items) => items?,
                         None => return Ok(None),
                     };
@@ -74,7 +91,11 @@ impl BackendPairing for SqliteBackend {
                 let total = match conn.query_row_anyhow(
                     include_str!("all-count.sql"),
                     rusqlite::params![],
-                    |row| Ok(row.get(0).context("Attempting to get row index 0 for pairing count")?),
+                    |row| {
+                        Ok(row
+                            .get(0)
+                            .context("Attempting to get row index 0 for pairing count")?)
+                    },
                 )? {
                     Some(total) => total,
                     None => return Ok(None),
@@ -82,7 +103,8 @@ impl BackendPairing for SqliteBackend {
 
                 Ok(Some(List { total, items }))
             }
-        }).await??;
+        })
+        .await??;
 
         Ok(pairings)
     }
@@ -101,29 +123,48 @@ impl BackendPairing for SqliteBackend {
                     rusqlite::params![id],
                     |row| {
                         Ok(PairingPart {
-                            id: row.get(0).context("Attempting to get row index 0 for pairing")?,
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for pairing")?,
 
-                            platonic: row.get(1).context("Attempting to get row index 0 for pairing")?,
+                            platonic: row
+                                .get(1)
+                                .context("Attempting to get row index 0 for pairing")?,
 
-                            created: row.get(2).context("Attempting to get row index 0 for pairing")?,
-                            updated: row.get(3).context("Attempting to get row index 0 for pairing")?,
+                            created: row
+                                .get(2)
+                                .context("Attempting to get row index 0 for pairing")?,
+                            updated: row
+                                .get(3)
+                                .context("Attempting to get row index 0 for pairing")?,
                         })
-                    }
+                    },
                 )? {
                     Some(part) => part,
                     None => return Ok(None),
                 };
 
-                let characters = match character_stmt.query_map_anyhow(rusqlite::params![part.id], |row| Ok(Character {
-                    id: row.get(0).context("Attempting to get row index 0 for pairing character")?,
+                let characters = match character_stmt
+                    .query_map_anyhow(rusqlite::params![part.id], |row| {
+                        Ok(Character {
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for pairing character")?,
 
-                    name: row.get(1).context("Attempting to get row index 1 for pairing character")?,
+                            name: row
+                                .get(1)
+                                .context("Attempting to get row index 1 for pairing character")?,
 
-                    created: row.get(2).context("Attempting to get row index 2 for pairing character")?,
-                    updated: row.get(3).context("Attempting to get row index 3 for pairing character")?,
-                }))?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
+                            created: row
+                                .get(2)
+                                .context("Attempting to get row index 2 for pairing character")?,
+                            updated: row
+                                .get(3)
+                                .context("Attempting to get row index 3 for pairing character")?,
+                        })
+                    })?
+                    .map(|items| items.collect::<Result<_, _>>())
+                {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
@@ -139,7 +180,8 @@ impl BackendPairing for SqliteBackend {
                     updated: part.updated,
                 }))
             }
-        }).await??;
+        })
+        .await??;
 
         Ok(pairing)
     }

@@ -1,6 +1,6 @@
 use {
     crate::{
-        utils::{SqliteExt, SqliteStmtExt, FromRow},
+        utils::{FromRow, SqliteExt, SqliteStmtExt},
         SqliteBackend,
     },
     anyhow::Context,
@@ -17,12 +17,20 @@ impl FromRow for Warning {
         Self: Sized,
     {
         Ok(Warning {
-            id: row.get(0).context("Attempting to get row index 0 for warning")?,
+            id: row
+                .get(0)
+                .context("Attempting to get row index 0 for warning")?,
 
-            name: row.get(1).context("Attempting to get row index 1 for warning")?,
+            name: row
+                .get(1)
+                .context("Attempting to get row index 1 for warning")?,
 
-            created: row.get(2).context("Attempting to get row index 2 for warning")?,
-            updated: row.get(3).context("Attempting to get row index 3 for warning")?,
+            created: row
+                .get(2)
+                .context("Attempting to get row index 2 for warning")?,
+            updated: row
+                .get(3)
+                .context("Attempting to get row index 3 for warning")?,
         })
     }
 }
@@ -36,30 +44,41 @@ impl BackendWarning for SqliteBackend {
             move || -> anyhow::Result<Option<List<Warning>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt =
-                    conn.prepare(include_str!("all-items.sql"))?;
+                let mut stmt = conn.prepare(include_str!("all-items.sql"))?;
 
                 let items = match stmt
                     .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
                         Ok(Warning {
-                            id: row.get(0).context("Attempting to get row index 0 for warning")?,
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for warning")?,
 
-                            name: row.get(1).context("Attempting to get row index 1 for warning")?,
+                            name: row
+                                .get(1)
+                                .context("Attempting to get row index 1 for warning")?,
 
-                            created: row.get(2).context("Attempting to get row index 2 for warning")?,
-                            updated: row.get(3).context("Attempting to get row index 3 for warning")?,
+                            created: row
+                                .get(2)
+                                .context("Attempting to get row index 2 for warning")?,
+                            updated: row
+                                .get(3)
+                                .context("Attempting to get row index 3 for warning")?,
                         })
-                    })?.map(|items| {
-                        items.collect::<Result<_, _>>()
-                    }) {
-                        Some(items) => items?,
-                        None => return Ok(None),
-                    };
+                    })?
+                    .map(|items| items.collect::<Result<_, _>>())
+                {
+                    Some(items) => items?,
+                    None => return Ok(None),
+                };
 
                 let total = match conn.query_row_anyhow(
                     include_str!("all-count.sql"),
                     rusqlite::params![],
-                    |row| Ok(row.get(0).context("Attempting to get row index 0 for warning count")?),
+                    |row| {
+                        Ok(row
+                            .get(0)
+                            .context("Attempting to get row index 0 for warning count")?)
+                    },
                 )? {
                     Some(total) => total,
                     None => return Ok(None),
@@ -125,11 +144,16 @@ impl BackendWarning for SqliteBackend {
 
                 let mut stmt = conn.prepare(include_str!("stories-items.sql"))?;
 
-                let items: Vec<Entity> = match stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| Ok(Entity {
-                    id: row.get(0).context("Attempting to get row index 0 for warning story id")?,
-                }))?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
+                let items: Vec<Entity> = match stmt
+                    .query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
+                        Ok(Entity {
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for warning story id")?,
+                        })
+                    })?
+                    .map(|items| items.collect::<Result<_, _>>())
+                {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
@@ -137,18 +161,21 @@ impl BackendWarning for SqliteBackend {
                 let total = match conn.query_row_anyhow(
                     include_str!("stories-count.sql"),
                     rusqlite::params![id],
-                    |row| Ok(row.get(0).context("Attempting to get row index 0 for warning story count")?)
+                    |row| {
+                        Ok(row
+                            .get(0)
+                            .context("Attempting to get row index 0 for warning story count")?)
+                    },
                 )? {
                     Some(total) => total,
                     None => return Ok(None),
                 };
 
-                Ok(Some(List {
-                    total,
-                    items,
-                }))
+                Ok(Some(List { total, items }))
             }
-        }).await?? {
+        })
+        .await??
+        {
             Some(ids) => ids,
             None => return Ok(None),
         };

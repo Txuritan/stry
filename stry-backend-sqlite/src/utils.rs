@@ -1,4 +1,7 @@
-use {rusqlite::{Row, Rows, ToSql}, std::marker::PhantomData};
+use {
+    rusqlite::{Row, Rows, ToSql},
+    std::marker::PhantomData,
+};
 
 pub trait FromRow {
     fn from_row(row: &Row<'_>) -> anyhow::Result<Self>
@@ -51,7 +54,10 @@ where
     T: FromRow,
 {
     pub(crate) fn new(rows: Rows<'stmt>) -> Self {
-        Self { rows, typ: PhantomData::default() }
+        Self {
+            rows,
+            typ: PhantomData::default(),
+        }
     }
 }
 
@@ -75,22 +81,13 @@ where
 }
 
 pub trait SqliteExt {
-    fn query_row_anyhow<T, P, F>(
-        &self,
-        sql: &str,
-        params: P,
-        f: F,
-    ) -> anyhow::Result<Option<T>>
+    fn query_row_anyhow<T, P, F>(&self, sql: &str, params: P, f: F) -> anyhow::Result<Option<T>>
     where
         P: IntoIterator,
         P::Item: ToSql,
         F: FnOnce(&Row<'_>) -> anyhow::Result<T>;
 
-    fn type_query_row_anyhow<T, P>(
-        &self,
-        sql: &str,
-        params: P,
-    ) -> anyhow::Result<Option<T>>
+    fn type_query_row_anyhow<T, P>(&self, sql: &str, params: P) -> anyhow::Result<Option<T>>
     where
         P: IntoIterator,
         P::Item: ToSql,

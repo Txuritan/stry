@@ -138,72 +138,35 @@ impl BackendStory for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let authors: Vec<Author> = match author_stmt.query_map_anyhow(rusqlite::params![id], |row| Ok(Author {
-                    id: row.get(0).context("Attempting to get row index 0 for author")?,
-
-                    name: row.get(1).context("Attempting to get row index 1 for author")?,
-
-                    created: row.get(2).context("Attempting to get row index 2 for author")?,
-                    updated: row.get(3).context("Attempting to get row index 3 for author")?,
-                }))?.map(|items| {
+                let authors: Vec<Author> = match author_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
 
-                let origins: Vec<Origin> = match origin_stmt.query_map_anyhow(rusqlite::params![id], |row| Ok(Origin {
-                    id: row.get(0).context("Attempting to get row index 0 for origin")?,
-
-                    name: row.get(1).context("Attempting to get row index 1 for origin")?,
-
-                    created: row.get(2).context("Attempting to get row index 2 for origin")?,
-                    updated: row.get(3).context("Attempting to get row index 3 for origin")?,
-                }))?.map(|items| {
+                let origins: Vec<Origin> = match origin_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
 
-                let warnings: Vec<Warning> = match warning_stmt.query_map_anyhow(rusqlite::params![id], |row| Ok(Warning {
-                    id: row.get(0).context("Attempting to get row index 0 for warning")?,
-
-                    name: row.get(1).context("Attempting to get row index 1 for warning")?,
-
-                    created: row.get(2).context("Attempting to get row index 2 for warning")?,
-                    updated: row.get(3).context("Attempting to get row index 3 for warning")?,
-                }))?.map(|items| {
+                let warnings: Vec<Warning> = match warning_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
 
-                let characters: Vec<Character> = match character_stmt.query_map_anyhow(rusqlite::params![id], |row| Ok(Character {
-                    id: row.get(0).context("Attempting to get row index 0 for character")?,
-
-                    name: row.get(1).context("Attempting to get row index 1 for character")?,
-
-                    created: row.get(2).context("Attempting to get row index 2 for character")?,
-                    updated: row.get(3).context("Attempting to get row index 3 for character")?,
-                }))?.map(|items| {
+                let characters: Vec<Character> = match character_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
 
-                let pairing_parts: Vec<PairingPart> = match story_pairings_stmt.query_map_anyhow(rusqlite::params![id], |row| {
-                    Ok(PairingPart {
-                        id: row.get(0).context("Attempting to get row index 0 for pairing")?,
-
-                        platonic: row.get(1).context("Attempting to get row index 1 for pairing")?,
-
-                        created: row.get(2).context("Attempting to get row index 2 for pairing")?,
-                        updated: row.get(3).context("Attempting to get row index 3 for pairing")?,
-                    })
-                })?.map(|items| {
+                let pairing_parts: Vec<PairingPart> = match story_pairings_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,
@@ -213,14 +176,7 @@ impl BackendStory for SqliteBackend {
                 let mut pairings = Vec::with_capacity(pairing_parts.len());
 
                 for part in pairing_parts {
-                    let characters = match pairing_stmt.query_map_anyhow(rusqlite::params![part.id], |row| Ok(Character {
-                        id: row.get(0).context("Attempting to get row index 0 for pairing character")?,
-
-                        name: row.get(1).context("Attempting to get row index 1 for pairing character")?,
-
-                        created: row.get(2).context("Attempting to get row index 2 for pairing character")?,
-                        updated: row.get(3).context("Attempting to get row index 3 for pairing character")?,
-                    }))?.map(|items| {
+                    let characters = match pairing_stmt.type_query_map_anyhow(rusqlite::params![part.id])?.map(|items| {
                         items.collect::<Result<_, _>>()
                     }) {
                         Some(items) => items?,
@@ -239,14 +195,7 @@ impl BackendStory for SqliteBackend {
                     });
                 }
 
-                let tags: Vec<Tag> = match tag_stmt.query_map_anyhow(rusqlite::params![id], |row| Ok(Tag {
-                    id: row.get(0).context("Attempting to get row index 0 for tag")?,
-
-                    name: row.get(1).context("Attempting to get row index 1 for tag")?,
-
-                    created: row.get(2).context("Attempting to get row index 2 for tag")?,
-                    updated: row.get(3).context("Attempting to get row index 3 for tag")?,
-                }))?.map(|items| {
+                let tags: Vec<Tag> = match tag_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,

@@ -1,6 +1,6 @@
 use {
     crate::{
-        utils::{SqliteExt, SqliteStmtExt},
+        utils::{FromRow, SqliteExt, SqliteStmtExt},
         SqliteBackend,
     },
     anyhow::Context,
@@ -10,6 +10,30 @@ use {
         models::{pairing::PairingPart, Character, List, Pairing, Story},
     },
 };
+
+impl FromRow for PairingPart {
+    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(PairingPart {
+            id: row
+                .get(0)
+                .context("Attempting to get row index 0 for pairing")?,
+
+            platonic: row
+                .get(1)
+                .context("Attempting to get row index 0 for pairing")?,
+
+            created: row
+                .get(2)
+                .context("Attempting to get row index 0 for pairing")?,
+            updated: row
+                .get(3)
+                .context("Attempting to get row index 0 for pairing")?,
+        })
+    }
+}
 
 #[async_trait::async_trait]
 impl BackendPairing for SqliteBackend {
@@ -24,24 +48,10 @@ impl BackendPairing for SqliteBackend {
                 let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
 
                 let item_parts: Vec<PairingPart> = match pairing_stmt
-                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
-                        Ok(PairingPart {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for pairing")?,
-
-                            platonic: row
-                                .get(1)
-                                .context("Attempting to get row index 0 for pairing")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 0 for pairing")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 0 for pairing")?,
-                        })
-                    })?
+                    .type_query_map_anyhow::<PairingPart, _>(rusqlite::params![
+                        limit,
+                        offset * limit
+                    ])?
                     .map(|items| items.collect::<Result<_, _>>())
                 {
                     Some(items) => items?,
@@ -52,24 +62,7 @@ impl BackendPairing for SqliteBackend {
 
                 for part in item_parts {
                     let characters = match character_stmt
-                        .query_map_anyhow(rusqlite::params![part.id], |row| {
-                            Ok(Character {
-                                id: row.get(0).context(
-                                    "Attempting to get row index 0 for pairing character",
-                                )?,
-
-                                name: row.get(1).context(
-                                    "Attempting to get row index 1 for pairing character",
-                                )?,
-
-                                created: row.get(2).context(
-                                    "Attempting to get row index 2 for pairing character",
-                                )?,
-                                updated: row.get(3).context(
-                                    "Attempting to get row index 3 for pairing character",
-                                )?,
-                            })
-                        })?
+                        .type_query_map_anyhow::<Character, _>(rusqlite::params![part.id])?
                         .map(|items| items.collect::<Result<_, _>>())
                     {
                         Some(items) => items?,
@@ -118,51 +111,16 @@ impl BackendPairing for SqliteBackend {
 
                 let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
 
-                let part = match conn.query_row_anyhow(
+                let part = match conn.type_query_row_anyhow::<PairingPart, _>(
                     include_str!("get-item.sql"),
                     rusqlite::params![id],
-                    |row| {
-                        Ok(PairingPart {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for pairing")?,
-
-                            platonic: row
-                                .get(1)
-                                .context("Attempting to get row index 0 for pairing")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 0 for pairing")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 0 for pairing")?,
-                        })
-                    },
                 )? {
                     Some(part) => part,
                     None => return Ok(None),
                 };
 
                 let characters = match character_stmt
-                    .query_map_anyhow(rusqlite::params![part.id], |row| {
-                        Ok(Character {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for pairing character")?,
-
-                            name: row
-                                .get(1)
-                                .context("Attempting to get row index 1 for pairing character")?,
-
-                            created: row
-                                .get(2)
-                                .context("Attempting to get row index 2 for pairing character")?,
-                            updated: row
-                                .get(3)
-                                .context("Attempting to get row index 3 for pairing character")?,
-                        })
-                    })?
+                    .type_query_map_anyhow::<Character, _>(rusqlite::params![part.id])?
                     .map(|items| items.collect::<Result<_, _>>())
                 {
                     Some(items) => items?,

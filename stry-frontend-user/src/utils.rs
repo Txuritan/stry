@@ -1,4 +1,5 @@
 use {
+    askama::Template,
     std::future::Future,
     warp::{
         http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
@@ -48,6 +49,10 @@ where
             let mut res = Response::new(Body::empty());
 
             *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+
+            if let Ok(rendered) = crate::pages::ErrorPage::server_error("503 server error").render() {
+                *res.body_mut() = Body::from(rendered);
+            }
 
             Ok(res)
         }

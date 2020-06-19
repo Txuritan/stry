@@ -7,6 +7,12 @@ use {
     },
 };
 
+pub struct WebError {
+    pub code: u32,
+    pub icon: &'static str,
+    pub help: &'static str,
+}
+
 #[inline(always)]
 pub async fn wrap<Run, Fut, Res>(run: Run) -> Result<impl Reply, Rejection>
 where

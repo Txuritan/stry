@@ -3,10 +3,22 @@ pub mod dashboard;
 pub mod story;
 
 use {
-    crate::pagination::Pagination,
+    crate::{pagination::Pagination, utils::WebError},
     askama::Template,
     stry_common::{models, utils::Readable},
 };
+
+#[derive(Template)]
+#[template(path = "error.html")]
+pub struct Error {
+    version: &'static str,
+    git: &'static str,
+
+    title: String,
+    search: Option<String>,
+
+    error: WebError,
+}
 
 #[derive(Template)]
 #[template(path = "explore.html")]

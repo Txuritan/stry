@@ -5,7 +5,7 @@
     <div class="empty__icon">
         <i class="icon {{ error.icon }}"></i>
     </div>
-    <p class="empty__title--sup">{{ error.code }}</p>
+    <p class="empty__title--sup"><b>{{ error.code }}</b>: {{ error.name }}</p>
     <p class="empty__title--sub">{{ error.help }}</p>
 </div>
 {% endblock %}

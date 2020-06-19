@@ -9,6 +9,7 @@ use {
 
 pub struct WebError {
     pub code: u32,
+    pub name: &'static str,
     pub icon: &'static str,
     pub help: &'static str,
 }

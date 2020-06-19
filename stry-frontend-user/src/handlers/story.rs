@@ -49,8 +49,9 @@ pub async fn chapter(
                             Ok(rendered.into_response())
                         }
                         None => {
-                            // TODO: return page
-                            todo!()
+                            let rendered = pages::ErrorPage::server_error(format!("503 server error | {}", story.name)).render()?;
+
+                            Ok(rendered.into_response())
                         }
                     }
                 } else {
@@ -67,8 +68,9 @@ pub async fn chapter(
                 }
             }
             None => {
-                // TODO: return a 404
-                todo!()
+                let rendered = pages::ErrorPage::server_error("404 not found").render()?;
+
+                Ok(rendered.into_response())
             }
         }
     })

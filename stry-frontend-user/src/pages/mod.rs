@@ -10,14 +10,59 @@ use {
 
 #[derive(Template)]
 #[template(path = "error.html")]
-pub struct Error {
+pub struct ErrorPage<T>
+where
+    T: std::fmt::Display,
+{
     version: &'static str,
     git: &'static str,
 
-    title: String,
+    title: T,
     search: Option<String>,
 
     error: WebError,
+}
+
+impl<T> ErrorPage<T>
+where
+    T: std::fmt::Display,
+{
+    pub fn new(
+        title: T,
+        code: u32,
+        name: &'static str,
+        icon: &'static str,
+        help: &'static str,
+    ) -> Self {
+        Self {
+            version: stry_common::VERSION,
+            git: stry_common::GIT_VERSION,
+
+            title,
+            error: WebError {
+                code,
+                name,
+                icon,
+                help,
+            },
+
+            search: None,
+        }
+    }
+
+    pub fn not_found(title: T) -> Self {
+        Self::new(title, 404, "Not Found", "danger", "")
+    }
+
+    pub fn server_error(title: T) -> Self {
+        Self::new(
+            title,
+            503,
+            "Server Error",
+            "danger",
+            "Check the log for more information",
+        )
+    }
 }
 
 #[derive(Template)]

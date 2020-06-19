@@ -6,7 +6,7 @@ pub mod story;
 
 use {
     crate::{
-        pages::{ResourceList, StoryList},
+        pages::{ErrorPage, ResourceList, StoryList},
         utils::wrap,
     },
     anyhow::Context,
@@ -75,28 +75,28 @@ pub async fn explore(
         }
 
         match rt {
-            RouteType::Authors => {
-                match backend.all_authors(norm.page, norm.page_size).await? {
-                    Some(list) => {
-                        let (count, authors) = list.into_parts();
+            RouteType::Authors => match backend.all_authors(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, authors) = list.into_parts();
 
-                        let rendered: String = ResourceList::new(
-                            format!("{} | authors | explore", paging.page),
-                            rt,
-                            paging.page,
-                            (count + (norm.page_size - 1)) / norm.page_size,
-                            authors.iter().map(|a| a as &dyn Resource).collect(),
-                        )
-                        .render()?;
+                    let rendered: String = ResourceList::new(
+                        format!("{} | authors | explore", paging.page),
+                        rt,
+                        paging.page,
+                        (count + (norm.page_size - 1)) / norm.page_size,
+                        authors.iter().map(|a| a as &dyn Resource).collect(),
+                    )
+                    .render()?;
 
-                        Ok(rendered)
-                    }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    Ok(rendered)
                 }
-            }
+                None => {
+                    let rendered =
+                        ErrorPage::not_found("404 not found | authors | explore").render()?;
+
+                    Ok(rendered)
+                }
+            },
             RouteType::Characters => {
                 match backend.all_characters(norm.page, norm.page_size).await? {
                     Some(list) => {
@@ -114,81 +114,83 @@ pub async fn explore(
                         Ok(rendered)
                     }
                     None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
-                }
-            }
-            RouteType::Origins => {
-                match backend.all_origins(norm.page, norm.page_size).await? {
-                    Some(list) => {
-                        let (count, origins) = list.into_parts();
-
-                        let rendered: String = ResourceList::new(
-                            format!("{} | origins | explore", paging.page),
-                            rt,
-                            paging.page,
-                            (count + (norm.page_size - 1)) / norm.page_size,
-                            origins.iter().map(|a| a as &dyn Resource).collect(),
-                        )
-                        .render()?;
+                        let rendered = ErrorPage::not_found("404 not found | characters | explore")
+                            .render()?;
 
                         Ok(rendered)
                     }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
                 }
             }
+            RouteType::Origins => match backend.all_origins(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, origins) = list.into_parts();
+
+                    let rendered: String = ResourceList::new(
+                        format!("{} | origins | explore", paging.page),
+                        rt,
+                        paging.page,
+                        (count + (norm.page_size - 1)) / norm.page_size,
+                        origins.iter().map(|a| a as &dyn Resource).collect(),
+                    )
+                    .render()?;
+
+                    Ok(rendered)
+                }
+                None => {
+                    let rendered =
+                        ErrorPage::not_found("404 not found | origins | explore").render()?;
+
+                    Ok(rendered)
+                }
+            },
             RouteType::Pairings => {
                 // TODO: finish the backend handle for this
                 todo!()
             }
-            RouteType::Tags => {
-                match backend.all_tags(norm.page, norm.page_size).await? {
-                    Some(list) => {
-                        let (count, tags) = list.into_parts();
+            RouteType::Tags => match backend.all_tags(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, tags) = list.into_parts();
 
-                        let rendered: String = ResourceList::new(
-                            format!("{} | tags | explore", paging.page),
-                            rt,
-                            paging.page,
-                            (count + (norm.page_size - 1)) / norm.page_size,
-                            tags.iter().map(|a| a as &dyn Resource).collect(),
-                        )
-                        .render()?;
+                    let rendered: String = ResourceList::new(
+                        format!("{} | tags | explore", paging.page),
+                        rt,
+                        paging.page,
+                        (count + (norm.page_size - 1)) / norm.page_size,
+                        tags.iter().map(|a| a as &dyn Resource).collect(),
+                    )
+                    .render()?;
 
-                        Ok(rendered)
-                    }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    Ok(rendered)
                 }
-            }
-            RouteType::Warnings => {
-                match backend.all_warnings(norm.page, norm.page_size).await? {
-                    Some(list) => {
-                        let (count, warnings) = list.into_parts();
+                None => {
+                    let rendered =
+                        ErrorPage::not_found("404 not found | tags | explore").render()?;
 
-                        let rendered: String = ResourceList::new(
-                            format!("{} | warnings | explore", paging.page),
-                            rt,
-                            paging.page,
-                            (count + (norm.page_size - 1)) / norm.page_size,
-                            warnings.iter().map(|a| a as &dyn Resource).collect(),
-                        )
-                        .render()?;
-
-                        Ok(rendered)
-                    }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    Ok(rendered)
                 }
-            }
+            },
+            RouteType::Warnings => match backend.all_warnings(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, warnings) = list.into_parts();
+
+                    let rendered: String = ResourceList::new(
+                        format!("{} | warnings | explore", paging.page),
+                        rt,
+                        paging.page,
+                        (count + (norm.page_size - 1)) / norm.page_size,
+                        warnings.iter().map(|a| a as &dyn Resource).collect(),
+                    )
+                    .render()?;
+
+                    Ok(rendered)
+                }
+                None => {
+                    let rendered =
+                        ErrorPage::not_found("404 not found | warnings | explore").render()?;
+
+                    Ok(rendered)
+                }
+            },
         }
     })
     .await
@@ -207,7 +209,7 @@ pub async fn item(
 
         let id: Cow<'static, str> = id.into();
 
-        let (title, count, stories, url) = match rt {
+        let ret = match rt {
             RouteType::Authors => {
                 match backend
                     .author_stories(id.clone(), norm.page, norm.page_size)
@@ -220,17 +222,14 @@ pub async fn item(
                         // UNWRAP: database wouldn't return any stories if the author didn't exist
                         let author = backend.get_author(id.clone()).await?.unwrap();
 
-                        (
+                        Some((
                             format!("{} | {} | authors", paging.page, author.name),
                             count,
                             stories,
                             format!("/authors/{}", id),
-                        )
+                        ))
                     }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    None => None,
                 }
             }
             RouteType::Characters => {
@@ -245,17 +244,14 @@ pub async fn item(
                         // UNWRAP: database wouldn't return any stories if the origin didn't exist
                         let character = backend.get_character(id.clone()).await?.unwrap();
 
-                        (
+                        Some((
                             format!("{} | {} | characters", paging.page, character.name),
                             count,
                             stories,
                             format!("/characters/{}", id),
-                        )
+                        ))
                     }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    None => None,
                 }
             }
             RouteType::Origins => {
@@ -270,17 +266,14 @@ pub async fn item(
                         // UNWRAP: database wouldn't return any stories if the origin didn't exist
                         let origin = backend.get_origin(id.clone()).await?.unwrap();
 
-                        (
+                        Some((
                             format!("{} | {} | origins", paging.page, origin.name),
                             count,
                             stories,
                             format!("/origins/{}", id),
-                        )
+                        ))
                     }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    None => None,
                 }
             }
             RouteType::Pairings => {
@@ -299,17 +292,14 @@ pub async fn item(
                         // UNWRAP: database wouldn't return any stories if the origin didn't exist
                         let tag = backend.get_tag(id.clone()).await?.unwrap();
 
-                        (
+                        Some((
                             format!("{} | {} | tags", paging.page, tag.name),
                             count,
                             stories,
                             format!("/tags/{}", id),
-                        )
+                        ))
                     }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    None => None,
                 }
             }
             RouteType::Warnings => {
@@ -324,32 +314,46 @@ pub async fn item(
                         // UNWRAP: database wouldn't return any stories if the origin didn't exist
                         let warning = backend.get_warning(id.clone()).await?.unwrap();
 
-                        (
+                        Some((
                             format!("{} | {} | warnings", paging.page, warning.name),
                             count,
                             stories,
                             format!("/warnings/{}", id),
-                        )
+                        ))
                     }
-                    None => {
-                        // TODO: return 404 page
-                        todo!()
-                    }
+                    None => None,
                 }
             }
         };
 
-        let rendered: String = StoryList::new(
-            title,
-            url,
-            paging.page,
-            (count + (norm.page_size - 1)) / norm.page_size,
-            stories,
-        )
-        .render()
-        .context("Unable to render item page")?;
+        if let Some((title, count, stories, url)) = ret {
+            let rendered: String = StoryList::new(
+                title,
+                url,
+                paging.page,
+                (count + (norm.page_size - 1)) / norm.page_size,
+                stories,
+            )
+            .render()
+            .context("Unable to render item page")?;
 
-        Ok(rendered)
+            Ok(rendered)
+        } else {
+            let rendered = ErrorPage::not_found(format!(
+                "404 not found | {}",
+                match rt {
+                    RouteType::Authors => "authors",
+                    RouteType::Characters => "characters",
+                    RouteType::Origins => "origins",
+                    RouteType::Pairings => "pairings",
+                    RouteType::Tags => "tags",
+                    RouteType::Warnings => "warnings",
+                }
+            ))
+            .render()?;
+
+            Ok(rendered)
+        }
     })
     .await
 }

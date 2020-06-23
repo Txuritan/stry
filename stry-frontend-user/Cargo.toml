@@ -21,7 +21,7 @@ tracing = "0.1"
 # Crate
 akibisuto-stylus = "0.1"
 askama = { version = "0.9", default-features = false }
-resource = "0.4"
+resource = "0.5"
 serde_urlencoded = "0.6"
 tokio = { version = "0.2", default-features = false, features = [ "blocking" ] }
 warp = { version = "0.2", default-features = false }

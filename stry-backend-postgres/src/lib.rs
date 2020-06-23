@@ -9,6 +9,9 @@ pub mod story;
 pub mod tag;
 pub mod warning;
 
+#[macro_use]
+pub mod utils;
+
 use {
     bb8::Pool,
     bb8_postgres::PostgresConnectionManager,

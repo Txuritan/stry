@@ -9,6 +9,8 @@ license = "MIT OR Apache-2.0"
 workspace = ".."
 
 [dependencies]
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+
 stry-common = { path = "../stry-common" }
 stry-backend = { path = "../stry-backend" }
 stry-frontend-common = { path = "../stry-frontend-common" }
@@ -20,7 +22,7 @@ tracing = "0.1"
 
 # Crate
 akibisuto-stylus = "0.1"
-askama = { version = "0.9", default-features = false }
+askama = { version = "0.10", default-features = false }
 resource = "0.5"
 serde_urlencoded = "0.6"
 tokio = { version = "0.2", default-features = false, features = [ "blocking" ] }

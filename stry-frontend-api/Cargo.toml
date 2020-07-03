@@ -9,6 +9,8 @@ license = "MIT OR Apache-2.0"
 workspace = ".."
 
 [dependencies]
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+
 stry-common = { path = "../stry-common" }
 stry-backend = { path = "../stry-backend" }
 stry-frontend-common = { path = "../stry-frontend-common" }
@@ -20,6 +22,7 @@ tracing = "0.1"
 # Crate
 bytes = "0.5"
 futures-util = "0.3"
+serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 tokio = { version = "0.2", features = [ "blocking", "rt-core" ] }
 warp = { version = "0.2", default-features = false }

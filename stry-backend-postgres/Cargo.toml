@@ -11,6 +11,8 @@ build = "build.rs"
 workspace = ".."
 
 [dependencies]
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+
 stry-common = { path = "../stry-common", features = [ "types-postgres" ] }
 
 # Core
@@ -24,4 +26,5 @@ tracing = "0.1"
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 bb8 = "0.4"
 bb8-postgres = "0.4"
+pin-project = "0.4"
 tokio-postgres = { version = "0.5", features = [ "with-chrono-0_4" ] }

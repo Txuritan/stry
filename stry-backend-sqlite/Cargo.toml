@@ -11,6 +11,8 @@ build = "build.rs"
 workspace = ".."
 
 [dependencies]
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+
 stry-common = { path = "../stry-common", features = [ "types-sqlite" ] }
 
 # Core

@@ -5,8 +5,7 @@ use {
 };
 
 pub fn graphql(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path("graphql"))
+    warp::path("graphql")
         .and(support::make_graphql_filter(
             schema(),
             warp::any().and(state).boxed(),
@@ -15,8 +14,7 @@ pub fn graphql(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)>
 }
 
 pub fn playground() -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path("playground"))
+    warp::path("playground")
         .and(support::playground_filter("/graphql", None))
         .boxed()
 }

@@ -1,0 +1,119 @@
+type DateTime  {
+    year: Int!
+    month: Int!
+    day: Int!
+
+    hour: Int!
+    minute: Int!
+    second: Int!
+}
+
+
+interface Node {
+    id: ID!
+}
+
+
+type Author implements Node {
+    id: ID!
+
+    name: String!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Character implements Node {
+    id: ID!
+
+    name: String!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Origin implements Node {
+    id: ID!
+
+    name: String!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Pairing implements Node {
+    id: ID!
+
+    name: String!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Tag implements Node {
+    id: ID!
+
+    name: String!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Warning implements Node {
+    id: ID!
+
+    name: String!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+
+type Story implements Node {
+    id: ID!
+
+    name: String!
+    summary: String!
+
+    chapters: Int!
+    words: Int!
+
+    rating: Rating!
+    state: State!
+
+    authors: [Author!]!
+    characters: [Character!]!
+    origins: [Origin!]!
+    pairings: [Pairing!]!
+    tags: [tag!]!
+    warnings: [Warning!]!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+
+type Chapter implements Node {
+    id: ID!
+
+    name: String!
+
+    pre: String!
+    main: String!
+    post: String!
+
+    words: Int!
+
+    created: DateTime!
+    updated: DateTime!
+}
+
+
+type Query {
+    node(id: ID!): Node
+
+    authors(offset: Int!, limit: Int! = 15): [Author!]
+    author(id: ID!): Author
+}
+
+type Mutation {}

@@ -50,7 +50,8 @@ where
 
             *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
 
-            if let Ok(rendered) = crate::pages::ErrorPage::server_error("503 server error").render() {
+            if let Ok(rendered) = crate::pages::ErrorPage::server_error("503 server error").render()
+            {
                 *res.body_mut() = Body::from(rendered);
             }
 

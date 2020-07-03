@@ -49,7 +49,11 @@ pub async fn chapter(
                             Ok(rendered.into_response())
                         }
                         None => {
-                            let rendered = pages::ErrorPage::server_error(format!("503 server error | {}", story.name)).render()?;
+                            let rendered = pages::ErrorPage::server_error(format!(
+                                "503 server error | {}",
+                                story.name
+                            ))
+                            .render()?;
 
                             Ok(rendered.into_response())
                         }

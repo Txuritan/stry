@@ -1,6 +1,6 @@
 use {
     crate::{
-        utils::{FromRow, SqliteExt, SqliteStmtExt},
+        utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
         SqliteBackend,
     },
     anyhow::Context,
@@ -54,20 +54,15 @@ impl BackendAuthor for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let total = match conn.query_row_anyhow(
+                let total: Total = match conn.type_query_row_anyhow(
                     include_str!("all-count.sql"),
                     rusqlite::params![],
-                    |row| {
-                        Ok(row
-                            .get(0)
-                            .context("Attempting to get row index 0 for author count")?)
-                    },
                 )? {
                     Some(total) => total,
                     None => return Ok(None),
                 };
 
-                Ok(Some(List { total, items }))
+                Ok(Some(List { total: total.total, items }))
             }
         })
         .await??;

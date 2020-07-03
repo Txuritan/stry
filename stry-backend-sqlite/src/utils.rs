@@ -1,4 +1,5 @@
 use {
+    anyhow::Context,
     rusqlite::{Row, Rows, ToSql},
     std::marker::PhantomData,
 };
@@ -7,6 +8,23 @@ pub trait FromRow {
     fn from_row(row: &Row<'_>) -> anyhow::Result<Self>
     where
         Self: Sized;
+}
+
+pub struct Total {
+    pub total: u32,
+}
+
+impl FromRow for Total {
+    fn from_row(row: &Row<'_>) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Self {
+            total: row
+                .get(0)
+                .context("Attempting to get row index 0 for row count")?
+        })
+    }
 }
 
 // This is a horrible way to add anyhow to rusqlite but hey

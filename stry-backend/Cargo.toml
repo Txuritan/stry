@@ -9,6 +9,8 @@ license = "MIT OR Apache-2.0"
 workspace = ".."
 
 [dependencies]
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+
 stry-common = { path = "../stry-common" }
 
 # Core

@@ -61,10 +61,7 @@ impl BackendAuthor for PostgresBackend {
         let conn = self.0.get().await?;
 
         let author = conn
-            .type_query_row_anyhow(
-                include_str!("get-item.sql"),
-                crate::params![id],
-            )
+            .type_query_row_anyhow(include_str!("get-item.sql"), crate::params![id])
             .await?;
 
         Ok(author)

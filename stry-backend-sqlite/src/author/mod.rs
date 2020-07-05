@@ -54,15 +54,17 @@ impl BackendAuthor for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let total: Total = match conn.type_query_row_anyhow(
-                    include_str!("all-count.sql"),
-                    rusqlite::params![],
-                )? {
+                let total: Total = match conn
+                    .type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])?
+                {
                     Some(total) => total,
                     None => return Ok(None),
                 };
 
-                Ok(Some(List { total: total.total, items }))
+                Ok(Some(List {
+                    total: total.total,
+                    items,
+                }))
             }
         })
         .await??;

@@ -12,7 +12,11 @@ mod utils;
 use {
     r2d2::Pool,
     r2d2_sqlite::SqliteConnectionManager,
-    stry_common::backend::{Backend, BackendType, StorageType},
+    std::sync::Arc,
+    stry_common::{
+        backend::{Backend, BackendType, StorageType},
+        LibVersion,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -20,7 +24,11 @@ pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
 #[async_trait::async_trait]
 impl Backend for SqliteBackend {
-    async fn init(_backend: BackendType, storage: StorageType) -> anyhow::Result<Self> {
+    async fn init(
+        _backend: BackendType,
+        storage: StorageType,
+        _: Arc<Vec<LibVersion>>,
+    ) -> anyhow::Result<Self> {
         if let StorageType::File { location } = storage {
             let manager = SqliteConnectionManager::file(&location)
                 .with_init(|c| c.execute_batch("PRAGMA foreign_keys=1;"));
@@ -52,4 +60,10 @@ pub mod test_utils {
 
         Ok(SqliteBackend(pool))
     }
+}
+
+pub fn version() -> Vec<LibVersion> {
+    vec![LibVersion::SQLite {
+        version: rusqlite::version(),
+    }]
 }

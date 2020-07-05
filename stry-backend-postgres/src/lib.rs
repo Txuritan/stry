@@ -15,7 +15,11 @@ pub mod utils;
 use {
     bb8::Pool,
     bb8_postgres::PostgresConnectionManager,
-    stry_common::backend::{Backend, BackendType, StorageType},
+    std::sync::Arc,
+    stry_common::{
+        backend::{Backend, BackendType, StorageType},
+        LibVersion,
+    },
     tokio_postgres::NoTls,
 };
 
@@ -24,7 +28,15 @@ pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 
 #[async_trait::async_trait]
 impl Backend for PostgresBackend {
-    async fn init(backend: BackendType, storage: StorageType) -> anyhow::Result<Self> {
+    async fn init(
+        backend: BackendType,
+        storage: StorageType,
+        _: Arc<Vec<LibVersion>>,
+    ) -> anyhow::Result<Self> {
         todo!()
     }
+}
+
+pub fn version() -> Vec<stry_common::LibVersion> {
+    vec![]
 }

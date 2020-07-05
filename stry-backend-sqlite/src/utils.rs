@@ -22,7 +22,7 @@ impl FromRow for Total {
         Ok(Self {
             total: row
                 .get(0)
-                .context("Attempting to get row index 0 for row count")?
+                .context("Attempting to get row index 0 for row count")?,
         })
     }
 }

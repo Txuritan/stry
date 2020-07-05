@@ -5,7 +5,7 @@ use crate::backend::{BackendType, StorageType};
 pub struct Config {
     pub host: [u8; 4],
     pub port: u16,
-    pub workers: usize,
+    pub workers: FourCount,
     pub database: Database,
     pub executor: Executor,
     pub logging: Logging,
@@ -16,10 +16,39 @@ impl Default for Config {
         Self {
             host: [0, 0, 0, 0],
             port: 8901,
-            workers: 4,
+            workers: FourCount::Four,
             database: Database::default(),
             executor: Executor::default(),
             logging: Logging::default(),
+        }
+    }
+}
+
+#[rustfmt::skip]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(serde::Deserialize, serde::Serialize)]
+pub enum FourCount {
+    Four,
+    Eight,
+    Twelve,
+    Sixteen,
+    Twenty,
+    TwentyFour,
+    TwentyEight,
+    ThirtyTwo,
+}
+
+impl FourCount {
+    pub fn as_count(self) -> usize {
+        match self {
+            FourCount::Four => 4,
+            FourCount::Eight => 8,
+            FourCount::Twelve => 12,
+            FourCount::Sixteen => 16,
+            FourCount::Twenty => 20,
+            FourCount::TwentyFour => 24,
+            FourCount::TwentyEight => 28,
+            FourCount::ThirtyTwo => 32,
         }
     }
 }

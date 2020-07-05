@@ -1,6 +1,9 @@
 use {
-    crate::models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning},
-    std::{borrow::Cow, collections::HashMap},
+    crate::{
+        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning},
+        LibVersion,
+    },
+    std::{borrow::Cow, collections::HashMap, sync::Arc},
 };
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
@@ -52,7 +55,11 @@ pub trait Backend:
     + BackendWarning
     + Clone
 {
-    async fn init(backend: BackendType, storage: StorageType) -> anyhow::Result<Self>;
+    async fn init(
+        backend: BackendType,
+        storage: StorageType,
+        version: Arc<Vec<LibVersion>>,
+    ) -> anyhow::Result<Self>;
 }
 
 #[async_trait::async_trait]

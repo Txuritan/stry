@@ -1,10 +1,12 @@
-use {crate::downloader::WorkerState, std::sync::atomic::Ordering};
+use {crate::worker::WorkerData, std::sync::atomic::Ordering};
 
 macro_rules! stop {
     ($lbl:lifetime, $state:expr) => {
+        tokio::time::delay_for(tokio::time::Duration::from_millis(1)).await;
+
         if $state.stopping.load(Ordering::SeqCst) {
             tracing::info!(
-                worker = $state.id,
+                worker_id = $state.id,
                 "Received shutdown signal, shutting down"
             );
 
@@ -13,7 +15,7 @@ macro_rules! stop {
     };
 }
 
-pub async fn task(state: WorkerState) {
+pub async fn task(state: WorkerData) {
     'l: loop {
         stop!('l, state);
 

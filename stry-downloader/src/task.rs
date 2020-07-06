@@ -4,11 +4,10 @@ macro_rules! stop {
     ($lbl:lifetime, $state:expr) => {
         tokio::time::delay_for(tokio::time::Duration::from_millis(1)).await;
 
-        if $state.stopping.load(Ordering::SeqCst) {
-            tracing::info!(
-                worker_id = $state.id,
-                "Received shutdown signal, shutting down"
-            );
+        if $state.stop.load(Ordering::SeqCst) {
+            // tracing::info!(
+            //     "Received shutdown signal, shutting down"
+            // );
 
             break $lbl;
         }

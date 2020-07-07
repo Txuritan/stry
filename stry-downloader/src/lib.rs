@@ -9,11 +9,19 @@ use {
 };
 
 pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend) {
-    worker::WorkerPool::new(
+    // worker::WorkerPool::new(
+    //     async move { rx.recv().await.expect("Failed to listen for event") },
+    //     backend,
+    //     cfg.workers,
+    //     task::task,
+    // )
+    // .await;
+
+    worker::worker(
         async move { rx.recv().await.expect("Failed to listen for event") },
-        backend,
         cfg.workers,
         task::task,
+        backend,
     )
     .await;
 }

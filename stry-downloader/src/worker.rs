@@ -1,338 +1,145 @@
 use {
-    fenn::BoolExt,
+    futures::FutureExt,
     std::{
         future::Future,
-        pin::Pin,
         sync::{
             atomic::{AtomicBool, Ordering},
-            Arc, Mutex,
+            Arc,
         },
-        task::{Context, Poll, Waker},
     },
     stry_backend::DataBackend,
     stry_common::config::FourCount,
+    tracing_futures::Instrument,
 };
 
-macro_rules! new_worker {
-    ($id:expr, $stop:expr, $backend:expr, $task:expr) => {
-        Box::pin(Worker {
-            id: $id,
-            // stop: $stop,
-            stopped: false,
-            task: Box::pin($task(WorkerData {
-                id: $id,
-                stop: $stop,
-                backend: $backend,
-            })),
-            waker: Arc::new(Mutex::new(None)),
-        })
-    };
+struct WorkerGroupData<'t, Fun, Task>
+where
+    Fun: Fn(WorkerData) -> Task + Sync,
+    Task: Future<Output = ()> + Send + Sync + 't,
+{
+    worker_groups: usize,
+    id: usize,
+    task: &'t Fun,
+    backend: DataBackend,
+    stop: Arc<AtomicBool>,
 }
 
-macro_rules! poll_worker {
-    ($worker:expr, $ctx:expr, $stop:expr) => {{
-        if !$worker.stopped {
-            {
-                let mut waker_lock = $worker.waker.lock().unwrap();
-
-                if let Some(waker) = waker_lock.take() {
-                    waker.wake();
-                }
-            }
-
-            if let Poll::Ready(()) = $worker.as_mut().poll($ctx) {
-                // $worker.stopped = true;
-
-                if !$stop {
-                    tracing::warn!(
-                        worker_id = $worker.id,
-                        "Worker has stopped before the shutdown signal, this is a problem"
-                    );
-                }
-            }
+impl<'t, Fun, Task> WorkerGroupData<'t, Fun, Task>
+where
+    Fun: Fn(WorkerData) -> Task + Sync,
+    Task: Future<Output = ()> + Send + Sync + 't,
+{
+    fn bump(&self) -> Self {
+        Self {
+            worker_groups: self.worker_groups,
+            id: self.id + 1,
+            task: self.task,
+            backend: self.backend.clone(),
+            stop: self.stop.clone(),
         }
-    }};
+    }
 }
-
-macro_rules! new_worker_group {
-    ($id:expr, $count:expr, $stop:expr, $backend:expr, $task:expr) => {{
-        let __temp_worker_group_number = if $id == 1 { $id } else { (($id - 1) * 4) + 1 };
-
-        ($count >= $id).some(Box::pin(WorkerGroup {
-            id: $id,
-
-            stopped: false,
-            stop: $stop,
-
-            one: new_worker!(__temp_worker_group_number, $stop, $backend, $task),
-            two: new_worker!(__temp_worker_group_number + 1, $stop, $backend, $task),
-            three: new_worker!(__temp_worker_group_number + 2, $stop, $backend, $task),
-            four: new_worker!(__temp_worker_group_number + 3, $stop, $backend, $task),
-        }))
-    }};
-}
-
-macro_rules! poll_worker_group {
-    ($ctx:expr, $worker:expr) => {
-        // Poll specific worker group if it exists
-        if let Some(group) = $worker.as_mut() {
-            let group: &mut PinnedWorkerGroup<'t> = group;
-
-            if !group.stopped {
-                if let Poll::Ready(()) = group.as_mut().poll($ctx) {
-                    if !group.stop.load(Ordering::SeqCst) {
-                        tracing::warn!(
-                            group_id = group.id,
-                            "Worker group has stopped before the shutdown signal, this is a problem"
-                        );
-                    }
-                }
-            }
-        }
-    };
-}
-
-macro_rules! is_worker_group_stopped {
-    ($worker_group:expr) => {
-        $worker_group
-            .as_ref()
-            .map(|w| w.all_stopped())
-            .unwrap_or_else(|| true)
-    };
-}
-
-type PinnedWorker<'t> = Pin<Box<Worker<'t>>>;
-
-type PinnedWorkerGroup<'t> = Pin<Box<WorkerGroup<'t>>>;
 
 pub struct WorkerData {
     pub id: usize,
-
-    pub stop: Arc<AtomicBool>,
-
     pub backend: DataBackend,
+    pub stop: Arc<AtomicBool>,
 }
 
-pub struct WorkerPool<'t, S>
-where
-    S: 't,
-    S: Future<Output = ()> + Send + Sync,
-{
-    signal: Pin<Box<S>>,
-
-    stop: Arc<AtomicBool>,
-
-    worker_groups: usize,
-
-    one: Option<PinnedWorkerGroup<'t>>,
-    two: Option<PinnedWorkerGroup<'t>>,
-    three: Option<PinnedWorkerGroup<'t>>,
-    four: Option<PinnedWorkerGroup<'t>>,
-    five: Option<PinnedWorkerGroup<'t>>,
-    six: Option<PinnedWorkerGroup<'t>>,
-    seven: Option<PinnedWorkerGroup<'t>>,
-    eight: Option<PinnedWorkerGroup<'t>>,
-}
-
-impl<'t, S> WorkerPool<'t, S>
-where
-    S: 't,
-    S: Future<Output = ()> + Send + Sync,
-{
-    #[allow(clippy::redundant_clone)]
-    pub fn new<T>(
-        signal: S,
-        backend: DataBackend,
-        worker_count: FourCount,
-        task: impl Fn(WorkerData) -> T,
-    ) -> Self
-    where
-        T: 't,
-        T: Future<Output = ()> + Send + Sync,
-    {
-        let stop = Arc::new(AtomicBool::new(false));
-
-        let worker_group_count = worker_count.as_count() / 4;
-
-        tracing::debug!(
-            workers = worker_count.as_count(),
-            worker_groups = worker_group_count,
-            "Creating workers"
-        );
-
+impl WorkerData {
+    fn bump(&self) -> Self {
         Self {
-            signal: Box::pin(signal),
-
-            worker_groups: worker_group_count,
-
-            one: new_worker_group!(1, worker_group_count, stop.clone(), backend.clone(), task),
-            two: new_worker_group!(2, worker_group_count, stop.clone(), backend.clone(), task),
-            three: new_worker_group!(3, worker_group_count, stop.clone(), backend.clone(), task),
-            four: new_worker_group!(4, worker_group_count, stop.clone(), backend.clone(), task),
-            five: new_worker_group!(5, worker_group_count, stop.clone(), backend.clone(), task),
-            six: new_worker_group!(6, worker_group_count, stop.clone(), backend.clone(), task),
-            seven: new_worker_group!(7, worker_group_count, stop.clone(), backend.clone(), task),
-            eight: new_worker_group!(8, worker_group_count, stop.clone(), backend.clone(), task),
-
-            stop,
+            id: self.id + 1,
+            backend: self.backend.clone(),
+            stop: self.stop.clone(),
         }
-    }
-
-    pub fn all_stopped(&self) -> bool {
-        is_worker_group_stopped!(self.one)
-            && is_worker_group_stopped!(self.two)
-            && is_worker_group_stopped!(self.three)
-            && is_worker_group_stopped!(self.four)
-            && is_worker_group_stopped!(self.five)
-            && is_worker_group_stopped!(self.six)
-            && is_worker_group_stopped!(self.seven)
-            && is_worker_group_stopped!(self.eight)
     }
 }
 
-impl<'t, S> Future for WorkerPool<'t, S>
-where
-    S: 't,
-    S: Future<Output = ()> + Send + Sync,
+pub async fn worker<'t, Signal, Fun, Task>(
+    signal: Signal,
+    worker_count: FourCount,
+    task: Fun,
+    backend: DataBackend,
+) where
+    Signal: Future<Output = ()> + Send + Sync + 't,
+    Fun: Fn(WorkerData) -> Task + Sync,
+    Task: Future<Output = ()> + Send + Sync + 't,
 {
-    type Output = ();
+    let stop = Arc::new(AtomicBool::new(false));
 
-    fn poll(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
-        let span = tracing::debug_span!("WorkerPool::poll", worker_groups = self.worker_groups);
+    let signal_fut = {
+        let stop = stop.clone();
 
-        let _guard = span.enter();
+        async move {
+            signal.await;
 
-        if !self.stop.load(Ordering::SeqCst) {
-            if let Poll::Ready(()) = self.signal.as_mut().poll(ctx) {
-                tracing::debug!("Shutdown signal received, starting shutdown");
-
-                self.stop.store(true, Ordering::SeqCst);
-            }
+            stop.store(true, Ordering::Release);
         }
+    };
 
-        // This checks if a worker group exists in the array and polls it
-        poll_worker_group!(ctx, self.one);
-        poll_worker_group!(ctx, self.two);
-        poll_worker_group!(ctx, self.three);
-        poll_worker_group!(ctx, self.four);
-        poll_worker_group!(ctx, self.five);
-        poll_worker_group!(ctx, self.six);
-        poll_worker_group!(ctx, self.seven);
-        poll_worker_group!(ctx, self.eight);
+    let worker_groups = worker_count.as_count() / 4;
 
-        if self.stop.load(Ordering::SeqCst) {
-            // Wait for workers to stop
-            if self.all_stopped() {
-                tracing::debug!("Worker poll has stopped");
+    let data = WorkerGroupData {
+        id: 0,
+        worker_groups,
+        task: &task,
+        stop: stop.clone(),
+        backend: backend.clone(),
+    };
 
-                Poll::Ready(())
-            } else {
-                Poll::Pending
-            }
+    let one = worker_group(data.bump());
+    let two = worker_group(data.bump());
+    let three = worker_group(data.bump());
+    let four = worker_group(data.bump());
+    let five = worker_group(data.bump());
+    let six = worker_group(data.bump());
+    let seven = worker_group(data.bump());
+    let eight = worker_group(data.bump());
+
+    futures::join!(signal_fut, one, two, three, four, five, six, seven, eight);
+}
+
+async fn worker_group<'t, Fun, Task>(
+    group_data: WorkerGroupData<'t, Fun, Task>,
+) -> futures::future::BoxFuture<'t, ()>
+where
+    Fun: Fn(WorkerData) -> Task + Sync,
+    Task: Future<Output = ()> + Send + Sync + 't,
+{
+    if group_data.worker_groups >= group_data.id {
+        let worker_id = if group_data.id == 1 {
+            group_data.id
         } else {
-            // Waiting for shutdown
-            Poll::Pending
-        }
-    }
-}
+            ((group_data.id - 1) * 4) + 1
+        };
 
-// To remove iterations from polling, workers are separated into groups of 4
-struct WorkerGroup<'t> {
-    id: usize,
+        let data = WorkerData {
+            id: worker_id - 1,
+            backend: group_data.backend.clone(),
+            stop: group_data.stop.clone(),
+        };
 
-    stopped: bool,
-    stop: Arc<AtomicBool>,
+        let one = (group_data.task)(data.bump())
+            .instrument(tracing::debug_span!("Worker", worker_id = 1));
 
-    one: PinnedWorker<'t>,
-    two: PinnedWorker<'t>,
-    three: PinnedWorker<'t>,
-    four: PinnedWorker<'t>,
-}
+        let two = (group_data.task)(data.bump())
+            .instrument(tracing::debug_span!("Worker", worker_id = 2));
 
-impl<'t> WorkerGroup<'t> {
-    fn all_stopped(&self) -> bool {
-        if self.stopped {
-            return self.stopped;
-        }
+        let three = (group_data.task)(data.bump())
+            .instrument(tracing::debug_span!("Worker", worker_id = 3));
 
-        self.one.stopped && self.two.stopped && self.three.stopped && self.four.stopped
-    }
-}
+        let four = (group_data.task)(data.bump())
+            .instrument(tracing::debug_span!("Worker", worker_id = 4));
 
-impl<'t> Future for WorkerGroup<'t> {
-    type Output = ();
-
-    fn poll(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
-        let span = tracing::debug_span!("WorkerGroup::poll", group_id = self.id);
-
-        let _guard = span.enter();
-
-        if !self.stopped {
-            let stop = self.stop.load(Ordering::SeqCst);
-
-            // Poll each worker if there is one
-            poll_worker!(self.one, ctx, stop);
-            poll_worker!(self.two, ctx, stop);
-            poll_worker!(self.three, ctx, stop);
-            poll_worker!(self.four, ctx, stop);
-
-            if self.all_stopped() {
-                // If all workers are stopped, set worker group to stopped
-                // This group will no longer be polled
-                tracing::debug!("Worker group has stopped");
-
-                self.stopped = true;
-
-                Poll::Ready(())
-            } else {
-                Poll::Pending
-            }
-        } else {
-            tracing::warn!("Worker group was polled even though it has stopped");
-
-            Poll::Ready(())
-        }
-    }
-}
-
-struct Worker<'t> {
-    id: usize,
-
-    // stop: Arc<AtomicBool>,
-    stopped: bool,
-
-    task: Pin<Box<dyn Future<Output = ()> + Send + Sync + 't>>,
-    waker: Arc<Mutex<Option<Waker>>>,
-}
-
-impl<'t> Future for Worker<'t> {
-    type Output = ();
-
-    fn poll(mut self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
-        let span = tracing::debug_span!("Worker::poll", worker_id = self.id);
-
-        let _guard = span.enter();
-
-        if !self.stopped {
-            if let Poll::Ready(()) = self.task.as_mut().poll(ctx) {
-                tracing::debug!("Worker has stopped");
-
-                self.stopped = true;
-
-                return Poll::Ready(());
-            }
-        }
-
-        if self.stopped {
-            tracing::warn!("Worker was polled even though it has stopped");
-
-            Poll::Ready(())
-        } else {
-            let mut state_waker = self.waker.lock().unwrap();
-
-            *state_waker = Some(ctx.waker().clone());
-
-            Poll::Pending
-        }
+        futures::future::join4(one, two, three, four)
+            .map(|_| ())
+            .instrument(tracing::debug_span!(
+                "WorkerGroup",
+                group_id = group_data.id
+            ))
+            .boxed()
+    } else {
+        futures::future::ready(()).boxed()
     }
 }

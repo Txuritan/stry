@@ -58,7 +58,7 @@ pub trait Backend:
     async fn init(
         backend: BackendType,
         storage: StorageType,
-        version: Arc<Vec<LibVersion>>,
+        versions: Arc<Vec<LibVersion>>,
     ) -> anyhow::Result<Self>;
 }
 

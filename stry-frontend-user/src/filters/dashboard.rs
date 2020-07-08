@@ -3,6 +3,13 @@ use {
     warp::{filters::BoxedFilter, Filter, Reply},
 };
 
+pub fn about(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
+    warp::path("about")
+        .and(state)
+        .and_then(crate::handlers::dashboard::about)
+        .boxed()
+}
+
 pub fn downloads(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
     warp::path("downloads")
         .and(state)

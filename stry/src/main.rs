@@ -71,7 +71,11 @@ async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
 
     tracing_log::LogTracer::init().context("Failed to set Tracing as global Log drain")?;
 
-    let version_info = Arc::new(stry_backend::version().appended(&mut stry_downloader::version()));
+    let version_info = Arc::new(
+        stry_backend::version()
+            .appended(&mut stry_downloader::version())
+            .sorted(),
+    );
 
     let backend = DataBackend::init(cfg.database.typ, cfg.database.storage.clone(), version_info)
         .await

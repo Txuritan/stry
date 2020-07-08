@@ -10,6 +10,8 @@ use {
     warp::{filters::BoxedFilter, Filter, Reply},
 };
 
+const BOM: &str = include_str!("../bom.txt");
+
 pub fn route(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
     filters::dashboard(state.clone())
         .or(filters::story(state.clone()))

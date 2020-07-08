@@ -11,12 +11,13 @@ use {
 pub use crate::filters::assets::assets;
 
 pub fn dashboard(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
-    use crate::filters::dashboard::{downloads, index, queue, updates};
+    use crate::filters::dashboard::{about, downloads, index, queue, updates};
 
     warp::get()
         .and(warp::path("dashboard"))
         .and(
-            downloads(state.clone())
+            about(state.clone())
+                .or(downloads(state.clone()))
                 .or(queue(state.clone()))
                 .or(updates(state.clone()))
                 .or(index(state)),

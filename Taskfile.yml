@@ -1,6 +1,15 @@
 version: '2'
 
 tasks:
+  build-dev:
+    cmds:
+      - cargo bom --all > stry-frontend-user/bom.txt
+      - cargo build --bin stry
+  build-release:
+    cmds:
+      - cargo bom --all > stry-frontend-user/bom.txt
+      - cargo build --bin stry --release
+
   dot:
     cmds:
       - cargo deps --all-deps --no-transitive-deps --subgraph stry askama crossbeam-channel chrono db-derive log parking_lot serde serde_json serde_urlencoded story-dl rand toml warp > stry.dot

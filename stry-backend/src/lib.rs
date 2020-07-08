@@ -15,7 +15,7 @@ use {
 #[derive(Clone)]
 pub struct DataBackend {
     inner: DataBackendInner,
-    version: Arc<Vec<LibVersion>>,
+    pub versions: Arc<Vec<LibVersion>>,
 }
 
 #[derive(Clone)]
@@ -29,23 +29,23 @@ impl Backend for DataBackend {
     async fn init(
         backend: BackendType,
         storage: StorageType,
-        version: Arc<Vec<LibVersion>>,
+        versions: Arc<Vec<LibVersion>>,
     ) -> anyhow::Result<Self> {
         match backend {
             BackendType::Postgres => {
-                let back = PostgresBackend::init(backend, storage, version.clone()).await?;
+                let back = PostgresBackend::init(backend, storage, versions.clone()).await?;
 
                 Ok(DataBackend {
                     inner: DataBackendInner::Postgres(back),
-                    version,
+                    versions,
                 })
             }
             BackendType::Sqlite => {
-                let back = SqliteBackend::init(backend, storage, version.clone()).await?;
+                let back = SqliteBackend::init(backend, storage, versions.clone()).await?;
 
                 Ok(DataBackend {
                     inner: DataBackendInner::Sqlite(back),
-                    version,
+                    versions,
                 })
             }
         }

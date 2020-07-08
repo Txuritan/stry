@@ -6,6 +6,7 @@ mod pairing;
 mod story;
 mod tag;
 mod warning;
+mod worker;
 
 mod utils;
 

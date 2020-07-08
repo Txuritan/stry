@@ -1,6 +1,6 @@
 use {
     crate::{
-        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning},
+        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask},
         LibVersion,
     },
     std::{borrow::Cow, collections::HashMap, sync::Arc},
@@ -157,4 +157,9 @@ pub trait BackendWarning {
         offset: u32,
         limit: u32,
     ) -> anyhow::Result<Option<List<Story>>>;
+}
+
+#[async_trait::async_trait]
+pub trait BackendWorker {
+    async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>>;
 }

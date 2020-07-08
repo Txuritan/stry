@@ -10,6 +10,7 @@ pub mod site;
 pub mod story;
 pub mod tag;
 pub mod warning;
+pub mod worker;
 
 use {
     chrono::{DateTime, Utc},
@@ -28,6 +29,7 @@ pub use self::{
     story::{Rating, Square, State, Story},
     tag::Tag,
     warning::Warning,
+    worker::WorkerTask,
 };
 
 pub trait Resource {

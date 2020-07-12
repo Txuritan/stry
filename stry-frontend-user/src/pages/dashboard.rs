@@ -1,4 +1,4 @@
-use {askama::Template, stry_common::LibVersion};
+use {askama::Template, stry_common::{LibVersion, models::Worker}};
 
 #[derive(Template)]
 #[template(path = "dashboard/about.html")]
@@ -53,9 +53,22 @@ pub struct Stats {
 
 #[derive(Template)]
 #[template(path = "dashboard/Tasks.html")]
-pub struct Tasks {
+pub struct Tasks<'w> {
     version: &'static str,
     git: &'static str,
 
-    title: String,
+    title: &'static str,
+
+    workers: &'w [Worker],
+}
+
+impl<'w> Tasks<'w> {
+    pub fn new(workers: &'w [Worker]) -> Self {
+        Self {
+            version: stry_common::VERSION,
+            git: stry_common::GIT_VERSION,
+            title: "tasks | dashboard",
+            workers,
+        }
+    }
 }

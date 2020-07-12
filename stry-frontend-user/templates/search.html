@@ -1,6 +1,8 @@
 {% import "macros.html" as scope %}
 {% extends "base-standard.html" %}
 
+{% block style %}{% endblock %}
+
 {% block content %}
 {% for s in stories %}
 {% call scope::story(s) %}

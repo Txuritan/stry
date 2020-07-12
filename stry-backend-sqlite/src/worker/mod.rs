@@ -14,26 +14,39 @@ impl FromRow for WorkerTask {
                 .get(0)
                 .context("Attempting to get row index 0 for worker task")?,
 
-            site: row
+            name: row
                 .get(1)
                 .context("Attempting to get row index 1 for worker task")?,
-            url: row
+            site: row
                 .get(2)
-                .context("Attempting to get row index 1 for worker task")?,
-            chapter: row
+                .map(|sites: crate::sync::Sites| -> stry_common::models::sync::Sites {
+                    sites.into()
+                })
+                .context("Attempting to get row index 2 for worker task")?,
+            url: row
                 .get(3)
                 .context("Attempting to get row index 3 for worker task")?,
 
-            complete: row
+            chapter: row
                 .get(4)
                 .context("Attempting to get row index 4 for worker task")?,
-
-            created: row
+            chapters: row
                 .get(5)
                 .context("Attempting to get row index 5 for worker task")?,
-            updated: row
+            next: row
                 .get(6)
                 .context("Attempting to get row index 6 for worker task")?,
+
+            completed: row
+                .get(7)
+                .context("Attempting to get row index 7 for worker task")?,
+
+            created: row
+                .get(8)
+                .context("Attempting to get row index 8 for worker task")?,
+            updated: row
+                .get(9)
+                .context("Attempting to get row index 9 for worker task")?,
         })
     }
 }
@@ -48,7 +61,7 @@ impl BackendWorker for SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let task: WorkerTask = match conn.type_query_row_anyhow(
-                    "SELECT WT.Id, WT.Site, WT.Url, WT.Chapter, WT.Complete, WT.Created, WT.Updated FROM WorkerTask WT WHERE WT.Complete = TRUE AND WT.Id IS NOT IN (SELECT Task FROM Worker) LIMIT 1",
+                    "SELECT WT.Id, WT.Name, WT.Site, WT.Url, WT.Chapter, WT.Chapters, WT.Next, WT.Completed, WT.Created, WT.Updated FROM WorkerTask WT WHERE WT.Complete = TRUE AND WT.Id IS NOT IN (SELECT Task FROM Worker) LIMIT 1",
                     rusqlite::params![],
                 )? {
                     Some(task) => task,

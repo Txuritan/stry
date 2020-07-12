@@ -8,6 +8,7 @@ pub mod pairing;
 pub mod series;
 pub mod site;
 pub mod story;
+pub mod sync;
 pub mod tag;
 pub mod warning;
 pub mod worker;
@@ -29,7 +30,7 @@ pub use self::{
     story::{Rating, Square, State, Story},
     tag::Tag,
     warning::Warning,
-    worker::WorkerTask,
+    worker::{WorkerTask, Worker},
 };
 
 pub trait Resource {

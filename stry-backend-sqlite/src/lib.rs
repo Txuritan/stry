@@ -8,6 +8,7 @@ mod tag;
 mod warning;
 mod worker;
 
+mod sync;
 mod utils;
 
 use {

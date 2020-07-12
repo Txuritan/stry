@@ -185,7 +185,7 @@ table PairingCharacter {
 table Worker {
     Site text [primary key]
 
-    Task text [ref: WorkerTask.Id]
+    Task text? [ref: WorkerTask.Id]
 
     Created dateTime [default: now()]
     Updated dateTime [default: now()]
@@ -194,9 +194,13 @@ table Worker {
 table WorkerTask {
     Id text [primary key]
 
+    Name text
     Site text
     Url text
+
     Chapter number
+    Chapters number
+    Next number?
 
     Completed bool
 

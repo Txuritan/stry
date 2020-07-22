@@ -8,6 +8,7 @@ pub mod pairing;
 pub mod story;
 pub mod tag;
 pub mod warning;
+pub mod worker;
 
 #[macro_use]
 pub mod utils;

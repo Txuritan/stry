@@ -11,7 +11,7 @@ build = "build.rs"
 workspace = ".."
 
 [dependencies]
-fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git" }
 
 stry-common = { path = "../stry-common", features = [ "types-postgres" ] }
 

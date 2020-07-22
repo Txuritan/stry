@@ -17,7 +17,7 @@ types-postgres = [ "postgres-types" ]
 types-sqlite = [ "rusqlite" ]
 
 [dependencies]
-fenn = { git = "https://gitlab.com/Txuritan/fenn.git", default-features = false }
+fenn = { git = "https://gitlab.com/Txuritan/fenn.git" }
 
 # Core
 anyhow = "1.0"

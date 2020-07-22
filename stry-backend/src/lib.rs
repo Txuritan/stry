@@ -5,9 +5,9 @@ use {
     stry_common::{
         backend::{
             Backend, BackendAuthor, BackendChapter, BackendCharacter, BackendOrigin,
-            BackendPairing, BackendStory, BackendTag, BackendType, BackendWarning, StorageType,
+            BackendPairing, BackendStory, BackendTag, BackendType, BackendWarning ,BackendWorker, StorageType,
         },
-        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning},
+        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask},
         LibVersion,
     },
 };
@@ -277,6 +277,16 @@ impl BackendWarning for DataBackend {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.warning_stories(id, offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.warning_stories(id, offset, limit).await,
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl BackendWorker for DataBackend {
+    async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
+        match &self.inner {
+            DataBackendInner::Postgres(backend) => backend.get_new_task().await,
+            DataBackendInner::Sqlite(backend) => backend.get_new_task().await,
         }
     }
 }

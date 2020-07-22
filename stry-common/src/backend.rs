@@ -53,6 +53,7 @@ pub trait Backend:
     + BackendStory
     + BackendTag
     + BackendWarning
+    + BackendWorker
     + Clone
 {
     async fn init(

@@ -14,8 +14,8 @@ use {
 
 struct WorkerGroupData<'t, Fun, Task>
 where
-    Fun: Fn(WorkerData) -> Task + Sync,
-    Task: Future<Output = ()> + Send + Sync + 't,
+    Fun: Fn(WorkerData) -> Task,
+    Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
     worker_groups: usize,
     id: usize,
@@ -26,8 +26,8 @@ where
 
 impl<'t, Fun, Task> WorkerGroupData<'t, Fun, Task>
 where
-    Fun: Fn(WorkerData) -> Task + Sync,
-    Task: Future<Output = ()> + Send + Sync + 't,
+    Fun: Fn(WorkerData) -> Task,
+    Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
     fn bump(&self) -> Self {
         Self {
@@ -62,9 +62,9 @@ pub async fn worker<'t, Signal, Fun, Task>(
     task: Fun,
     backend: DataBackend,
 ) where
-    Signal: Future<Output = ()> + Send + Sync + 't,
-    Fun: Fn(WorkerData) -> Task + Sync,
-    Task: Future<Output = ()> + Send + Sync + 't,
+    Signal: Future<Output = ()> + Send + 't,
+    Fun: Fn(WorkerData) -> Task,
+    Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
     let stop = Arc::new(AtomicBool::new(false));
 
@@ -104,8 +104,8 @@ async fn worker_group<'t, Fun, Task>(
     group_data: WorkerGroupData<'t, Fun, Task>,
 ) -> futures::future::BoxFuture<'t, ()>
 where
-    Fun: Fn(WorkerData) -> Task + Sync,
-    Task: Future<Output = ()> + Send + Sync + 't,
+    Fun: Fn(WorkerData) -> Task,
+    Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
     if group_data.worker_groups >= group_data.id {
         let worker_id = if group_data.id == 1 {

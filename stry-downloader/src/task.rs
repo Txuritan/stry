@@ -1,4 +1,4 @@
-use {crate::worker::WorkerData, std::sync::atomic::Ordering};
+use {crate::worker::WorkerData, std::sync::atomic::Ordering, stry_common::{backend::BackendWorker, models::sync}, story_dl::{Site, Sites}};
 
 macro_rules! stop {
     ($lbl:lifetime, $state:expr) => {
@@ -14,15 +14,30 @@ macro_rules! stop {
     };
 }
 
-pub async fn task(state: WorkerData) {
+pub async fn task(state: WorkerData) -> anyhow::Result<()> {
     'l: loop {
         stop!('l, state);
 
-        // Look for new task (if any)
+        let task = match state.backend.get_new_task().await? {
+            Some(task) => task,
+            None => {
+                // Task check runs every 30 seconds
+                tokio::time::delay_for(tokio::time::Duration::from_secs(30)).await;
+
+                continue;
+            }
+        };
+
+        // TODO: take ownership of the task
 
         stop!('l, state);
 
-        // Get story details
+        let site = match task.site {
+            sync::Sites::ArchiveOfOurOwn => Sites::ArchiveOfOurOwn,
+            sync::Sites::FanFictionNet => Sites::FanFictionNet,
+        };
+
+        // let details = site.get_details(&task.url).await?;
 
         stop!('l, state);
 
@@ -42,4 +57,6 @@ pub async fn task(state: WorkerData) {
 
         stop!('l, state);
     }
+
+    Ok(())
 }

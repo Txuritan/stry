@@ -2,7 +2,7 @@ use {
     crate::PostgresBackend,
     std::borrow::Cow,
     stry_common::{
-        backend::{BackendCharacter, BackendStory},
+        backend::BackendCharacter,
         models::{Character, List, Story},
     },
 };

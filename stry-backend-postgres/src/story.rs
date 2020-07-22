@@ -3,10 +3,9 @@ use {
     futures::try_join,
     std::borrow::Cow,
     stry_common::{
-        backend::{BackendAuthor, BackendOrigin, BackendStory, BackendTag},
+        backend::BackendStory,
         models::{
-            story::{StoryPart, StoryRow},
-            Author, Character, Entity, List, Origin, Pairing, Square, Story, Tag, Warning,
+            Author, Character, List, Origin, Pairing, Square, Story, Tag, Warning,
         },
         search::SearchParser,
     },
@@ -59,7 +58,7 @@ impl BackendStory for PostgresBackend {
         let (
             author_stmt, origin_stmt,
             warning_stmt, character_stmt, tag_stmt,
-            story_pairings_stmt, pairing_stmt,
+            _story_pairings_stmt, pairing_stmt,
             story_row,
             chapter_row, word_row,
         ) = try_join!(
@@ -247,9 +246,9 @@ impl BackendStory for PostgresBackend {
         limit: u32,
     ) -> anyhow::Result<Option<List<Story>>> {
         // TODO: maybe wrap this in a blocking call
-        let values = SearchParser::parse_to_structure(input.as_ref())?;
+        let _values = SearchParser::parse_to_structure(input.as_ref())?;
 
-        let conn = self.0.get().await?;
+        let _conn = self.0.get().await?;
 
         todo!()
     }

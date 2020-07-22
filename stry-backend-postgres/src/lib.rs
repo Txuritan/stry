@@ -30,8 +30,8 @@ pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 #[async_trait::async_trait]
 impl Backend for PostgresBackend {
     async fn init(
-        backend: BackendType,
-        storage: StorageType,
+        _backend: BackendType,
+        _storage: StorageType,
         _: Arc<Vec<LibVersion>>,
     ) -> anyhow::Result<Self> {
         todo!()

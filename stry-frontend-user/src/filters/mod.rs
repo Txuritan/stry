@@ -13,8 +13,7 @@ pub use crate::filters::assets::assets;
 pub fn dashboard(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
     use crate::filters::dashboard::{about, downloads, index, queue, updates};
 
-    warp::get()
-        .and(warp::path("dashboard"))
+    warp::path("dashboard")
         .and(
             about(state.clone())
                 .or(downloads(state.clone()))
@@ -26,11 +25,11 @@ pub fn dashboard(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,
 }
 
 pub fn explore(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path("explore"))
+    warp::path("explore")
         .and(warp::path::param::<String>())
         .and(warp::query::<Paging>())
         .and(state)
+        .and(warp::path::end())
         .and_then(crate::handlers::explore)
         .boxed()
 }
@@ -39,6 +38,7 @@ pub fn index(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
     warp::get()
         .and(warp::query::<Paging>())
         .and(state)
+        .and(warp::path::end())
         .and_then(crate::handlers::index)
         .boxed()
 }
@@ -49,16 +49,17 @@ pub fn item(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
         .and(warp::path::param::<String>())
         .and(warp::query::<Paging>())
         .and(state)
+        .and(warp::path::end())
         .and_then(crate::handlers::item)
         .boxed()
 }
 
 pub fn search(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
-    warp::get()
-        .and(warp::path("search"))
+    warp::path("search")
         .and(warp::query::<Paging>())
         .and(warp::query::<Search>())
         .and(state)
+        .and(warp::path::end())
         .and_then(crate::handlers::search::index)
         .boxed()
 }

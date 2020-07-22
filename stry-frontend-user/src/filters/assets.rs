@@ -12,7 +12,7 @@ use {
 
 macro_rules! embed {
     (@internal_bytes => $mime:expr, $t:tt, $file:tt) => {
-        warp::path(concat!($file, ".", $t)).map(|| Mime {
+        warp::path(concat!($file, ".", $t)).and(warp::path::end()).map(|| Mime {
             body: {
                 static CONTENTS: &'static [u8] =  include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/", $file, ".", $t));
 
@@ -22,7 +22,7 @@ macro_rules! embed {
         })
     };
     (@internal_str => $mime:expr, $t:tt, $file:tt) => {
-        warp::path(concat!($file, ".", $t)).map(|| Mime {
+        warp::path(concat!($file, ".", $t)).and(warp::path::end()).map(|| Mime {
             body: {
                 static CONTENTS: &'static str =  include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/", $file, ".", $t));
 
@@ -90,6 +90,7 @@ pub fn assets() -> BoxedFilter<(impl Reply,)> {
 pub fn css() -> BoxedFilter<(impl Reply,)> {
     warp::path("css")
         .and(warp::path::param::<String>())
+        .and(warp::path::end())
         .and_then(|file: String| async move {
             match file.as_str() {
                 "easymde.css" => Ok(Css::new(resource!("assets/css/easymde.css"))),
@@ -104,6 +105,7 @@ pub fn css() -> BoxedFilter<(impl Reply,)> {
 pub fn js() -> BoxedFilter<(impl Reply,)> {
     warp::path("js")
         .and(warp::path::param::<String>())
+        .and(warp::path::end())
         .and_then(|file: String| async move {
             match file.as_str() {
                 "easymde.js" => Ok(Js::new(resource!("assets/js/easymde.js"))),

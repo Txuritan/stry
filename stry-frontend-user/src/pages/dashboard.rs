@@ -1,4 +1,7 @@
-use {askama::Template, stry_common::{LibVersion, models::Worker}};
+use {
+    askama::Template,
+    stry_common::{models::Worker, LibVersion},
+};
 
 #[derive(Template)]
 #[template(path = "dashboard/about.html")]
@@ -52,7 +55,7 @@ pub struct Stats {
 }
 
 #[derive(Template)]
-#[template(path = "dashboard/Tasks.html")]
+#[template(path = "dashboard/tasks.html")]
 pub struct Tasks<'w> {
     version: &'static str,
     git: &'static str,

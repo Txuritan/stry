@@ -33,17 +33,13 @@ where
             Ok(response)
         }
         Err(err) => {
-            if let Err(err) = tokio::task::spawn_blocking(move || {
+            {
                 let span = tracing::error_span!("Response error");
                 let _enter = span.enter();
 
                 for chain in err.chain() {
                     tracing::error!("{}", chain);
                 }
-            })
-            .await
-            {
-                tracing::error!("Unable to join error thread: {}", err);
             }
 
             let mut res = Response::new(Body::empty());

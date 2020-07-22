@@ -5,9 +5,12 @@ use {
     stry_common::{
         backend::{
             Backend, BackendAuthor, BackendChapter, BackendCharacter, BackendOrigin,
-            BackendPairing, BackendStory, BackendTag, BackendType, BackendWarning ,BackendWorker, StorageType,
+            BackendPairing, BackendStory, BackendTag, BackendType, BackendWarning, BackendWorker,
+            StorageType,
         },
-        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask},
+        models::{
+            Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask,
+        },
         LibVersion,
     },
 };
@@ -26,6 +29,7 @@ enum DataBackendInner {
 
 #[async_trait::async_trait]
 impl Backend for DataBackend {
+    #[tracing::instrument(skip(storage, versions))]
     async fn init(
         backend: BackendType,
         storage: StorageType,
@@ -54,6 +58,7 @@ impl Backend for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendAuthor for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Author>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_authors(offset, limit).await,
@@ -61,6 +66,7 @@ impl BackendAuthor for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_author(id).await,
@@ -68,6 +74,7 @@ impl BackendAuthor for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn author_stories(
         &self,
         id: Cow<'static, str>,
@@ -83,6 +90,7 @@ impl BackendAuthor for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendChapter for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
@@ -101,6 +109,7 @@ impl BackendChapter for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendCharacter for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_characters(
         &self,
         offset: u32,
@@ -112,6 +121,7 @@ impl BackendCharacter for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_character(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Character>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_character(id).await,
@@ -119,6 +129,7 @@ impl BackendCharacter for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn character_stories(
         &self,
         id: Cow<'static, str>,
@@ -136,6 +147,7 @@ impl BackendCharacter for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendOrigin for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_origins(offset, limit).await,
@@ -143,6 +155,7 @@ impl BackendOrigin for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_origin(id).await,
@@ -150,6 +163,7 @@ impl BackendOrigin for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn origin_stories(
         &self,
         id: Cow<'static, str>,
@@ -165,6 +179,7 @@ impl BackendOrigin for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendPairing for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_pairings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Pairing>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_pairings(offset, limit).await,
@@ -172,6 +187,7 @@ impl BackendPairing for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_pairing(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Pairing>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_pairing(id).await,
@@ -179,6 +195,7 @@ impl BackendPairing for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn pairing_stories(
         &self,
         id: Cow<'static, str>,
@@ -194,6 +211,7 @@ impl BackendPairing for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendStory for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_stories(offset, limit).await,
@@ -201,6 +219,7 @@ impl BackendStory for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_story(id).await,
@@ -208,6 +227,7 @@ impl BackendStory for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn search_stories(
         &self,
         input: Cow<'static, str>,
@@ -225,6 +245,7 @@ impl BackendStory for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendTag for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Tag>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_tags(offset, limit).await,
@@ -232,6 +253,7 @@ impl BackendTag for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_tag(id).await,
@@ -239,6 +261,7 @@ impl BackendTag for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn tag_stories(
         &self,
         id: Cow<'static, str>,
@@ -254,6 +277,7 @@ impl BackendTag for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendWarning for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_warnings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Warning>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_warnings(offset, limit).await,
@@ -261,6 +285,7 @@ impl BackendWarning for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_warning(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Warning>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_warning(id).await,
@@ -268,6 +293,7 @@ impl BackendWarning for DataBackend {
         }
     }
 
+    #[tracing::instrument(skip(self))]
     async fn warning_stories(
         &self,
         id: Cow<'static, str>,
@@ -283,6 +309,7 @@ impl BackendWarning for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendWorker for DataBackend {
+    #[tracing::instrument(skip(self))]
     async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.get_new_task().await,

@@ -30,7 +30,7 @@ pub use self::{
     story::{Rating, Square, State, Story},
     tag::Tag,
     warning::Warning,
-    worker::{WorkerTask, Worker},
+    worker::{Worker, WorkerTask},
 };
 
 pub trait Resource {

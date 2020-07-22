@@ -21,6 +21,7 @@ async-trait = "0.1"
 futures = "0.3"
 serde = { version = "1.0", features = [ "derive" ] }
 tracing = "0.1"
+tracing-futures = "0.2"
 
 # Database
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }

@@ -2170,6 +2170,8 @@ dependencies = [
  "stry-backend-postgres 2.3.0",
  "stry-backend-sqlite 2.3.0",
  "stry-common 2.3.0",
+ "tracing 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing-futures 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2188,6 +2190,7 @@ dependencies = [
  "stry-common 2.3.0",
  "tokio-postgres 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tracing 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing-futures 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

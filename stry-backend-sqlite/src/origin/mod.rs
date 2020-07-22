@@ -37,6 +37,7 @@ impl FromRow for Origin {
 
 #[async_trait::async_trait]
 impl BackendOrigin for SqliteBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
         let origins = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -75,6 +76,7 @@ impl BackendOrigin for SqliteBackend {
         Ok(origins)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -95,6 +97,7 @@ impl BackendOrigin for SqliteBackend {
         Ok(res)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn origin_stories(
         &self,
         id: Cow<'static, str>,

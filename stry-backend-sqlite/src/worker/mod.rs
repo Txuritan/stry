@@ -1,7 +1,10 @@
 use {
-    stry_common::{backend::BackendWorker, models::WorkerTask},
-    crate::{SqliteBackend, utils::{FromRow, SqliteExt}},
+    crate::{
+        utils::{FromRow, SqliteExt},
+        SqliteBackend,
+    },
     anyhow::Context,
+    stry_common::{backend::BackendWorker, models::WorkerTask},
 };
 
 impl FromRow for WorkerTask {
@@ -19,9 +22,11 @@ impl FromRow for WorkerTask {
                 .context("Attempting to get row index 1 for worker task")?,
             site: row
                 .get(2)
-                .map(|sites: crate::sync::Sites| -> stry_common::models::sync::Sites {
-                    sites.into()
-                })
+                .map(
+                    |sites: crate::sync::Sites| -> stry_common::models::sync::Sites {
+                        sites.into()
+                    },
+                )
                 .context("Attempting to get row index 2 for worker task")?,
             url: row
                 .get(3)
@@ -53,6 +58,7 @@ impl FromRow for WorkerTask {
 
 #[async_trait::async_trait]
 impl BackendWorker for SqliteBackend {
+    #[tracing::instrument(skip(self))]
     async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
         let task = tokio::task::spawn_blocking({
             let inner = self.clone();

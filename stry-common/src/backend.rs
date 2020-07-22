@@ -1,6 +1,8 @@
 use {
     crate::{
-        models::{Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask},
+        models::{
+            Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask,
+        },
         LibVersion,
     },
     std::{borrow::Cow, collections::HashMap, sync::Arc},

@@ -1,4 +1,3 @@
-
 // A module with items that must be synced with other instances of itself
 // This allows for trait implementations of database types
 use std::fmt;

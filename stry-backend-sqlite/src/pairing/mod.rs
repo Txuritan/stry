@@ -37,6 +37,7 @@ impl FromRow for PairingPart {
 
 #[async_trait::async_trait]
 impl BackendPairing for SqliteBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_pairings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Pairing>>> {
         let pairings = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -102,6 +103,7 @@ impl BackendPairing for SqliteBackend {
         Ok(pairings)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_pairing(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Pairing>> {
         let pairing = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -144,6 +146,7 @@ impl BackendPairing for SqliteBackend {
         Ok(pairing)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn pairing_stories(
         &self,
         _id: Cow<'static, str>,

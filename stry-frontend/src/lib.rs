@@ -1,7 +1,5 @@
-pub mod logging;
-
 use {
-    crate::logging::log, std::sync::Arc, stry_backend::DataBackend, stry_common::config::Config,
+    std::sync::Arc, stry_backend::DataBackend, stry_common::config::Config,
     tokio::sync::broadcast::Receiver, warp::Filter,
 };
 
@@ -11,7 +9,7 @@ pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend)
     let routes = akibisuto_stylus::route()
         .or(stry_frontend_api::route(state.clone()))
         .or(stry_frontend_user::route(state.clone()))
-        .with(warp::log::custom(log));
+        .with(warp::trace::request());
 
     let (addr, server) = warp::serve(routes)
         .bind_with_graceful_shutdown((cfg.host, cfg.port), async move {

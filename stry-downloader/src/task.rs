@@ -1,4 +1,9 @@
-use {crate::worker::WorkerData, std::sync::atomic::Ordering, stry_common::{backend::BackendWorker, models::sync}, story_dl::{Site, Sites}};
+use {
+    crate::worker::WorkerData,
+    std::sync::atomic::Ordering,
+    story_dl::{Site, Sites},
+    stry_common::{backend::BackendWorker, models::sync},
+};
 
 macro_rules! stop {
     ($lbl:lifetime, $state:expr) => {
@@ -14,6 +19,7 @@ macro_rules! stop {
     };
 }
 
+#[tracing::instrument(skip(state))]
 pub async fn task(state: WorkerData) -> anyhow::Result<()> {
     'l: loop {
         stop!('l, state);

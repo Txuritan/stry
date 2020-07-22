@@ -18,7 +18,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendStory for SqliteBackend {
-    #[tracing::instrument]
+    #[tracing::instrument(skip(self))]
     async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Story>>> {
         let ids = match tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -82,7 +82,7 @@ impl BackendStory for SqliteBackend {
         Ok(Some(List { total, items }))
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip(self))]
     async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
         let story_part = match tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -267,7 +267,7 @@ impl BackendStory for SqliteBackend {
         Ok(Some(story))
     }
 
-    #[tracing::instrument]
+    #[tracing::instrument(skip(self))]
     async fn search_stories(
         &self,
         _input: Cow<'static, str>,

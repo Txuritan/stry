@@ -1,7 +1,10 @@
 // A module with items that must be synced with other instances of itself
 // This allows for trait implementations of database types
 
-use rusqlite::{types::{FromSql, FromSqlResult, FromSqlError, ToSql, ToSqlOutput, ValueRef}, Result};
+use rusqlite::{
+    types::{FromSql, FromSqlError, FromSqlResult, ToSql, ToSqlOutput, ValueRef},
+    Result,
+};
 
 // NOTICE: must be kept in-sync with story-dl's site enum
 pub enum Sites {
@@ -20,12 +23,10 @@ impl Into<stry_common::models::sync::Sites> for Sites {
 
 impl FromSql for Sites {
     fn column_result(value: ValueRef) -> FromSqlResult<Self> {
-        value.as_str().and_then(|value| {
-            match value {
-                "archive-of-our-own" => Ok(Sites::ArchiveOfOurOwn),
-                "fanfiction-net" => Ok(Sites::FanFictionNet),
-                _ => Err(FromSqlError::InvalidType),
-            }
+        value.as_str().and_then(|value| match value {
+            "archive-of-our-own" => Ok(Sites::ArchiveOfOurOwn),
+            "fanfiction-net" => Ok(Sites::FanFictionNet),
+            _ => Err(FromSqlError::InvalidType),
         })
     }
 }

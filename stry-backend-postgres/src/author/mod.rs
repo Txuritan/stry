@@ -38,6 +38,7 @@ impl FromRow for Author {
 
 #[async_trait::async_trait]
 impl BackendAuthor for PostgresBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Author>>> {
         let conn = self.0.get().await?;
 
@@ -57,6 +58,7 @@ impl BackendAuthor for PostgresBackend {
         Ok(Some(list))
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         let conn = self.0.get().await?;
 
@@ -67,6 +69,7 @@ impl BackendAuthor for PostgresBackend {
         Ok(author)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn author_stories(
         &self,
         id: Cow<'static, str>,

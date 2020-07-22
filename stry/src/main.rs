@@ -14,6 +14,7 @@ use {
     },
     tokio::{runtime::Builder, sync::broadcast},
     tracing::Level,
+    tracing_subscriber::{fmt::format::FmtSpan, FmtSubscriber},
 };
 
 fn main() -> anyhow::Result<()> {
@@ -51,14 +52,15 @@ async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
         }
     })?;
 
-    let builder =
-        tracing_subscriber::FmtSubscriber::builder().with_max_level(match cfg.logging.level {
+    let builder = FmtSubscriber::builder()
+        .with_max_level(match cfg.logging.level {
             LogLevel::Error => Level::ERROR,
             LogLevel::Warn => Level::WARN,
             LogLevel::Info => Level::INFO,
             LogLevel::Debug => Level::DEBUG,
             LogLevel::Trace => Level::TRACE,
-        });
+        })
+        .with_span_events(FmtSpan::CLOSE);
 
     // TODO: figure out a way so i don't have to have to different `set_global_default` calls
     if cfg.logging.json {

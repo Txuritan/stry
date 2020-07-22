@@ -37,6 +37,7 @@ impl FromRow for Character {
 
 #[async_trait::async_trait]
 impl BackendCharacter for SqliteBackend {
+    #[tracing::instrument(skip(self))]
     async fn all_characters(
         &self,
         offset: u32,
@@ -81,6 +82,7 @@ impl BackendCharacter for SqliteBackend {
         Ok(characters)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn get_character(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Character>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -101,6 +103,7 @@ impl BackendCharacter for SqliteBackend {
         Ok(res)
     }
 
+    #[tracing::instrument(skip(self))]
     async fn character_stories(
         &self,
         id: Cow<'static, str>,

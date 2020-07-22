@@ -14,11 +14,50 @@ use {
     },
     tokio::{runtime::Builder, sync::broadcast},
     tracing::Level,
-    tracing_subscriber::{fmt::format::FmtSpan, FmtSubscriber},
+    tracing_subscriber::{
+        filter::LevelFilter,
+        fmt::{self, format::FmtSpan},
+        layer::SubscriberExt,
+        Registry,
+    },
 };
 
 fn main() -> anyhow::Result<()> {
     let cfg = load_config().context("Failure to create config instance")?;
+
+    let file_appender =
+        tracing_appender::rolling::daily(&cfg.logging.directory, &cfg.logging.prefix);
+    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+
+    // TODO: Get JSON output working
+    let reg = Registry::default()
+        .with(
+            fmt::Layer::default()
+                .with_ansi(cfg.logging.ansi)
+                .with_thread_ids(cfg.logging.thread_ids)
+                .with_thread_names(cfg.logging.thread_names)
+                .with_span_events(FmtSpan::CLOSE),
+        )
+        .with(
+            fmt::Layer::default()
+                .with_writer(non_blocking)
+                .with_ansi(false)
+                .with_thread_ids(cfg.logging.thread_ids)
+                .with_thread_names(cfg.logging.thread_names)
+                .with_span_events(FmtSpan::CLOSE),
+        )
+        .with(LevelFilter::from(match cfg.logging.level {
+            LogLevel::Error => Level::ERROR,
+            LogLevel::Warn => Level::WARN,
+            LogLevel::Info => Level::INFO,
+            LogLevel::Debug => Level::DEBUG,
+            LogLevel::Trace => Level::TRACE,
+        }));
+
+    tracing::subscriber::set_global_default(reg)
+        .context("Failed to set Tracing global subscriber")?;
+
+    tracing_log::LogTracer::init().context("Failed to set Tracing as global Log drain")?;
 
     let mut builder = Builder::new();
 
@@ -51,27 +90,6 @@ async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
             tracing::error!("Unable to send shutdown signal");
         }
     })?;
-
-    let builder = FmtSubscriber::builder()
-        .with_max_level(match cfg.logging.level {
-            LogLevel::Error => Level::ERROR,
-            LogLevel::Warn => Level::WARN,
-            LogLevel::Info => Level::INFO,
-            LogLevel::Debug => Level::DEBUG,
-            LogLevel::Trace => Level::TRACE,
-        })
-        .with_span_events(FmtSpan::CLOSE);
-
-    // TODO: figure out a way so i don't have to have to different `set_global_default` calls
-    if cfg.logging.json {
-        tracing::subscriber::set_global_default(builder.json().finish())
-            .context("Failed to set Tracing global subscriber")?;
-    } else {
-        tracing::subscriber::set_global_default(builder.finish())
-            .context("Failed to set Tracing global subscriber")?;
-    }
-
-    tracing_log::LogTracer::init().context("Failed to set Tracing as global Log drain")?;
 
     let version_info = Arc::new(
         stry_backend::version()

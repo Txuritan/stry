@@ -91,15 +91,25 @@ impl Default for Executor {
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(default)]
 pub struct Logging {
+    pub ansi: bool,
+    pub directory: String,
     pub level: LogLevel,
     pub json: bool,
+    pub prefix: String,
+    pub thread_ids: bool,
+    pub thread_names: bool,
 }
 
 impl Default for Logging {
     fn default() -> Self {
         Self {
+            ansi: true,
+            directory: String::from("./logs"),
             level: LogLevel::Debug,
             json: false,
+            prefix: String::from("log"),
+            thread_ids: true,
+            thread_names: true,
         }
     }
 }

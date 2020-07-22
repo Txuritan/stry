@@ -14,6 +14,7 @@ use {
         },
         search::{SearchParser, SearchTypes, SearchValue, VecSearchExt},
     },
+    tracing_futures::Instrument,
 };
 
 #[async_trait::async_trait]
@@ -26,32 +27,38 @@ impl BackendStory for SqliteBackend {
             move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt =
-                    conn.prepare("SELECT Id FROM Story ORDER BY Updated DESC LIMIT ? OFFSET ?;")?;
+                let mut stmt = tracing::trace_span!("prepare").in_scope(|| {
+                    conn.prepare("SELECT Id FROM Story ORDER BY Updated DESC LIMIT ? OFFSET ?;")
+                })?;
 
-                let items = match stmt
-                    .query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
-                        Ok(Entity {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for story id")?,
+                let rows = tracing::trace_span!("get_rows")
+                    .in_scope(|| {
+                        stmt.query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
+                            Ok(Entity {
+                                id: row
+                                    .get(0)
+                                    .context("Attempting to get row index 0 for story id")?,
+                            })
                         })
                     })?
-                    .map(|items| items.collect::<Result<_, _>>())
-                {
+                    .map(|items| items.collect::<Result<_, _>>());
+
+                let items = match rows {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
 
-                let total = match conn.query_row_anyhow(
-                    "SELECT COUNT(Id) as Count FROM Story;",
-                    rusqlite::params![],
-                    |row| {
-                        Ok(row
-                            .get(0)
-                            .context("Attempting to get row index 0 for story count")?)
-                    },
-                )? {
+                let total = match tracing::trace_span!("get_count").in_scope(|| {
+                    conn.query_row_anyhow(
+                        "SELECT COUNT(Id) as Count FROM Story;",
+                        rusqlite::params![],
+                        |row| {
+                            Ok(row
+                                .get(0)
+                                .context("Attempting to get row index 0 for story count")?)
+                        },
+                    )
+                })? {
                     Some(total) => total,
                     None => return Ok(None),
                 };
@@ -71,7 +78,11 @@ impl BackendStory for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = match self.get_story(id.into()).await? {
+            let story = match self
+                .get_story(id.into())
+                .instrument(tracing::trace_span!("get_story"))
+                .await?
+            {
                 Some(story) => story,
                 None => return Ok(None),
             };

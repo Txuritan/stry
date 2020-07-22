@@ -9,6 +9,7 @@ use {
         backend::{BackendAuthor, BackendStory},
         models::{Author, Entity, List, Story},
     },
+    tracing_futures::Instrument,
 };
 
 impl FromRow for Author {
@@ -37,7 +38,7 @@ impl FromRow for Author {
 
 #[async_trait::async_trait]
 impl BackendAuthor for SqliteBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Author>>> {
         let authors = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -73,7 +74,7 @@ impl BackendAuthor for SqliteBackend {
         Ok(authors)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -93,7 +94,7 @@ impl BackendAuthor for SqliteBackend {
         Ok(res)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn author_stories(
         &self,
         id: Cow<'static, str>,
@@ -106,31 +107,39 @@ impl BackendAuthor for SqliteBackend {
             move || -> anyhow::Result<Option<List<Entity>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare(include_str!("stories-items.sql"))?;
+                let mut stmt = tracing::trace_span!("prepare")
+                    .in_scope(|| conn.prepare(include_str!("stories-items.sql")))?;
 
-                let items: Vec<Entity> = match stmt
-                    .query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
-                        Ok(Entity {
-                            id: row
-                                .get(0)
-                                .context("Attempting to get row index 0 for author story id")?,
+                let rows = tracing::trace_span!("get_rows")
+                    .in_scope(|| {
+                        stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
+                            Ok(Entity {
+                                id: row
+                                    .get(0)
+                                    .context("Attempting to get row index 0 for author story id")?,
+                            })
                         })
                     })?
-                    .map(|items| items.collect::<Result<_, _>>())
-                {
+                    .map(|items| items.collect::<Result<_, _>>());
+
+                let items: Vec<Entity> = match rows {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
 
-                let total = match conn.query_row_anyhow(
-                    include_str!("stories-count.sql"),
-                    rusqlite::params![id],
-                    |row| {
-                        Ok(row
-                            .get(0)
-                            .context("Attempting to get row index 0 for author story count")?)
-                    },
-                )? {
+                let row = tracing::trace_span!("get_count").in_scope(|| {
+                    conn.query_row_anyhow(
+                        include_str!("stories-count.sql"),
+                        rusqlite::params![id],
+                        |row| {
+                            Ok(row
+                                .get(0)
+                                .context("Attempting to get row index 0 for author story count")?)
+                        },
+                    )
+                })?;
+
+                let total = match row {
                     Some(total) => total,
                     None => return Ok(None),
                 };
@@ -149,7 +158,11 @@ impl BackendAuthor for SqliteBackend {
         let mut items = Vec::with_capacity(limit as usize);
 
         for Entity { id } in entities {
-            let story = match self.get_story(id.into()).await? {
+            let story = match self
+                .get_story(id.into())
+                .instrument(tracing::trace_span!("get_story"))
+                .await?
+            {
                 Some(story) => story,
                 None => return Ok(None),
             };

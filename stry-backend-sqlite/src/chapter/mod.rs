@@ -48,7 +48,7 @@ impl FromRow for Chapter {
 
 #[async_trait::async_trait]
 impl BackendChapter for SqliteBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
@@ -60,11 +60,13 @@ impl BackendChapter for SqliteBackend {
             move || -> anyhow::Result<Option<Chapter>> {
                 let conn = inner.0.get()?;
 
-                let row = conn
-                    .type_query_row_anyhow::<Chapter, _>(
-                        include_str!("get-item.sql"),
-                        rusqlite::params![story_id, chapter_number],
-                    )
+                let row: Option<Chapter> = tracing::trace_span!("get")
+                    .in_scope(|| {
+                        conn.type_query_row_anyhow(
+                            include_str!("get-item.sql"),
+                            rusqlite::params![story_id, chapter_number],
+                        )
+                    })
                     .context("Unable to get story chapter")?;
 
                 Ok(row)

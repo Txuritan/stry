@@ -1,6 +1,6 @@
 use {
     crate::{
-        utils::{FromRow, SqliteExt, SqliteStmtExt},
+        utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
         SqliteBackend,
     },
     anyhow::Context,
@@ -37,7 +37,7 @@ impl FromRow for PairingPart {
 
 #[async_trait::async_trait]
 impl BackendPairing for SqliteBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn all_pairings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Pairing>>> {
         let pairings = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -45,57 +45,73 @@ impl BackendPairing for SqliteBackend {
             move || -> anyhow::Result<Option<List<Pairing>>> {
                 let conn = inner.0.get()?;
 
-                let mut pairing_stmt = conn.prepare(include_str!("all-items.sql"))?;
-                let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
+                let (mut pairing_stmt, mut character_stmt) = tracing::trace_span!("prepare")
+                    .in_scope(|| -> anyhow::Result<_> {
+                        let pairing_stmt = conn.prepare(include_str!("all-items.sql"))?;
+                        let character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
 
-                let item_parts: Vec<PairingPart> = match pairing_stmt
-                    .type_query_map_anyhow::<PairingPart, _>(rusqlite::params![
-                        limit,
-                        offset * limit
-                    ])?
-                    .map(|items| items.collect::<Result<_, _>>())
-                {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
+                        Ok((pairing_stmt, character_stmt))
+                    })?;
 
-                let mut items = Vec::with_capacity(item_parts.len());
+                let rows = tracing::trace_span!("get_parts").in_scope(|| {
+                    pairing_stmt.type_query_map_anyhow(rusqlite::params![limit, offset * limit])
+                });
 
-                for part in item_parts {
-                    let characters = match character_stmt
-                        .type_query_map_anyhow::<Character, _>(rusqlite::params![part.id])?
-                        .map(|items| items.collect::<Result<_, _>>())
-                    {
+                let item_parts: Vec<PairingPart> =
+                    match rows?.map(|items| items.collect::<Result<Vec<PairingPart>, _>>()) {
                         Some(items) => items?,
                         None => return Ok(None),
                     };
 
-                    items.push(Pairing {
-                        id: part.id,
+                let filled: Option<Vec<Pairing>> =
+                    tracing::trace_span!("fill_parts").in_scope(|| -> anyhow::Result<_> {
+                        let mut items = Vec::with_capacity(item_parts.len());
 
-                        characters,
+                        for part in item_parts {
+                            let rows = tracing::trace_span!("get_characters").in_scope(|| {
+                                character_stmt.type_query_map_anyhow(rusqlite::params![part.id])
+                            })?;
 
-                        platonic: part.platonic,
+                            let characters: Vec<Character> = match rows
+                                .map(|items| items.collect::<Result<Vec<Character>, _>>())
+                            {
+                                Some(items) => items?,
+                                None => return Ok(None),
+                            };
 
-                        created: part.created,
-                        updated: part.updated,
-                    });
-                }
+                            items.push(Pairing {
+                                id: part.id,
 
-                let total = match conn.query_row_anyhow(
-                    include_str!("all-count.sql"),
-                    rusqlite::params![],
-                    |row| {
-                        Ok(row
-                            .get(0)
-                            .context("Attempting to get row index 0 for pairing count")?)
-                    },
-                )? {
+                                characters,
+
+                                platonic: part.platonic,
+
+                                created: part.created,
+                                updated: part.updated,
+                            });
+                        }
+
+                        Ok(Some(items))
+                    })?;
+
+                let items = match filled {
+                    Some(items) => items,
+                    None => return Ok(None),
+                };
+
+                let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
+                    conn.type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])
+                })?;
+
+                let total: Total = match row {
                     Some(total) => total,
                     None => return Ok(None),
                 };
 
-                Ok(Some(List { total, items }))
+                Ok(Some(List {
+                    total: total.total,
+                    items,
+                }))
             }
         })
         .await??;
@@ -103,7 +119,7 @@ impl BackendPairing for SqliteBackend {
         Ok(pairings)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn get_pairing(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Pairing>> {
         let pairing = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -111,23 +127,27 @@ impl BackendPairing for SqliteBackend {
             move || -> anyhow::Result<Option<Pairing>> {
                 let conn = inner.0.get()?;
 
-                let mut character_stmt = conn.prepare(include_str!("item-characters.sql"))?;
+                let mut character_stmt = tracing::trace_span!("prepare")
+                    .in_scope(|| conn.prepare(include_str!("item-characters.sql")))?;
 
-                let part = match conn.type_query_row_anyhow::<PairingPart, _>(
-                    include_str!("get-item.sql"),
-                    rusqlite::params![id],
-                )? {
+                let row: Option<PairingPart> = tracing::trace_span!("get_part").in_scope(|| {
+                    conn.type_query_row_anyhow(include_str!("get-item.sql"), rusqlite::params![id])
+                })?;
+
+                let part: PairingPart = match row {
                     Some(part) => part,
                     None => return Ok(None),
                 };
 
-                let characters = match character_stmt
-                    .type_query_map_anyhow::<Character, _>(rusqlite::params![part.id])?
-                    .map(|items| items.collect::<Result<_, _>>())
-                {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
+                let rows = tracing::trace_span!("get_characters").in_scope(|| {
+                    character_stmt.type_query_map_anyhow(rusqlite::params![part.id])
+                })?;
+
+                let characters: Vec<Character> =
+                    match rows.map(|items| items.collect::<Result<Vec<Character>, _>>()) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
 
                 Ok(Some(Pairing {
                     id: part.id,
@@ -146,7 +166,7 @@ impl BackendPairing for SqliteBackend {
         Ok(pairing)
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn pairing_stories(
         &self,
         _id: Cow<'static, str>,

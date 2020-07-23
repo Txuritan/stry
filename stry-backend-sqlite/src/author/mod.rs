@@ -46,19 +46,27 @@ impl BackendAuthor for SqliteBackend {
             move || -> anyhow::Result<Option<List<Author>>> {
                 let conn = inner.0.get()?;
 
-                let mut stmt = conn.prepare(include_str!("all-items.sql"))?;
+                let mut stmt = tracing::trace_span!("prepare")
+                    .in_scope(|| conn.prepare(include_str!("all-items.sql")))?;
 
-                let items = match stmt
-                    .type_query_map_anyhow::<Author, _>(rusqlite::params![limit, offset * limit])?
-                    .map(|items| items.collect::<Result<_, _>>())
-                {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
+                let rows = tracing::trace_span!("get_rows").in_scope(|| {
+                    stmt.type_query_map_anyhow::<Author, _>(rusqlite::params![
+                        limit,
+                        offset * limit
+                    ])
+                })?;
 
-                let total: Total = match conn
-                    .type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])?
-                {
+                let items: Vec<Author> =
+                    match rows.map(|items| items.collect::<Result<Vec<Author>, _>>()) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
+
+                let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
+                    conn.type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])
+                })?;
+
+                let total: Total = match row {
                     Some(total) => total,
                     None => return Ok(None),
                 };
@@ -81,10 +89,9 @@ impl BackendAuthor for SqliteBackend {
             move || -> anyhow::Result<Option<Author>> {
                 let conn = inner.0.get()?;
 
-                let row = conn.type_query_row_anyhow::<Author, _>(
-                    include_str!("get-item.sql"),
-                    rusqlite::params![id],
-                )?;
+                let row: Option<Author> = tracing::trace_span!("get").in_scope(|| {
+                    conn.type_query_row_anyhow(include_str!("get-item.sql"), rusqlite::params![id])
+                })?;
 
                 Ok(row)
             }
@@ -110,41 +117,38 @@ impl BackendAuthor for SqliteBackend {
                 let mut stmt = tracing::trace_span!("prepare")
                     .in_scope(|| conn.prepare(include_str!("stories-items.sql")))?;
 
-                let rows = tracing::trace_span!("get_rows")
-                    .in_scope(|| {
-                        stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
-                            Ok(Entity {
-                                id: row
-                                    .get(0)
-                                    .context("Attempting to get row index 0 for author story id")?,
-                            })
+                let rows = tracing::trace_span!("get_ids").in_scope(|| {
+                    stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
+                        Ok(Entity {
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for author story id")?,
                         })
-                    })?
-                    .map(|items| items.collect::<Result<_, _>>());
+                    })
+                })?;
 
-                let items: Vec<Entity> = match rows {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
+                let items: Vec<Entity> =
+                    match rows.map(|items| items.collect::<Result<Vec<Entity>, _>>()) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
 
-                let row = tracing::trace_span!("get_count").in_scope(|| {
-                    conn.query_row_anyhow(
+                let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
+                    conn.type_query_row_anyhow(
                         include_str!("stories-count.sql"),
                         rusqlite::params![id],
-                        |row| {
-                            Ok(row
-                                .get(0)
-                                .context("Attempting to get row index 0 for author story count")?)
-                        },
                     )
                 })?;
 
-                let total = match row {
+                let total: Total = match row {
                     Some(total) => total,
                     None => return Ok(None),
                 };
 
-                Ok(Some(List { total, items }))
+                Ok(Some(List {
+                    total: total.total,
+                    items,
+                }))
             }
         })
         .await??

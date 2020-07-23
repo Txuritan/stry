@@ -4,9 +4,7 @@ use {
     std::borrow::Cow,
     stry_common::{
         backend::BackendStory,
-        models::{
-            Author, Character, List, Origin, Pairing, Square, Story, Tag, Warning,
-        },
+        models::{Author, Character, List, Origin, Pairing, Square, Story, Tag, Warning},
         search::SearchParser,
     },
 };

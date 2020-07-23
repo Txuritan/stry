@@ -56,7 +56,7 @@ impl WorkerData {
     }
 }
 
-#[tracing::instrument(skip(signal, task, backend))]
+#[tracing::instrument(level = "debug", skip(signal, task, backend))]
 pub async fn worker<'t, Signal, Fun, Task>(
     signal: Signal,
     worker_count: FourCount,
@@ -101,7 +101,7 @@ pub async fn worker<'t, Signal, Fun, Task>(
     futures::join!(signal_fut, one, two, three, four, five, six, seven, eight);
 }
 
-#[tracing::instrument(skip(group_data))]
+#[tracing::instrument(level = "debug", skip(group_data))]
 async fn worker_group<'t, Fun, Task>(
     group_data: WorkerGroupData<'t, Fun, Task>,
 ) -> futures::future::BoxFuture<'t, ()>

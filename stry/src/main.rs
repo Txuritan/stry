@@ -78,6 +78,8 @@ fn main() -> anyhow::Result<()> {
 
     rt.block_on(run(cfg))?;
 
+    tracing::info!("Thank you. I'll say goodbye soon.. Though its the end of the would. Don't blame yourself now.. I'll be okay");
+
     Ok(())
 }
 

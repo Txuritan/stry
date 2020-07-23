@@ -58,7 +58,7 @@ impl FromRow for WorkerTask {
 
 #[async_trait::async_trait]
 impl BackendWorker for SqliteBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(level = "debug", skip(self))]
     async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
         let task = tokio::task::spawn_blocking({
             let inner = self.clone();

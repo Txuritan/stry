@@ -1,18 +1,13 @@
+pub mod commands;
+
+pub mod config;
+
 use {
+    crate::commands::{endpoint, serve},
     anyhow::Context,
-    fenn::VecExt,
-    std::{
-        fs,
-        io::{self, prelude::*},
-        path::Path,
-        sync::Arc,
-    },
-    stry_backend::DataBackend,
-    stry_common::{
-        backend::Backend,
-        config::{Config, LogLevel},
-    },
-    tokio::{runtime::Builder, sync::broadcast},
+    std::{future::Future, pin::Pin},
+    stry_common::{backend::BackendType, config::LogLevel},
+    tokio::runtime::Builder,
     tracing::Level,
     tracing_subscriber::{
         filter::LevelFilter,
@@ -22,8 +17,32 @@ use {
     },
 };
 
+pub type Boxed = Pin<Box<dyn Future<Output = anyhow::Result<()>>>>;
+
 fn main() -> anyhow::Result<()> {
-    let cfg = load_config().context("Failure to create config instance")?;
+    let mut args = pico_args::Arguments::from_env();
+
+    if args.contains(["-h", "--help"]) {
+        help();
+
+        return Ok(());
+    }
+
+    if args.contains(["-v", "--version"]) {
+        println!(
+            "stry v{}-{}",
+            stry_common::VERSION,
+            stry_common::GIT_VERSION
+        );
+
+        return Ok(());
+    }
+
+    let cfg = config::load_config(
+        args.opt_value_from_str(["-c", "--config"])?,
+        get_config_override(&mut args)?,
+    )
+    .context("Failure to create config instance")?;
 
     let file_appender =
         tracing_appender::rolling::daily(&cfg.logging.directory, &cfg.logging.prefix);
@@ -76,65 +95,123 @@ fn main() -> anyhow::Result<()> {
         .build()
         .context("Unable to build Tokio runtime")?;
 
-    rt.block_on(run(cfg))?;
+    let fut = match args.subcommand()?.as_deref() {
+        Some("endpoint") => endpoint::handle(args, cfg)?,
+        Some("serve") | None => serve::handle(args, cfg)?,
+        Some(other) => {
+            println!("Unknown command: {}", other);
+            println!();
+            println!("Use `stry --help` to see all allowed commands");
+
+            return Ok(());
+        }
+    };
+
+    rt.block_on(fut)?;
 
     tracing::info!("Thank you. I'll say goodbye soon.. Though its the end of the would. Don't blame yourself now.. I'll be okay");
 
     Ok(())
 }
 
-async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
-    let (tx, frontend_rx) = broadcast::channel::<()>(2);
-    let download_rx = tx.subscribe();
-
-    ctrlc::set_handler(move || {
-        if tx.send(()).is_err() {
-            tracing::error!("Unable to send shutdown signal");
-        }
-    })?;
-
-    let version_info = Arc::new(
-        stry_backend::version()
-            .appended(&mut stry_downloader::version())
-            .sorted(),
-    );
-
-    let backend = DataBackend::init(cfg.database.typ, cfg.database.storage.clone(), version_info)
-        .await
-        .context("Unable to create backend instance")?;
-
-    let download_handle = tokio::spawn(stry_downloader::start(
-        cfg.clone(),
-        download_rx,
-        backend.clone(),
-    ));
-    let frontend_handle = tokio::spawn(stry_frontend::start(cfg.clone(), frontend_rx, backend));
-
-    download_handle
-        .await
-        .context("Unable to join download process with main")?;
-    frontend_handle
-        .await
-        .context("Unable to join frontend process with main")?;
-
-    Ok(())
+#[rustfmt::skip]
+fn help() {
+    println!("stry v{}-{}", stry_common::VERSION, stry_common::GIT_VERSION);
+    println!();
+    println!("Usage:");
+    println!("  stry <COMMAND> [--config <FILE>]");
+    println!("  stry <COMMAND> [--host <HOST>] [--port <PORT>]");
+    println!("  stry <COMMAND> [--workers <COUNT>]");
+    println!("  stry <COMMAND> [--backend-type <TYPE> --backend-file <FILE>]");
+    println!("  stry -h | --help");
+    println!("  stry -v | --version");
+    println!();
+    println!("Commands:");
+    println!("  stry endpoint                   Start the web server with only the API");
+    println!("  stry serve                      Start the web server with user front-end and API");
+    println!();
+    println!("Options:");
+    println!("  -h, --help                      Show this screen");
+    println!("  -v, --version                   Show version");
+    println!("  -C <FILE>, --config <FILE>      Use a specified config instead of the default");
+    println!("  -H <HOST>, --host <HOST>        Sets the server ip [default: 0.0.0.0]");
+    println!("  -P <PORT>, --port <PORT>        Sets the server port [default: 8901]");
+    println!("  -W <COUNT>, --workers <COUNT>   Sets the amount of task workers [default: 4]");
+    println!("  --backend-type <TYPE>           Sets the database type [default: sqlite]");
+    println!("  --backend-file <FILE>           Sets the database file path [default: stry.db]");
+    println!("  --backend-username <USERNAME>   Sets the database connection username");
+    println!("  --backend-password <PASSWORD>   Sets the database connection password");
+    println!("  --backend-host <HOST>           Sets the database connection host");
+    println!("  --backend-port <PORT>           Sets the database connection port");
+    println!("  --backend-database <DATABASE>   Sets the database connection database");
+    println!("  --log-ansi                      Enables ANSI coloring if its disabled");
+    println!("  --log-no-ansi                   Disables ANSI coloring if its enabled");
+    println!("  --log-directory <DIRECTORY>     Sets the directory to write logs to");
+    println!("  --log-level <LEVEL>             Sets the lowest logging level");
+    println!("  --log-json                      Enabled JSON logging if its disabled");
+    println!("  --log-no-json                   Disables JSON logging if its enabled");
+    println!("  --log-prefix <PREFIX>           Sets the prefix of log files");
+    println!("  --log-thread-ids                Enabled logging of thread IDs if its disabled");
+    println!("  --log-no-thread-ids             Disables logging of thread IDs if its enabled");
+    println!("  --log-thread-names              Enabled logging of thread names if its disabled");
+    println!("  --log-no-thread-names           Disables logging of thread names if its enabled");
 }
 
-pub fn load_config() -> anyhow::Result<Arc<Config>> {
-    let cfg_path = Path::new("stry.ron");
-
-    let cfg = if cfg_path.exists() {
-        let file = fs::OpenOptions::new().read(true).open(cfg_path)?;
-        let mut reader = io::BufReader::new(file);
-
-        let mut contents = String::new();
-
-        reader.read_to_string(&mut contents)?;
-
-        ron::de::from_str(&contents)?
-    } else {
-        Config::default()
+fn get_config_override(args: &mut pico_args::Arguments) -> anyhow::Result<config::ConfigOverride> {
+    let typ = match args
+        .opt_value_from_str::<_, String>("--backend-type")?
+        .as_deref()
+    {
+        Some("sqlite") => Some(BackendType::Sqlite),
+        Some("postgres") => Some(BackendType::Sqlite),
+        _ => None,
     };
 
-    Ok(Arc::new(cfg))
+    let cfg_override = config::ConfigOverride {
+        host: args.opt_value_from_str(["-H", "--host"])?,
+        port: args.opt_value_from_str(["-P", "--port"])?,
+        workers: args.opt_value_from_str(["-W", "--workers"])?,
+        database: config::DatabaseOverride {
+            typ,
+            storage: if let Some(typ) = typ {
+                Some(match typ {
+                    BackendType::Sqlite => config::StorageTypeOverride::File {
+                        location: args.opt_value_from_str("--backend-file")?,
+                    },
+                    BackendType::Postgres => config::StorageTypeOverride::Parts {
+                        username: args.opt_value_from_str("--backend-username")?,
+                        password: args.opt_value_from_str("--backend-password")?,
+                        host: args.opt_value_from_str("--backend-host")?,
+                        port: args.opt_value_from_str("--backend-port")?,
+                        database: args.opt_value_from_str("--backend-database")?,
+                    },
+                })
+            } else {
+                None
+            },
+        },
+        executor: config::ExecutorOverride {
+            core_threads: None,
+            max_threads: None,
+        },
+        logging: config::LoggingOverride {
+            ansi: args
+                .opt_value_from_str("--log-ansi")?
+                .or(args.opt_value_from_str("--log-no-ansi")?),
+            directory: args.opt_value_from_str("--log-directory")?,
+            level: args.opt_value_from_str("--log-level")?,
+            json: args
+                .opt_value_from_str("--log-json")?
+                .or(args.opt_value_from_str("--log-no-json")?),
+            prefix: args.opt_value_from_str("--log-prefix")?,
+            thread_ids: args
+                .opt_value_from_str("--log-thread-ids")?
+                .or(args.opt_value_from_str("--log-no-thread-ids")?),
+            thread_names: args
+                .opt_value_from_str("--log-thread-names")?
+                .or(args.opt_value_from_str("--log-no-thread-names")?),
+        },
+    };
+
+    Ok(cfg_override)
 }

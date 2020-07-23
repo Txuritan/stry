@@ -37,6 +37,10 @@ impl Backend for SqliteBackend {
 
             let pool = Pool::new(manager)?;
 
+            let conn = pool.get()?;
+
+            conn.execute_batch(include_str!("../schema.sql"))?;
+
             Ok(Self(pool))
         } else {
             anyhow::bail!("The `SQLite` backend can only use the `File` storage type");

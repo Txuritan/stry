@@ -37,7 +37,12 @@ async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
         download_rx,
         backend.clone(),
     ));
-    let frontend_handle = tokio::spawn(stry_frontend::start_api(cfg.clone(), frontend_rx, backend));
+    let frontend_handle = tokio::spawn(stry_frontend::start(
+        cfg.clone(),
+        frontend_rx,
+        backend,
+        false,
+    ));
 
     download_handle
         .await

@@ -9,4 +9,4 @@ SELECT P.Id, (SELECT GROUP_CONCAT(C.Name, CASE WHEN P.Platonic THEN '+' ELSE '/'
 UNION ALL
 SELECT Id, Name, Created, Updated, (SELECT COUNT(1) FROM StoryTag WHERE TagId = Id) AS Count, 'tag' AS Type FROM Tag
     WHERE Name LIKE ? COLLATE NOCASE
-ORDER BY Count DESC;
+ORDER BY Count DESC, Name ASC LIMIT 10;

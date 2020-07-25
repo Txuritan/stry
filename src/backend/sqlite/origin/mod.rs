@@ -1,0 +1,179 @@
+use {
+    crate::{
+        backend::{
+            sqlite::utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
+            BackendOrigin, BackendStory, SqliteBackend,
+        },
+        models::{Entity, List, Origin, Story},
+    },
+    anyhow::Context,
+    std::borrow::Cow,
+    tracing_futures::Instrument,
+};
+
+impl FromRow for Origin {
+    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Origin {
+            id: row
+                .get(0)
+                .context("Attempting to get row index 0 for origin")?,
+
+            name: row
+                .get(1)
+                .context("Attempting to get row index 1 for origin")?,
+
+            created: row
+                .get(2)
+                .context("Attempting to get row index 2 for origin")?,
+            updated: row
+                .get(3)
+                .context("Attempting to get row index 3 for origin")?,
+        })
+    }
+}
+
+#[async_trait::async_trait]
+impl BackendOrigin for SqliteBackend {
+    #[tracing::instrument(level = "debug", skip(self))]
+    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
+        let origins = tokio::task::spawn_blocking({
+            let inner = self.clone();
+
+            move || -> anyhow::Result<Option<List<Origin>>> {
+                let conn = inner.0.get()?;
+
+                let mut stmt = tracing::trace_span!("prepare")
+                    .in_scope(|| conn.prepare(include_str!("all-items.sql")))?;
+
+                let rows = tracing::trace_span!("get_rows").in_scope(|| {
+                    stmt.type_query_map_anyhow(rusqlite::params![limit, offset * limit])
+                })?;
+
+                let items: Vec<Origin> =
+                    match rows.map(|tags| tags.collect::<Result<Vec<Origin>, _>>()) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
+
+                let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
+                    conn.type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])
+                })?;
+
+                let total: Total = match row {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
+
+                Ok(Some(List {
+                    total: total.total,
+                    items,
+                }))
+            }
+        })
+        .await??;
+
+        Ok(origins)
+    }
+
+    #[tracing::instrument(level = "debug", skip(self))]
+    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
+        let res = tokio::task::spawn_blocking({
+            let inner = self.clone();
+
+            move || -> anyhow::Result<Option<Origin>> {
+                let conn = inner.0.get()?;
+
+                let row: Option<Origin> = tracing::trace_span!("get").in_scope(|| {
+                    conn.type_query_row_anyhow::<Origin, _>(
+                        include_str!("get-item.sql"),
+                        rusqlite::params![id],
+                    )
+                })?;
+
+                Ok(row)
+            }
+        })
+        .await??;
+
+        Ok(res)
+    }
+
+    #[tracing::instrument(level = "debug", skip(self))]
+    async fn origin_stories(
+        &self,
+        id: Cow<'static, str>,
+        offset: u32,
+        limit: u32,
+    ) -> anyhow::Result<Option<List<Story>>> {
+        let ids = match tokio::task::spawn_blocking({
+            let inner = self.clone();
+
+            move || -> anyhow::Result<Option<List<Entity>>> {
+                let conn = inner.0.get()?;
+
+                let mut stmt = tracing::trace_span!("prepare")
+                    .in_scope(|| conn.prepare(include_str!("stories-items.sql")))?;
+
+                let rows = tracing::trace_span!("get_ids").in_scope(|| {
+                    stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
+                        Ok(Entity {
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for origin story id")?,
+                        })
+                    })
+                })?;
+
+                let items: Vec<Entity> =
+                    match rows.map(|items| items.collect::<Result<Vec<Entity>, _>>()) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
+
+                let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
+                    conn.type_query_row_anyhow(
+                        include_str!("stories-count.sql"),
+                        rusqlite::params![id],
+                    )
+                })?;
+
+                let total: Total = match row {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
+
+                Ok(Some(List {
+                    total: total.total,
+                    items,
+                }))
+            }
+        })
+        .await??
+        {
+            Some(ids) => ids,
+            None => return Ok(None),
+        };
+
+        let (total, entities) = ids.into_parts();
+
+        let mut items = Vec::with_capacity(limit as usize);
+
+        for Entity { id } in entities {
+            let story = match self
+                .get_story(id.into())
+                .instrument(tracing::trace_span!("get_story"))
+                .await?
+            {
+                Some(story) => story,
+                None => return Ok(None),
+            };
+
+            items.push(story);
+        }
+
+        Ok(Some(List { total, items }))
+    }
+}

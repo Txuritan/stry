@@ -19,5 +19,9 @@ fn run_command(cmd: &str) -> Output {
 }
 
 fn main() {
-    git_version();
+    if cfg!(debug_assertions) {
+        println!("cargo:rustc-env=GIT_VERSION=DEBUG");
+    } else {
+        git_version();
+    }
 }

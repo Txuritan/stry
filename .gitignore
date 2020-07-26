@@ -6,3 +6,5 @@
 *.log
 *.exe
 *.dot
+*.db
+*.ron

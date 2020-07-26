@@ -3,6 +3,7 @@ name = "stry"
 version = "2.3.0"
 authors = [ "Txuritan <txuritan@protonmail.com>" ]
 edition = "2018"
+description = "A mini self-hosted Archive of Our Own, a story host with tagging."
 
 license = "MIT OR Apache-2.0"
 

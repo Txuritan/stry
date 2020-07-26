@@ -68,7 +68,7 @@ pub fn load_config(
         let two = parts.pop().expect("Missing part of the host address")?;
         let one = parts.pop().expect("Missing part of the host address")?;
 
-        cfg.host = [one, two, three, four];
+        cfg.ip = [one, two, three, four];
     }
 
     if let Some(port) = cfg_override.port.take() {
@@ -127,7 +127,7 @@ pub fn load_config(
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(default)]
 pub struct Config {
-    pub host: [u8; 4],
+    pub ip: [u8; 4],
     pub port: u16,
     pub workers: FourCount,
     pub database: Database,
@@ -138,7 +138,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            host: [0, 0, 0, 0],
+            ip: [0, 0, 0, 0],
             port: 8901,
             workers: FourCount::Four,
             database: Database::default(),

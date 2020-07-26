@@ -6,7 +6,7 @@ use {
         },
         version::LibVersion,
     },
-    std::{borrow::Cow, collections::HashMap, sync::Arc},
+    std::{borrow::Cow, sync::Arc},
 };
 
 #[async_trait::async_trait]

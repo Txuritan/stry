@@ -23,7 +23,7 @@ pub async fn start(
         .with(warp::trace::request());
 
     let (addr, server) = warp::serve(routes)
-        .bind_with_graceful_shutdown((cfg.host, cfg.port), async move {
+        .bind_with_graceful_shutdown((cfg.ip, cfg.port), async move {
             rx.recv().await.expect("Failed to listen for event")
         });
 

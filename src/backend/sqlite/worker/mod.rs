@@ -24,11 +24,6 @@ impl FromRow for WorkerTask {
                 .context("Attempting to get row index 1 for worker task")?,
             site: row
                 .get(2)
-                .map(
-                    |sites: crate::models::sync::Sites| -> crate::models::sync::Sites {
-                        sites.into()
-                    },
-                )
                 .context("Attempting to get row index 2 for worker task")?,
             url: row
                 .get(3)

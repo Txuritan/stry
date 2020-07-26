@@ -1,5 +1,8 @@
 use {
-    crate::models::{Author, Character, Origin, Pairing, Series, Tag, Warning},
+    crate::{
+        backend::DataBackend,
+        models::{Author, Character, Origin, Pairing, Series, Tag, Warning},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -30,6 +33,61 @@ pub struct Story {
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl Story {
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn summary(&self) -> &str {
+        &self.summary
+    }
+
+    pub fn rating(&self) -> Rating {
+        self.square.rating
+    }
+
+    pub fn state(&self) -> State {
+        self.square.state
+    }
+
+    pub fn chapters(&self) -> i32 {
+        self.chapters as i32
+    }
+
+    pub fn words(&self) -> i32 {
+        self.words as i32
+    }
+
+    pub fn warnings(&self) -> &[Warning] {
+        &self.warnings
+    }
+
+    pub fn pairings(&self) -> &[Pairing] {
+        &self.pairings
+    }
+
+    pub fn characters(&self) -> &[Character] {
+        &self.characters
+    }
+
+    pub fn tags(&self) -> &[Tag] {
+        &self.tags
+    }
+
+    pub fn created(&self) -> &DateTime<Utc> {
+        &self.created
+    }
+
+    pub fn updated(&self) -> &DateTime<Utc> {
+        &self.updated
+    }
 }
 
 pub struct StoryRow {
@@ -71,8 +129,9 @@ pub struct StoryPart {
 
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(juniper::GraphQLEnum)]
 #[derive(postgres_types::ToSql, postgres_types::FromSql)]
+#[derive(serde::Deserialize, serde::Serialize)]
 #[postgres(name = "rating")]
 pub enum Rating {
     #[serde(rename = "explicit")]
@@ -145,8 +204,9 @@ impl rusqlite::types::ToSql for Rating {
 
 #[rustfmt::skip]
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(juniper::GraphQLEnum)]
 #[derive(postgres_types::ToSql, postgres_types::FromSql)]
+#[derive(serde::Deserialize, serde::Serialize)]
 #[postgres(name = "state")]
 pub enum State {
     #[serde(rename = "completed")]

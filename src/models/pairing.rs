@@ -1,5 +1,5 @@
 use {
-    crate::models::Character,
+    crate::{backend::DataBackend, models::Character},
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -16,6 +16,29 @@ pub struct Pairing {
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl Pairing {
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn characters(&self) -> &[Character] {
+        &self.characters
+    }
+
+    pub fn platonic(&self) -> bool {
+        self.platonic
+    }
+
+    pub fn created(&self) -> &DateTime<Utc> {
+        &self.created
+    }
+
+    pub fn updated(&self) -> &DateTime<Utc> {
+        &self.updated
+    }
 }
 
 impl fmt::Display for Pairing {

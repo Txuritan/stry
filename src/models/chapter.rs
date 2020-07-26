@@ -1,4 +1,7 @@
-use chrono::{DateTime, Utc};
+use {
+    crate::backend::DataBackend,
+    chrono::{DateTime, Utc},
+};
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -12,8 +15,43 @@ pub struct Chapter {
     pub main: String,
     pub post: String,
 
-    pub words: i64,
+    pub words: i32,
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl Chapter {
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn pre(&self) -> &str {
+        &self.pre
+    }
+
+    pub fn main(&self) -> &str {
+        &self.main
+    }
+
+    pub fn post(&self) -> &str {
+        &self.post
+    }
+
+    pub fn words(&self) -> i32 {
+        self.words
+    }
+
+    pub fn created(&self) -> &DateTime<Utc> {
+        &self.created
+    }
+
+    pub fn updated(&self) -> &DateTime<Utc> {
+        &self.updated
+    }
 }

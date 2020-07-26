@@ -33,24 +33,102 @@ fn main() -> anyhow::Result<()> {
     let matches = App::new(env!("CARGO_PKG_NAME"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
         .version(&*format!("{}-{}", version::VERSION, version::GIT_VERSION))
-        .arg(value("config", "c", "Use a specified config instead of the default", "CONFIG"))
-        .arg(value("workers", "w", "Sets the amount of task workers", "COUNT"))
-        .arg(value("backend-database", "d", "Database name for remote backend database", "DATABASE"))
-        .arg(value("backend-host", "H", "Host address for remote backend database", "HOST"))
-        .arg(value("backend-port", "P", "Port number for remote backend database", "PORT"))
-        .arg(value("backend-file", "f", "The file of the SQLite backend database", "FILE"))
-        .arg(value("backend-password", "s", "Password for remote backend database user", "PASSWORD"))
-        .arg(value("backend-type", "t", "The type of the backend database", "TYPE").possible_values(&["postgres", "sqlite"]))
-        .arg(value("backend-username", "u", "Username for remote backend database user", "USERNAME"))
-        .arg(value("log-directory", "o", "Directory to write logging files to", "DIRECTORY"))
-        .arg(value("log-level", "l", "Lowest level for logging output", "LEVEL").possible_values(&["error", "warn", "info", "debug", "trace"]))
-        .arg(value("log-prefix", "x", "Logging file name prefix", "PREFIX"))
-        .arg(value("server-ip", "i", "IP that the server will listen for requests on", "IP"))
+        .arg(value(
+            "config",
+            "c",
+            "Use a specified config instead of the default",
+            "CONFIG",
+        ))
+        .arg(value(
+            "workers",
+            "w",
+            "Sets the amount of task workers",
+            "COUNT",
+        ))
+        .arg(value(
+            "backend-database",
+            "d",
+            "Database name for remote backend database",
+            "DATABASE",
+        ))
+        .arg(value(
+            "backend-host",
+            "H",
+            "Host address for remote backend database",
+            "HOST",
+        ))
+        .arg(value(
+            "backend-port",
+            "P",
+            "Port number for remote backend database",
+            "PORT",
+        ))
+        .arg(value(
+            "backend-file",
+            "f",
+            "The file of the SQLite backend database",
+            "FILE",
+        ))
+        .arg(value(
+            "backend-password",
+            "s",
+            "Password for remote backend database user",
+            "PASSWORD",
+        ))
+        .arg(
+            value(
+                "backend-type",
+                "t",
+                "The type of the backend database",
+                "TYPE",
+            )
+            .possible_values(&["postgres", "sqlite"]),
+        )
+        .arg(value(
+            "backend-username",
+            "u",
+            "Username for remote backend database user",
+            "USERNAME",
+        ))
+        .arg(value(
+            "log-directory",
+            "o",
+            "Directory to write logging files to",
+            "DIRECTORY",
+        ))
+        .arg(
+            value("log-level", "l", "Lowest level for logging output", "LEVEL")
+                .possible_values(&["error", "warn", "info", "debug", "trace"]),
+        )
+        .arg(value(
+            "log-prefix",
+            "x",
+            "Logging file name prefix",
+            "PREFIX",
+        ))
+        .arg(value(
+            "server-ip",
+            "i",
+            "IP that the server will listen for requests on",
+            "IP",
+        ))
         .arg(value("server-port", "p", "Port used by the server", "PORT"))
-        .arg(flag("log-ansi", "a", "Enables ANSI coloring of logging output"))
+        .arg(flag(
+            "log-ansi",
+            "a",
+            "Enables ANSI coloring of logging output",
+        ))
         .arg(flag("log-json", "j", "Output logging in JSON format"))
-        .arg(flag("log-thread-ids", "D", "Logging output contains the ID of its source thread"))
-        .arg(flag("log-thread-names", "n", "Logging output contains the name of its source thread"))
+        .arg(flag(
+            "log-thread-ids",
+            "D",
+            "Logging output contains the ID of its source thread",
+        ))
+        .arg(flag(
+            "log-thread-names",
+            "n",
+            "Logging output contains the name of its source thread",
+        ))
         .version_short("v")
         .get_matches();
 
@@ -144,17 +222,12 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn flag<'b>(name: &'b str, short: &'b str, help: &'b str)-> Arg<'b, 'b> {
-    Arg::with_name(name)
-        .long(name)
-        .short(short)
-        .help(help)
+fn flag<'b>(name: &'b str, short: &'b str, help: &'b str) -> Arg<'b, 'b> {
+    Arg::with_name(name).long(name).short(short).help(help)
 }
 
 fn value<'b>(name: &'b str, short: &'b str, help: &'b str, value: &'b str) -> Arg<'b, 'b> {
-    flag(name, short, help)
-        .takes_value(true)
-        .value_name(value)
+    flag(name, short, help).takes_value(true).value_name(value)
 }
 
 #[rustfmt::skip]

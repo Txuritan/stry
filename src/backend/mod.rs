@@ -64,6 +64,8 @@ pub struct DataBackend {
     pub versions: Arc<Vec<LibVersion>>,
 }
 
+impl juniper::Context for DataBackend {}
+
 #[derive(Clone)]
 enum DataBackendInner {
     Postgres(PostgresBackend),

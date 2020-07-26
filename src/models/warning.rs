@@ -1,5 +1,5 @@
 use {
-    crate::models::Resource,
+    crate::{backend::DataBackend, models::Resource},
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -14,6 +14,25 @@ pub struct Warning {
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl Warning {
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn created(&self) -> &DateTime<Utc> {
+        &self.created
+    }
+
+    pub fn updated(&self) -> &DateTime<Utc> {
+        &self.updated
+    }
 }
 
 impl Resource for Warning {

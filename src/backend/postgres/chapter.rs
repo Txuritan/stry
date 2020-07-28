@@ -12,7 +12,7 @@ impl BackendChapter for PostgresBackend {
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
-        chapter_number: u32,
+        chapter_number: i32,
     ) -> anyhow::Result<Option<Chapter>> {
         let conn = self.0.get().await?;
 

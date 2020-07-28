@@ -9,7 +9,7 @@ use {
 #[async_trait::async_trait]
 impl BackendPairing for PostgresBackend {
     #[tracing::instrument(skip(self))]
-    async fn all_pairings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Pairing>>> {
+    async fn all_pairings(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Pairing>>> {
         todo!()
     }
 
@@ -22,8 +22,8 @@ impl BackendPairing for PostgresBackend {
     async fn pairing_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         todo!()
     }

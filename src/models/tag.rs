@@ -1,5 +1,8 @@
 use {
-    crate::{backend::DataBackend, models::Resource},
+    crate::{
+        backend::DataBackend,
+        models::{List, Resource},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -64,5 +67,30 @@ impl fmt::Display for Tag {
             "<li><a class=\"label background--gray\" href=\"/tag/{}\">{}</a></li>",
             self.id, self.name
         )
+    }
+}
+
+pub struct TagList {
+    pub total: i32,
+    pub items: Vec<Tag>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl TagList {
+    pub fn total(&self) -> i32 {
+        self.total
+    }
+
+    pub fn items(&self) -> &[Tag] {
+        &self.items
+    }
+}
+
+impl From<List<Tag>> for TagList {
+    fn from(list: List<Tag>) -> Self {
+        TagList {
+            total: list.total,
+            items: list.items,
+        }
     }
 }

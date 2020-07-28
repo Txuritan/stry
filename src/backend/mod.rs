@@ -103,7 +103,7 @@ impl Backend for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendAuthor for DataBackend {
-    async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Author>>> {
+    async fn all_authors(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Author>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_authors(offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.all_authors(offset, limit).await,
@@ -120,8 +120,8 @@ impl BackendAuthor for DataBackend {
     async fn author_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.author_stories(id, offset, limit).await,
@@ -135,7 +135,7 @@ impl BackendChapter for DataBackend {
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
-        chapter_number: u32,
+        chapter_number: i32,
     ) -> anyhow::Result<Option<Chapter>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => {
@@ -152,8 +152,8 @@ impl BackendChapter for DataBackend {
 impl BackendCharacter for DataBackend {
     async fn all_characters(
         &self,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Character>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_characters(offset, limit).await,
@@ -171,8 +171,8 @@ impl BackendCharacter for DataBackend {
     async fn character_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => {
@@ -185,7 +185,7 @@ impl BackendCharacter for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendOrigin for DataBackend {
-    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
+    async fn all_origins(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Origin>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_origins(offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.all_origins(offset, limit).await,
@@ -202,8 +202,8 @@ impl BackendOrigin for DataBackend {
     async fn origin_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.origin_stories(id, offset, limit).await,
@@ -214,7 +214,7 @@ impl BackendOrigin for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendPairing for DataBackend {
-    async fn all_pairings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Pairing>>> {
+    async fn all_pairings(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Pairing>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_pairings(offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.all_pairings(offset, limit).await,
@@ -231,8 +231,8 @@ impl BackendPairing for DataBackend {
     async fn pairing_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.pairing_stories(id, offset, limit).await,
@@ -243,7 +243,7 @@ impl BackendPairing for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendStory for DataBackend {
-    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Story>>> {
+    async fn all_stories(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_stories(offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.all_stories(offset, limit).await,
@@ -260,8 +260,8 @@ impl BackendStory for DataBackend {
     async fn search_stories(
         &self,
         input: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => {
@@ -274,7 +274,7 @@ impl BackendStory for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendTag for DataBackend {
-    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Tag>>> {
+    async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_tags(offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.all_tags(offset, limit).await,
@@ -291,8 +291,8 @@ impl BackendTag for DataBackend {
     async fn tag_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.tag_stories(id, offset, limit).await,
@@ -303,7 +303,7 @@ impl BackendTag for DataBackend {
 
 #[async_trait::async_trait]
 impl BackendWarning for DataBackend {
-    async fn all_warnings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Warning>>> {
+    async fn all_warnings(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Warning>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.all_warnings(offset, limit).await,
             DataBackendInner::Sqlite(backend) => backend.all_warnings(offset, limit).await,
@@ -320,8 +320,8 @@ impl BackendWarning for DataBackend {
     async fn warning_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         match &self.inner {
             DataBackendInner::Postgres(backend) => backend.warning_stories(id, offset, limit).await,

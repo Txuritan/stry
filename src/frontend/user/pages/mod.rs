@@ -88,8 +88,8 @@ impl<'a> ResourceList<'a> {
     pub fn new(
         title: impl Into<String>,
         typ: models::RouteType,
-        page: u32,
-        pages: u32,
+        page: i32,
+        pages: i32,
         resources: Vec<&'a dyn models::Resource>,
     ) -> Self {
         Self {
@@ -97,7 +97,13 @@ impl<'a> ResourceList<'a> {
             git: GIT_VERSION,
             title: title.into(),
             search: None,
-            pagination: Pagination::new(format!("/explore/{}", typ), None, pages, page).to_string(),
+            pagination: Pagination::new(
+                format!("/explore/{}", typ),
+                None,
+                pages as u32,
+                page as u32,
+            )
+            .to_string(),
             typ: typ.to_string(),
             resources,
         }
@@ -122,8 +128,8 @@ impl StoryList {
     pub fn new(
         title: impl Into<String>,
         url: impl Into<String>,
-        page: u32,
-        pages: u32,
+        page: i32,
+        pages: i32,
         stories: Vec<models::Story>,
     ) -> Self {
         Self {
@@ -131,7 +137,7 @@ impl StoryList {
             git: GIT_VERSION,
             title: title.into(),
             search: None,
-            pagination: Pagination::new(url, None, pages, page).to_string(),
+            pagination: Pagination::new(url, None, pages as u32, page as u32).to_string(),
             stories,
         }
     }
@@ -155,8 +161,8 @@ impl Search {
     pub fn new(
         title: impl Into<String>,
         search: String,
-        page: u32,
-        pages: u32,
+        page: i32,
+        pages: i32,
         stories: Vec<models::Story>,
     ) -> anyhow::Result<Self> {
         #[derive(serde::Serialize)]
@@ -174,8 +180,8 @@ impl Search {
                     serde_urlencoded::to_string(SearchUrl { search: &search })?
                 ),
                 None,
-                pages,
-                page,
+                pages as u32,
+                page as u32,
             )
             .to_string(),
             search: Some(search),

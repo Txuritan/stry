@@ -11,8 +11,8 @@ impl BackendCharacter for PostgresBackend {
     #[tracing::instrument(skip(self))]
     async fn all_characters(
         &self,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Character>>> {
         todo!()
     }
@@ -26,8 +26,8 @@ impl BackendCharacter for PostgresBackend {
     async fn character_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         todo!()
     }

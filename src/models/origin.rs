@@ -1,5 +1,8 @@
 use {
-    crate::{backend::DataBackend, models::Resource},
+    crate::{
+        backend::DataBackend,
+        models::{List, Resource},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -60,5 +63,30 @@ impl Resource for Origin {
 impl fmt::Display for Origin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<a href=\"/origin/{}\">{}</a>", self.id, self.name)
+    }
+}
+
+pub struct OriginList {
+    pub total: i32,
+    pub items: Vec<Origin>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl OriginList {
+    pub fn total(&self) -> i32 {
+        self.total
+    }
+
+    pub fn items(&self) -> &[Origin] {
+        &self.items
+    }
+}
+
+impl From<List<Origin>> for OriginList {
+    fn from(list: List<Origin>) -> Self {
+        OriginList {
+            total: list.total,
+            items: list.items,
+        }
     }
 }

@@ -40,8 +40,8 @@ impl BackendCharacter for SqliteBackend {
     #[tracing::instrument(level = "debug", skip(self))]
     async fn all_characters(
         &self,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Character>>> {
         let characters = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -117,8 +117,8 @@ impl BackendCharacter for SqliteBackend {
     async fn character_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         let ids = match tokio::task::spawn_blocking({
             let inner = self.clone();

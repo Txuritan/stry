@@ -38,13 +38,13 @@ impl FromRow for Author {
 #[async_trait::async_trait]
 impl BackendAuthor for PostgresBackend {
     #[tracing::instrument(skip(self))]
-    async fn all_authors(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Author>>> {
+    async fn all_authors(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Author>>> {
         let conn = self.0.get().await?;
 
         let pair = crate::params![limit, offset];
         let empty = crate::params![];
 
-        let (items, total): (Option<Vec<Author>>, Option<u32>) = try_join!(
+        let (items, total): (Option<Vec<Author>>, Option<i32>) = try_join!(
             conn.type_query_map_anyhow(include_str!("all-items.sql"), pair),
             conn.type_query_row_anyhow(include_str!("all-count.sql"), empty),
         )?;
@@ -72,15 +72,15 @@ impl BackendAuthor for PostgresBackend {
     async fn author_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let pair = crate::params![limit, offset];
         let one = crate::params![id];
 
-        let (entity_rows, total): (Option<Vec<Entity>>, Option<u32>) = try_join!(
+        let (entity_rows, total): (Option<Vec<Entity>>, Option<i32>) = try_join!(
             conn.type_query_map_anyhow(include_str!("stories-items.sql"), pair),
             conn.type_query_row_anyhow(include_str!("stories-count.sql"), one),
         )?;

@@ -1,7 +1,7 @@
 use {
     crate::{
         backend::DataBackend,
-        models::{Author, Character, Origin, Pairing, Series, Tag, Warning},
+        models::{Author, Character, List, Origin, Pairing, Series, Tag, Warning},
     },
     chrono::{DateTime, Utc},
     std::fmt,
@@ -18,8 +18,8 @@ pub struct Story {
 
     pub square: Square,
 
-    pub chapters: u32,
-    pub words: u32,
+    pub chapters: i32,
+    pub words: i32,
 
     pub authors: Vec<Author>,
     pub origins: Vec<Origin>,
@@ -58,11 +58,11 @@ impl Story {
     }
 
     pub fn chapters(&self) -> i32 {
-        self.chapters as i32
+        self.chapters
     }
 
     pub fn words(&self) -> i32 {
-        self.words as i32
+        self.words
     }
 
     pub fn warnings(&self) -> &[Warning] {
@@ -112,8 +112,8 @@ pub struct StoryPart {
     pub rating: Rating,
     pub state: State,
 
-    pub chapters: u32,
-    pub words: u32,
+    pub chapters: i32,
+    pub words: i32,
 
     pub authors: Vec<Author>,
     pub origins: Vec<Origin>,
@@ -125,6 +125,31 @@ pub struct StoryPart {
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+pub struct StoryList {
+    pub total: i32,
+    pub items: Vec<Story>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl StoryList {
+    pub fn total(&self) -> i32 {
+        self.total
+    }
+
+    pub fn items(&self) -> &[Story] {
+        &self.items
+    }
+}
+
+impl From<List<Story>> for StoryList {
+    fn from(list: List<Story>) -> Self {
+        StoryList {
+            total: list.total,
+            items: list.items,
+        }
+    }
 }
 
 #[rustfmt::skip]

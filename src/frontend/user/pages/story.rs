@@ -17,7 +17,7 @@ pub struct Chapter {
     search: Option<String>,
 
     pagination: String,
-    page: u32,
+    page: i32,
 
     story: models::Story,
     chapter: models::Chapter,
@@ -26,7 +26,7 @@ pub struct Chapter {
 impl Chapter {
     pub fn new(
         title: impl Into<String>,
-        page: u32,
+        page: i32,
         story: models::Story,
         chapter: models::Chapter,
     ) -> Self {
@@ -38,8 +38,8 @@ impl Chapter {
             pagination: Pagination::new(
                 format!("/story/{}", story.id),
                 Some("/"),
-                story.chapters,
-                page,
+                story.chapters as u32,
+                page as u32,
             )
             .to_string(),
             page,

@@ -38,7 +38,7 @@ impl FromRow for Warning {
 #[async_trait::async_trait]
 impl BackendWarning for SqliteBackend {
     #[tracing::instrument(level = "debug", skip(self))]
-    async fn all_warnings(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Warning>>> {
+    async fn all_warnings(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Warning>>> {
         let warnings = tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -102,8 +102,8 @@ impl BackendWarning for SqliteBackend {
     async fn warning_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         let ids = match tokio::task::spawn_blocking({
             let inner = self.clone();

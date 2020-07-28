@@ -29,7 +29,7 @@ pub trait FromRow {
         Self: Sized;
 }
 
-impl FromRow for u32 {
+impl FromRow for i32 {
     fn from_row(row: &Row) -> anyhow::Result<Self>
     where
         Self: Sized,

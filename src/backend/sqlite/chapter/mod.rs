@@ -54,7 +54,7 @@ impl BackendChapter for SqliteBackend {
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
-        chapter_number: u32,
+        chapter_number: i32,
     ) -> anyhow::Result<Option<Chapter>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();

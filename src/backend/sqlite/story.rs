@@ -19,7 +19,7 @@ use {
 #[async_trait::async_trait]
 impl BackendStory for SqliteBackend {
     #[tracing::instrument(level = "debug", skip(self))]
-    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Story>>> {
+    async fn all_stories(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Story>>> {
         let ids = match tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -132,7 +132,7 @@ impl BackendStory for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let chapters: u32 = match conn.query_row_anyhow(
+                let chapters: i32 = match conn.query_row_anyhow(
                     "SELECT COUNT(StoryId) as Count FROM StoryChapter WHERE StoryId = ?;",
                     rusqlite::params![id],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for chapter count")?),
@@ -141,7 +141,7 @@ impl BackendStory for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let words: u32 = match conn.query_row_anyhow(
+                let words: i32 = match conn.query_row_anyhow(
                     "SELECT SUM(C.Words) as Words FROM StoryChapter SC LEFT JOIN Chapter C ON C.Id = SC.ChapterId WHERE SC.StoryId = ?;",
                     rusqlite::params![id],
                     |row| Ok(row.get(0).context("Attempting to get row index 0 for word count")?),
@@ -281,8 +281,8 @@ impl BackendStory for SqliteBackend {
     async fn search_stories(
         &self,
         _input: Cow<'static, str>,
-        _offset: u32,
-        _limit: u32,
+        _offset: i32,
+        _limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         // let search = SearchParser::parse_to_structure(input.as_ref())?;
 

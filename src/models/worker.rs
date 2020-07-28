@@ -25,8 +25,8 @@ pub struct WorkerTask {
     pub site: Sites,
     pub url: String,
 
-    pub chapter: u32,
-    pub chapters: u32,
+    pub chapter: i32,
+    pub chapters: i32,
     pub next: Option<String>,
 
     pub completed: bool,

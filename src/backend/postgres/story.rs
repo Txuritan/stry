@@ -11,7 +11,7 @@ use {
 #[async_trait::async_trait]
 impl BackendStory for PostgresBackend {
     #[tracing::instrument(skip(self))]
-    async fn all_stories(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Story>>> {
+    async fn all_stories(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -239,8 +239,8 @@ impl BackendStory for PostgresBackend {
     async fn search_stories(
         &self,
         input: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         // TODO: maybe wrap this in a blocking call
         let _values = SearchParser::parse_to_structure(input.as_ref())?;

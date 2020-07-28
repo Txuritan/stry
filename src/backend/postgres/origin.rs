@@ -9,7 +9,7 @@ use {
 #[async_trait::async_trait]
 impl BackendOrigin for PostgresBackend {
     #[tracing::instrument(skip(self))]
-    async fn all_origins(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Origin>>> {
+    async fn all_origins(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Origin>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -70,8 +70,8 @@ impl BackendOrigin for PostgresBackend {
     async fn origin_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 

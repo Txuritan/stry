@@ -20,10 +20,12 @@ pub async fn index(_story_id: String, _pool: DataBackend) -> Result<impl Reply, 
 
 pub async fn chapter(
     story_id: String,
-    mut chapter_page: u32,
+    chapter_page: u32,
     backend: DataBackend,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
+        let mut chapter_page = chapter_page as i32;
+
         if chapter_page == 0 {
             chapter_page = 1;
         }

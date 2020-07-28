@@ -11,7 +11,7 @@ pub trait FromRow {
 }
 
 pub struct Total {
-    pub total: u32,
+    pub total: i32,
 }
 
 impl FromRow for Total {

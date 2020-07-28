@@ -1,5 +1,8 @@
 use {
-    crate::{backend::DataBackend, models::Resource},
+    crate::{
+        backend::DataBackend,
+        models::{List, Node, Resource},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -35,6 +38,12 @@ impl Author {
     }
 }
 
+impl Node for Author {
+    fn id(&self) -> &str {
+        &self.id
+    }
+}
+
 impl Resource for Author {
     fn id(&self) -> &str {
         &self.id
@@ -60,5 +69,30 @@ impl Resource for Author {
 impl fmt::Display for Author {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "<a href=\"/author/{}\">{}</a>", self.id, self.name)
+    }
+}
+
+pub struct AuthorList {
+    pub total: i32,
+    pub items: Vec<Author>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl AuthorList {
+    pub fn total(&self) -> i32 {
+        self.total
+    }
+
+    pub fn items(&self) -> &[Author] {
+        &self.items
+    }
+}
+
+impl From<List<Author>> for AuthorList {
+    fn from(list: List<Author>) -> Self {
+        AuthorList {
+            total: list.total,
+            items: list.items,
+        }
     }
 }

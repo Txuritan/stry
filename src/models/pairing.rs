@@ -1,5 +1,8 @@
 use {
-    crate::{backend::DataBackend, models::Character},
+    crate::{
+        backend::DataBackend,
+        models::{Character, List},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
@@ -53,6 +56,31 @@ impl fmt::Display for Pairing {
                 .collect::<Vec<&str>>()
                 .join("/")
         )
+    }
+}
+
+pub struct PairingList {
+    pub total: i32,
+    pub items: Vec<Pairing>,
+}
+
+#[juniper::graphql_object(Context = DataBackend)]
+impl PairingList {
+    pub fn total(&self) -> i32 {
+        self.total
+    }
+
+    pub fn items(&self) -> &[Pairing] {
+        &self.items
+    }
+}
+
+impl From<List<Pairing>> for PairingList {
+    fn from(list: List<Pairing>) -> Self {
+        PairingList {
+            total: list.total,
+            items: list.items,
+        }
     }
 }
 

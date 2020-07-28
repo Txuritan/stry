@@ -1,12 +1,13 @@
 pub mod filters;
 pub mod handlers;
 
+pub mod scalar;
 pub mod support;
 
 use {
     crate::{
         backend::DataBackend,
-        frontend::api::handlers::{mutation::Mutation, query::Query},
+        frontend::api::handlers::{Mutation, Query, Subscription},
     },
     juniper::{EmptySubscription, RootNode},
     warp::{filters::BoxedFilter, Filter, Reply},

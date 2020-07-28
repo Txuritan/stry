@@ -9,7 +9,7 @@ use {
 #[async_trait::async_trait]
 impl BackendTag for PostgresBackend {
     #[tracing::instrument(skip(self))]
-    async fn all_tags(&self, offset: u32, limit: u32) -> anyhow::Result<Option<List<Tag>>> {
+    async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -70,8 +70,8 @@ impl BackendTag for PostgresBackend {
     async fn tag_stories(
         &self,
         id: Cow<'static, str>,
-        offset: u32,
-        limit: u32,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 

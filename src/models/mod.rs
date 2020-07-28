@@ -33,6 +33,10 @@ pub use self::{
     worker::{Worker, WorkerTask},
 };
 
+pub trait Node {
+    fn id(&self) -> &str;
+}
+
 pub trait Resource {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
@@ -50,12 +54,12 @@ pub trait Schema {
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct List<T> {
-    pub total: u32,
+    pub total: i32,
     pub items: Vec<T>,
 }
 
 impl<T> List<T> {
-    pub fn into_parts(self) -> (u32, Vec<T>) {
+    pub fn into_parts(self) -> (i32, Vec<T>) {
         (self.total, self.items)
     }
 }
@@ -70,15 +74,15 @@ pub struct Entity {
 #[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct Paging {
-    pub page: u32,
-    pub page_size: u32,
+    pub page: i32,
+    pub page_size: i32,
 }
 
 impl Paging {
     pub fn normalize(self) -> Self {
         let mut norm = self;
 
-        if norm.page == 0 {
+        if norm.page <= 0 {
             norm.page = 1;
         }
 

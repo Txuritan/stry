@@ -1,5 +1,5 @@
-mod task;
-mod worker;
+pub mod scraper;
+pub mod worker;
 
 use {
     crate::{backend::DataBackend, config::Config, version::LibVersion},
@@ -19,7 +19,7 @@ pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend)
     worker::worker(
         async move { rx.recv().await.expect("Failed to listen for event") },
         cfg.workers,
-        task::task,
+        scraper::task::task,
         backend,
     )
     .await;

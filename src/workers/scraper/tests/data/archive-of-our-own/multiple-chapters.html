@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+<script>window.NREUM||(NREUM={});NREUM.info={"beacon":"bam.nr-data.net","errorBeacon":"bam.nr-data.net","licenseKey":"f2edcff25e","applicationID":"190034","transactionName":"dgwMEkpfWVsHERpRXlQTFgNKQxpECgxC","queueTime":0,"applicationTime":105,"agent":""}</script>
+<script>(window.NREUM||(NREUM={})).loader_config={xpid:"VQcCWV9RGwIJVFFRAw==",licenseKey:"f2edcff25e",applicationID:"190034"};window.NREUM||(NREUM={}),__nr_require=function(t,n,e){function r(e){if(!n[e]){var o=n[e]={exports:{}};t[e][0].call(o.exports,function(n){var o=t[e][1][n];return r(o||n)},o,o.exports)}return n[e].exports}if("function"==typeof __nr_require)return __nr_require;for(var o=0;o<e.length;o++)r(e[o]);return r}({1:[function(t,n,e){function r(t){try{s.console&&console.log(t)}catch(n){}}var o,i=t("ee"),a=t(21),s={};try{o=localStorage.getItem("__nr_flags").split(","),console&&"function"==typeof console.log&&(s.console=!0,o.indexOf("dev")!==-1&&(s.dev=!0),o.indexOf("nr_dev")!==-1&&(s.nrDev=!0))}catch(c){}s.nrDev&&i.on("internal-error",function(t){r(t.stack)}),s.dev&&i.on("fn-err",function(t,n,e){r(e.stack)}),s.dev&&(r("NR AGENT IN DEVELOPMENT MODE"),r("flags: "+a(s,function(t,n){return t}).join(", ")))},{}],2:[function(t,n,e){function r(t,n,e,r,s){try{p?p-=1:o(s||new UncaughtException(t,n,e),!0)}catch(f){try{i("ierr",[f,c.now(),!0])}catch(d){}}return"function"==typeof u&&u.apply(this,a(arguments))}function UncaughtException(t,n,e){this.message=t||"Uncaught error with no additional information",this.sourceURL=n,this.line=e}function o(t,n){var e=n?null:c.now();i("err",[t,e])}var i=t("handle"),a=t(22),s=t("ee"),c=t("loader"),f=t("gos"),u=window.onerror,d=!1,l="nr@seenError",p=0;c.features.err=!0,t(1),window.onerror=r;try{throw new Error}catch(h){"stack"in h&&(t(9),t(8),"addEventListener"in window&&t(5),c.xhrWrappable&&t(10),d=!0)}s.on("fn-start",function(t,n,e){d&&(p+=1)}),s.on("fn-err",function(t,n,e){d&&!e[l]&&(f(e,l,function(){return!0}),this.thrown=!0,o(e))}),s.on("fn-end",function(){d&&!this.thrown&&p>0&&(p-=1)}),s.on("internal-error",function(t){i("ierr",[t,c.now(),!0])})},{}],3:[function(t,n,e){t("loader").features.ins=!0},{}],4:[function(t,n,e){function r(t){}if(window.performance&&window.performance.timing&&window.performance.getEntriesByType){var o=t("ee"),i=t("handle"),a=t(9),s=t(8),c="learResourceTimings",f="addEventListener",u="resourcetimingbufferfull",d="bstResource",l="resource",p="-start",h="-end",m="fn"+p,w="fn"+h,v="bstTimer",g="pushState",y=t("loader");y.features.stn=!0,t(7),"addEventListener"in window&&t(5);var x=NREUM.o.EV;o.on(m,function(t,n){var e=t[0];e instanceof x&&(this.bstStart=y.now())}),o.on(w,function(t,n){var e=t[0];e instanceof x&&i("bst",[e,n,this.bstStart,y.now()])}),a.on(m,function(t,n,e){this.bstStart=y.now(),this.bstType=e}),a.on(w,function(t,n){i(v,[n,this.bstStart,y.now(),this.bstType])}),s.on(m,function(){this.bstStart=y.now()}),s.on(w,function(t,n){i(v,[n,this.bstStart,y.now(),"requestAnimationFrame"])}),o.on(g+p,function(t){this.time=y.now(),this.startPath=location.pathname+location.hash}),o.on(g+h,function(t){i("bstHist",[location.pathname+location.hash,this.startPath,this.time])}),f in window.performance&&(window.performance["c"+c]?window.performance[f](u,function(t){i(d,[window.performance.getEntriesByType(l)]),window.performance["c"+c]()},!1):window.performance[f]("webkit"+u,function(t){i(d,[window.performance.getEntriesByType(l)]),window.performance["webkitC"+c]()},!1)),document[f]("scroll",r,{passive:!0}),document[f]("keypress",r,!1),document[f]("click",r,!1)}},{}],5:[function(t,n,e){function r(t){for(var n=t;n&&!n.hasOwnProperty(u);)n=Object.getPrototypeOf(n);n&&o(n)}function o(t){s.inPlace(t,[u,d],"-",i)}function i(t,n){return t[1]}var a=t("ee").get("events"),s=t("wrap-function")(a,!0),c=t("gos"),f=XMLHttpRequest,u="addEventListener",d="removeEventListener";n.exports=a,"getPrototypeOf"in Object?(r(document),r(window),r(f.prototype)):f.prototype.hasOwnProperty(u)&&(o(window),o(f.prototype)),a.on(u+"-start",function(t,n){var e=t[1],r=c(e,"nr@wrapped",function(){function t(){if("function"==typeof e.handleEvent)return e.handleEvent.apply(e,arguments)}var n={object:t,"function":e}[typeof e];return n?s(n,"fn-",null,n.name||"anonymous"):e});this.wrapped=t[1]=r}),a.on(d+"-start",function(t){t[1]=this.wrapped||t[1]})},{}],6:[function(t,n,e){function r(t,n,e){var r=t[n];"function"==typeof r&&(t[n]=function(){var t=i(arguments),n={};o.emit(e+"before-start",[t],n);var a;n[m]&&n[m].dt&&(a=n[m].dt);var s=r.apply(this,t);return o.emit(e+"start",[t,a],s),s.then(function(t){return o.emit(e+"end",[null,t],s),t},function(t){throw o.emit(e+"end",[t],s),t})})}var o=t("ee").get("fetch"),i=t(22),a=t(21);n.exports=o;var s=window,c="fetch-",f=c+"body-",u=["arrayBuffer","blob","json","text","formData"],d=s.Request,l=s.Response,p=s.fetch,h="prototype",m="nr@context";d&&l&&p&&(a(u,function(t,n){r(d[h],n,f),r(l[h],n,f)}),r(s,"fetch",c),o.on(c+"end",function(t,n){var e=this;if(n){var r=n.headers.get("content-length");null!==r&&(e.rxSize=r),o.emit(c+"done",[null,n],e)}else o.emit(c+"done",[t],e)}))},{}],7:[function(t,n,e){var r=t("ee").get("history"),o=t("wrap-function")(r);n.exports=r;var i=window.history&&window.history.constructor&&window.history.constructor.prototype,a=window.history;i&&i.pushState&&i.replaceState&&(a=i),o.inPlace(a,["pushState","replaceState"],"-")},{}],8:[function(t,n,e){var r=t("ee").get("raf"),o=t("wrap-function")(r),i="equestAnimationFrame";n.exports=r,o.inPlace(window,["r"+i,"mozR"+i,"webkitR"+i,"msR"+i],"raf-"),r.on("raf-start",function(t){t[0]=o(t[0],"fn-")})},{}],9:[function(t,n,e){function r(t,n,e){t[0]=a(t[0],"fn-",null,e)}function o(t,n,e){this.method=e,this.timerDuration=isNaN(t[1])?0:+t[1],t[0]=a(t[0],"fn-",this,e)}var i=t("ee").get("timer"),a=t("wrap-function")(i),s="setTimeout",c="setInterval",f="clearTimeout",u="-start",d="-";n.exports=i,a.inPlace(window,[s,"setImmediate"],s+d),a.inPlace(window,[c],c+d),a.inPlace(window,[f,"clearImmediate"],f+d),i.on(c+u,r),i.on(s+u,o)},{}],10:[function(t,n,e){function r(t,n){d.inPlace(n,["onreadystatechange"],"fn-",s)}function o(){var t=this,n=u.context(t);t.readyState>3&&!n.resolved&&(n.resolved=!0,u.emit("xhr-resolved",[],t)),d.inPlace(t,g,"fn-",s)}function i(t){y.push(t),h&&(b?b.then(a):w?w(a):(E=-E,O.data=E))}function a(){for(var t=0;t<y.length;t++)r([],y[t]);y.length&&(y=[])}function s(t,n){return n}function c(t,n){for(var e in t)n[e]=t[e];return n}t(5);var f=t("ee"),u=f.get("xhr"),d=t("wrap-function")(u),l=NREUM.o,p=l.XHR,h=l.MO,m=l.PR,w=l.SI,v="readystatechange",g=["onload","onerror","onabort","onloadstart","onloadend","onprogress","ontimeout"],y=[];n.exports=u;var x=window.XMLHttpRequest=function(t){var n=new p(t);try{u.emit("new-xhr",[n],n),n.addEventListener(v,o,!1)}catch(e){try{u.emit("internal-error",[e])}catch(r){}}return n};if(c(p,x),x.prototype=p.prototype,d.inPlace(x.prototype,["open","send"],"-xhr-",s),u.on("send-xhr-start",function(t,n){r(t,n),i(n)}),u.on("open-xhr-start",r),h){var b=m&&m.resolve();if(!w&&!m){var E=1,O=document.createTextNode(E);new h(a).observe(O,{characterData:!0})}}else f.on("fn-end",function(t){t[0]&&t[0].type===v||a()})},{}],11:[function(t,n,e){function r(t){if(!i(t))return null;var n=window.NREUM;if(!n.loader_config)return null;var e=(n.loader_config.accountID||"").toString()||null,r=(n.loader_config.agentID||"").toString()||null,s=(n.loader_config.trustKey||"").toString()||null;if(!e||!r)return null;var c=a.generateCatId(),f=a.generateCatId(),u=Date.now(),d=o(c,f,u,e,r,s);return{header:d,guid:c,traceId:f,timestamp:u}}function o(t,n,e,r,o,i){var a="btoa"in window&&"function"==typeof window.btoa;if(!a)return null;var s={v:[0,1],d:{ty:"Browser",ac:r,ap:o,id:t,tr:n,ti:e}};return i&&r!==i&&(s.d.tk=i),btoa(JSON.stringify(s))}function i(t){var n=!1,e=!1,r={};if("init"in NREUM&&"distributed_tracing"in NREUM.init&&(r=NREUM.init.distributed_tracing,e=!!r.enabled),e)if(t.sameOrigin)n=!0;else if(r.allowed_origins instanceof Array)for(var o=0;o<r.allowed_origins.length;o++){var i=s(r.allowed_origins[o]);if(t.hostname===i.hostname&&t.protocol===i.protocol&&t.port===i.port){n=!0;break}}return e&&n}var a=t(19),s=t(13);n.exports={generateTracePayload:r,shouldGenerateTrace:i}},{}],12:[function(t,n,e){function r(t){var n=this.params,e=this.metrics;if(!this.ended){this.ended=!0;for(var r=0;r<l;r++)t.removeEventListener(d[r],this.listener,!1);n.aborted||(e.duration=a.now()-this.startTime,this.loadCaptureCalled||4!==t.readyState?null==n.status&&(n.status=0):i(this,t),e.cbTime=this.cbTime,u.emit("xhr-done",[t],t),s("xhr",[n,e,this.startTime]))}}function o(t,n){var e=c(n),r=t.params;r.host=e.hostname+":"+e.port,r.pathname=e.pathname,t.parsedOrigin=c(n),t.sameOrigin=t.parsedOrigin.sameOrigin}function i(t,n){t.params.status=n.status;var e=w(n,t.lastSize);if(e&&(t.metrics.rxSize=e),t.sameOrigin){var r=n.getResponseHeader("X-NewRelic-App-Data");r&&(t.params.cat=r.split(", ").pop())}t.loadCaptureCalled=!0}var a=t("loader");if(a.xhrWrappable){var s=t("handle"),c=t(13),f=t(11).generateTracePayload,u=t("ee"),d=["load","error","abort","timeout"],l=d.length,p=t("id"),h=t(17),m=t(16),w=t(14),v=window.XMLHttpRequest;a.features.xhr=!0,t(10),t(6),u.on("new-xhr",function(t){var n=this;n.totalCbs=0,n.called=0,n.cbTime=0,n.end=r,n.ended=!1,n.xhrGuids={},n.lastSize=null,n.loadCaptureCalled=!1,t.addEventListener("load",function(e){i(n,t)},!1),h&&(h>34||h<10)||window.opera||t.addEventListener("progress",function(t){n.lastSize=t.loaded},!1)}),u.on("open-xhr-start",function(t){this.params={method:t[0]},o(this,t[1]),this.metrics={}}),u.on("open-xhr-end",function(t,n){"loader_config"in NREUM&&"xpid"in NREUM.loader_config&&this.sameOrigin&&n.setRequestHeader("X-NewRelic-ID",NREUM.loader_config.xpid);var e=f(this.parsedOrigin);e&&e.header&&(n.setRequestHeader("newrelic",e.header),this.dt=e)}),u.on("send-xhr-start",function(t,n){var e=this.metrics,r=t[0],o=this;if(e&&r){var i=m(r);i&&(e.txSize=i)}this.startTime=a.now(),this.listener=function(t){try{"abort"!==t.type||o.loadCaptureCalled||(o.params.aborted=!0),("load"!==t.type||o.called===o.totalCbs&&(o.onloadCalled||"function"!=typeof n.onload))&&o.end(n)}catch(e){try{u.emit("internal-error",[e])}catch(r){}}};for(var s=0;s<l;s++)n.addEventListener(d[s],this.listener,!1)}),u.on("xhr-cb-time",function(t,n,e){this.cbTime+=t,n?this.onloadCalled=!0:this.called+=1,this.called!==this.totalCbs||!this.onloadCalled&&"function"==typeof e.onload||this.end(e)}),u.on("xhr-load-added",function(t,n){var e=""+p(t)+!!n;this.xhrGuids&&!this.xhrGuids[e]&&(this.xhrGuids[e]=!0,this.totalCbs+=1)}),u.on("xhr-load-removed",function(t,n){var e=""+p(t)+!!n;this.xhrGuids&&this.xhrGuids[e]&&(delete this.xhrGuids[e],this.totalCbs-=1)}),u.on("addEventListener-end",function(t,n){n instanceof v&&"load"===t[0]&&u.emit("xhr-load-added",[t[1],t[2]],n)}),u.on("removeEventListener-end",function(t,n){n instanceof v&&"load"===t[0]&&u.emit("xhr-load-removed",[t[1],t[2]],n)}),u.on("fn-start",function(t,n,e){n instanceof v&&("onload"===e&&(this.onload=!0),("load"===(t[0]&&t[0].type)||this.onload)&&(this.xhrCbStart=a.now()))}),u.on("fn-end",function(t,n){this.xhrCbStart&&u.emit("xhr-cb-time",[a.now()-this.xhrCbStart,this.onload,n],n)}),u.on("fetch-before-start",function(t){var n,e=t[1]||{};"string"==typeof t[0]?n=t[0]:t[0]&&t[0].url&&(n=t[0].url),n&&(this.parsedOrigin=c(n),this.sameOrigin=this.parsedOrigin.sameOrigin);var r=f(this.parsedOrigin);if(r&&r.header){var o=r.header;if("string"==typeof t[0]){var i={};for(var a in e)i[a]=e[a];i.headers=new Headers(e.headers||{}),i.headers.set("newrelic",o),this.dt=r,t.length>1?t[1]=i:t.push(i)}else t[0]&&t[0].headers&&(t[0].headers.append("newrelic",o),this.dt=r)}})}},{}],13:[function(t,n,e){var r={};n.exports=function(t){if(t in r)return r[t];var n=document.createElement("a"),e=window.location,o={};n.href=t,o.port=n.port;var i=n.href.split("://");!o.port&&i[1]&&(o.port=i[1].split("/")[0].split("@").pop().split(":")[1]),o.port&&"0"!==o.port||(o.port="https"===i[0]?"443":"80"),o.hostname=n.hostname||e.hostname,o.pathname=n.pathname,o.protocol=i[0],"/"!==o.pathname.charAt(0)&&(o.pathname="/"+o.pathname);var a=!n.protocol||":"===n.protocol||n.protocol===e.protocol,s=n.hostname===document.domain&&n.port===e.port;return o.sameOrigin=a&&(!n.hostname||s),"/"===o.pathname&&(r[t]=o),o}},{}],14:[function(t,n,e){function r(t,n){var e=t.responseType;return"json"===e&&null!==n?n:"arraybuffer"===e||"blob"===e||"json"===e?o(t.response):"text"===e||"document"===e||""===e||void 0===e?o(t.responseText):void 0}var o=t(16);n.exports=r},{}],15:[function(t,n,e){function r(){}function o(t,n,e){return function(){return i(t,[f.now()].concat(s(arguments)),n?null:this,e),n?void 0:this}}var i=t("handle"),a=t(21),s=t(22),c=t("ee").get("tracer"),f=t("loader"),u=NREUM;"undefined"==typeof window.newrelic&&(newrelic=u);var d=["setPageViewName","setCustomAttribute","setErrorHandler","finished","addToTrace","inlineHit","addRelease"],l="api-",p=l+"ixn-";a(d,function(t,n){u[n]=o(l+n,!0,"api")}),u.addPageAction=o(l+"addPageAction",!0),u.setCurrentRouteName=o(l+"routeName",!0),n.exports=newrelic,u.interaction=function(){return(new r).get()};var h=r.prototype={createTracer:function(t,n){var e={},r=this,o="function"==typeof n;return i(p+"tracer",[f.now(),t,e],r),function(){if(c.emit((o?"":"no-")+"fn-start",[f.now(),r,o],e),o)try{return n.apply(this,arguments)}catch(t){throw c.emit("fn-err",[arguments,this,t],e),t}finally{c.emit("fn-end",[f.now()],e)}}}};a("actionText,setName,setAttribute,save,ignore,onEnd,getContext,end,get".split(","),function(t,n){h[n]=o(p+n)}),newrelic.noticeError=function(t,n){"string"==typeof t&&(t=new Error(t)),i("err",[t,f.now(),!1,n])}},{}],16:[function(t,n,e){n.exports=function(t){if("string"==typeof t&&t.length)return t.length;if("object"==typeof t){if("undefined"!=typeof ArrayBuffer&&t instanceof ArrayBuffer&&t.byteLength)return t.byteLength;if("undefined"!=typeof Blob&&t instanceof Blob&&t.size)return t.size;if(!("undefined"!=typeof FormData&&t instanceof FormData))try{return JSON.stringify(t).length}catch(n){return}}}},{}],17:[function(t,n,e){var r=0,o=navigator.userAgent.match(/Firefox[\/\s](\d+\.\d+)/);o&&(r=+o[1]),n.exports=r},{}],18:[function(t,n,e){function r(t,n){var e=t.getEntries();e.forEach(function(t){"first-paint"===t.name?c("timing",["fp",Math.floor(t.startTime)]):"first-contentful-paint"===t.name&&c("timing",["fcp",Math.floor(t.startTime)])})}function o(t,n){var e=t.getEntries();e.length>0&&c("lcp",[e[e.length-1]])}function i(t){if(t instanceof u&&!l){var n,e=Math.round(t.timeStamp);n=e>1e12?Date.now()-e:f.now()-e,l=!0,c("timing",["fi",e,{type:t.type,fid:n}])}}if(!("init"in NREUM&&"page_view_timing"in NREUM.init&&"enabled"in NREUM.init.page_view_timing&&NREUM.init.page_view_timing.enabled===!1)){var a,s,c=t("handle"),f=t("loader"),u=NREUM.o.EV;if("PerformanceObserver"in window&&"function"==typeof window.PerformanceObserver){a=new PerformanceObserver(r),s=new PerformanceObserver(o);try{a.observe({entryTypes:["paint"]}),s.observe({entryTypes:["largest-contentful-paint"]})}catch(d){}}if("addEventListener"in document){var l=!1,p=["click","keydown","mousedown","pointerdown","touchstart"];p.forEach(function(t){document.addEventListener(t,i,!1)})}}},{}],19:[function(t,n,e){function r(){function t(){return n?15&n[e++]:16*Math.random()|0}var n=null,e=0,r=window.crypto||window.msCrypto;r&&r.getRandomValues&&(n=r.getRandomValues(new Uint8Array(31)));for(var o,i="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx",a="",s=0;s<i.length;s++)o=i[s],"x"===o?a+=t().toString(16):"y"===o?(o=3&t()|8,a+=o.toString(16)):a+=o;return a}function o(){function t(){return n?15&n[e++]:16*Math.random()|0}var n=null,e=0,r=window.crypto||window.msCrypto;r&&r.getRandomValues&&Uint8Array&&(n=r.getRandomValues(new Uint8Array(31)));for(var o=[],i=0;i<16;i++)o.push(t().toString(16));return o.join("")}n.exports={generateUuid:r,generateCatId:o}},{}],20:[function(t,n,e){function r(t,n){if(!o)return!1;if(t!==o)return!1;if(!n)return!0;if(!i)return!1;for(var e=i.split("."),r=n.split("."),a=0;a<r.length;a++)if(r[a]!==e[a])return!1;return!0}var o=null,i=null,a=/Version\/(\S+)\s+Safari/;if(navigator.userAgent){var s=navigator.userAgent,c=s.match(a);c&&s.indexOf("Chrome")===-1&&s.indexOf("Chromium")===-1&&(o="Safari",i=c[1])}n.exports={agent:o,version:i,match:r}},{}],21:[function(t,n,e){function r(t,n){var e=[],r="",i=0;for(r in t)o.call(t,r)&&(e[i]=n(r,t[r]),i+=1);return e}var o=Object.prototype.hasOwnProperty;n.exports=r},{}],22:[function(t,n,e){function r(t,n,e){n||(n=0),"undefined"==typeof e&&(e=t?t.length:0);for(var r=-1,o=e-n||0,i=Array(o<0?0:o);++r<o;)i[r]=t[n+r];return i}n.exports=r},{}],23:[function(t,n,e){n.exports={exists:"undefined"!=typeof window.performance&&window.performance.timing&&"undefined"!=typeof window.performance.timing.navigationStart}},{}],ee:[function(t,n,e){function r(){}function o(t){function n(t){return t&&t instanceof r?t:t?c(t,s,i):i()}function e(e,r,o,i){if(!l.aborted||i){t&&t(e,r,o);for(var a=n(o),s=m(e),c=s.length,f=0;f<c;f++)s[f].apply(a,r);var d=u[y[e]];return d&&d.push([x,e,r,a]),a}}function p(t,n){g[t]=m(t).concat(n)}function h(t,n){var e=g[t];if(e)for(var r=0;r<e.length;r++)e[r]===n&&e.splice(r,1)}function m(t){return g[t]||[]}function w(t){return d[t]=d[t]||o(e)}function v(t,n){f(t,function(t,e){n=n||"feature",y[e]=n,n in u||(u[n]=[])})}var g={},y={},x={on:p,addEventListener:p,removeEventListener:h,emit:e,get:w,listeners:m,context:n,buffer:v,abort:a,aborted:!1};return x}function i(){return new r}function a(){(u.api||u.feature)&&(l.aborted=!0,u=l.backlog={})}var s="nr@context",c=t("gos"),f=t(21),u={},d={},l=n.exports=o();l.backlog=u},{}],gos:[function(t,n,e){function r(t,n,e){if(o.call(t,n))return t[n];var r=e();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(t,n,{value:r,writable:!0,enumerable:!1}),r}catch(i){}return t[n]=r,r}var o=Object.prototype.hasOwnProperty;n.exports=r},{}],handle:[function(t,n,e){function r(t,n,e,r){o.buffer([t],r),o.emit(t,n,e)}var o=t("ee").get("handle");n.exports=r,r.ee=o},{}],id:[function(t,n,e){function r(t){var n=typeof t;return!t||"object"!==n&&"function"!==n?-1:t===window?0:a(t,i,function(){return o++})}var o=1,i="nr@id",a=t("gos");n.exports=r},{}],loader:[function(t,n,e){function r(){if(!E++){var t=b.info=NREUM.info,n=p.getElementsByTagName("script")[0];if(setTimeout(u.abort,3e4),!(t&&t.licenseKey&&t.applicationID&&n))return u.abort();f(y,function(n,e){t[n]||(t[n]=e)}),c("mark",["onload",a()+b.offset],null,"api");var e=p.createElement("script");e.src="https://"+t.agent,n.parentNode.insertBefore(e,n)}}function o(){"complete"===p.readyState&&i()}function i(){c("mark",["domContent",a()+b.offset],null,"api")}function a(){return O.exists&&performance.now?Math.round(performance.now()):(s=Math.max((new Date).getTime(),s))-b.offset}var s=(new Date).getTime(),c=t("handle"),f=t(21),u=t("ee"),d=t(20),l=window,p=l.document,h="addEventListener",m="attachEvent",w=l.XMLHttpRequest,v=w&&w.prototype;NREUM.o={ST:setTimeout,SI:l.setImmediate,CT:clearTimeout,XHR:w,REQ:l.Request,EV:l.Event,PR:l.Promise,MO:l.MutationObserver};var g=""+location,y={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",agent:"js-agent.newrelic.com/nr-1167.min.js"},x=w&&v&&v[h]&&!/CriOS/.test(navigator.userAgent),b=n.exports={offset:s,now:a,origin:g,features:{},xhrWrappable:x,userAgent:d};t(15),t(18),p[h]?(p[h]("DOMContentLoaded",i,!1),l[h]("load",r,!1)):(p[m]("onreadystatechange",o),l[m]("onload",r)),c("mark",["firstbyte",s],null,"api");var E=0,O=t(23)},{}],"wrap-function":[function(t,n,e){function r(t){return!(t&&t instanceof Function&&t.apply&&!t[a])}var o=t("ee"),i=t(22),a="nr@original",s=Object.prototype.hasOwnProperty,c=!1;n.exports=function(t,n){function e(t,n,e,o){function nrWrapper(){var r,a,s,c;try{a=this,r=i(arguments),s="function"==typeof e?e(r,a):e||{}}catch(f){l([f,"",[r,a,o],s])}u(n+"start",[r,a,o],s);try{return c=t.apply(a,r)}catch(d){throw u(n+"err",[r,a,d],s),d}finally{u(n+"end",[r,a,c],s)}}return r(t)?t:(n||(n=""),nrWrapper[a]=t,d(t,nrWrapper),nrWrapper)}function f(t,n,o,i){o||(o="");var a,s,c,f="-"===o.charAt(0);for(c=0;c<n.length;c++)s=n[c],a=t[s],r(a)||(t[s]=e(a,f?s+o:o,i,s))}function u(e,r,o){if(!c||n){var i=c;c=!0;try{t.emit(e,r,o,n)}catch(a){l([a,e,r,o])}c=i}}function d(t,n){if(Object.defineProperty&&Object.keys)try{var e=Object.keys(t);return e.forEach(function(e){Object.defineProperty(n,e,{get:function(){return t[e]},set:function(n){return t[e]=n,n}})}),n}catch(r){l([r])}for(var o in t)s.call(t,o)&&(n[o]=t[o]);return n}function l(n){try{t.emit("internal-error",n)}catch(e){}}return t||(t=o),e.inPlace=f,e.flag=a,e}},{}]},{},["loader",2,12,4,3]);</script>
+    <meta name="keywords" content="fanfiction, transformative works, otw, fair use, archive"/>
+    <meta name="language" content="en-US"/>
+    <meta name="subject" content="fandom"/>
+    <meta name="description" content="An Archive of Our Own, a project of the
+    Organization for Transformative Works"/>
+    <meta name="distribution" content="GLOBAL"/>
+    <meta name="classification" content="transformative works"/>
+    <meta name="author" content="Organization for Transformative Works"/>
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
+    <title>
+        Fellow Traveler - Chapter 1 - quiet_wraith - Hunger Games Series - All Media Types [Archive of Our Own]
+    </title>
+
+        <link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/skins/skin_873_archive_2_0/1_site_screen_.css"/>
+<style media="only screen and (max-width: 62em), handheld">#dashboard{clear:both;float:none;margin:1% 3.5%;max-width:100%;padding:0;width:auto}#dashboard,#dashboard.own{border-bottom:10px solid #900;border-top:10px solid #900;padding:.5em 0;border-radius:.25em}#dashboard ul{border:none;display:inline;padding:0;text-align:left}#dashboard li{display:inline}#dashboard a,#dashboard span{display:inline-block;margin:.25em 0}#dashboard .secondary{background:#eee;padding:.375em 0 .625em;box-shadow:inset 2px 2px 5px #bbb}#dashboard .secondary a{margin:.125em 0}#dashboard .landmark{clear:none;float:left}#main,#main.dashboard{float:none;margin:auto;padding-left:3.5%;padding-right:3.5%;width:auto}.logged-in .splash>.module{width:48.5%}.logged-in .splash > div:nth-of-type(odd) {margin-left:0;margin-right:1.5%}.logged-in .splash > div:nth-of-type(even) {margin-left:1.5%;margin-right:0}form.filters{width:auto;min-width:23%;max-width:24%}.filters fieldset{margin-right:0}form.filters dl{margin-left:.25em;margin-right:.25em}#workskin{margin:auto 1.5%}</style>
+<link rel="stylesheet" type="text/css" media="only screen and (max-width: 42em), handheld" href="/stylesheets/skins/skin_873_archive_2_0/5_site_narrow.handheld_.css"/>
+<link rel="stylesheet" type="text/css" media="speech" href="/stylesheets/skins/skin_873_archive_2_0/6_site_speech_.css"/>
+<link rel="stylesheet" type="text/css" media="print" href="/stylesheets/skins/skin_873_archive_2_0/7_site_print_.css"/>
+<!--[if IE 8]><link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/skins/skin_873_archive_2_0/8_site_screen_IE8_or_lower.css" /><![endif]-->
+<!--[if IE 5]><link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/skins/skin_873_archive_2_0/9_site_screen_IE5.css" /><![endif]-->
+<!--[if IE 6]><link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/skins/skin_873_archive_2_0/10_site_screen_IE6.css" /><![endif]-->
+<!--[if IE 7]><link rel="stylesheet" type="text/css" media="screen" href="/stylesheets/skins/skin_873_archive_2_0/11_site_screen_IE7.css" /><![endif]-->
+
+
+<!--sandbox for developers	-->
+<style media="screen">#new_work_search fieldset:first-of-type .submit{padding-top:0}.edit_external_author ul ul{margin-left:2.75em}.twitter-share-button{min-width:76px;min-height:28px;width:76px;height:28px}</style>
+<script src="/javascripts/livevalidation_standalone.js"></script>
+
+<meta name="csrf-param" content="authenticity_token"/>
+<meta name="csrf-token" content="7gjuDBOqM3Tn7ZYBsTLm90lpfJfdjqsX+rVJoaLWna0Zjkp3ab07x0Z9pi5vPU745hMNaJf+2jnIl+LkC12tgA=="/>
+
+    
+  </head>
+
+  <body class="logged-out">
+    <div id="outer" class="wrapper">
+      <ul id="skiplinks"><li><a href="#main">Main Content</a></li></ul>
+      <!-- BEGIN BETA CAVEATS! -->
+<noscript>
+  <p id="javascript-warning">
+    While we&#39;ve done our best to make the core functionality of this site accessible without javascript, it will work better with it enabled. Please consider turning it on!
+  </p>
+</noscript>
+<!-- END BETA CAVEATS! --> 
+
+<!-- BEGIN header -->
+
+<div id="header" class="region">
+
+  <h1 class="heading">
+    <a href="/"><span>Archive of Our Own</span><sup> beta</sup><script data-pagespeed-no-defer>(function(){for(var g="function"==typeof Object.defineProperties?Object.defineProperty:function(b,c,a){if(a.get||a.set)throw new TypeError("ES3 does not support getters and setters.");b!=Array.prototype&&b!=Object.prototype&&(b[c]=a.value)},h="undefined"!=typeof window&&window===this?this:"undefined"!=typeof global&&null!=global?global:this,k=["String","prototype","repeat"],l=0;l<k.length-1;l++){var m=k[l];m in h||(h[m]={});h=h[m]}var n=k[k.length-1],p=h[n],q=p?p:function(b){var c;if(null==this)throw new TypeError("The 'this' value for String.prototype.repeat must not be null or undefined");c=this+"";if(0>b||1342177279<b)throw new RangeError("Invalid count value");b|=0;for(var a="";b;)if(b&1&&(a+=c),b>>>=1)c+=c;return a};q!=p&&null!=q&&g(h,n,{configurable:!0,writable:!0,value:q});var t=this;function u(b,c){var a=b.split("."),d=t;a[0]in d||!d.execScript||d.execScript("var "+a[0]);for(var e;a.length&&(e=a.shift());)a.length||void 0===c?d[e]?d=d[e]:d=d[e]={}:d[e]=c};function v(b){var c=b.length;if(0<c){for(var a=Array(c),d=0;d<c;d++)a[d]=b[d];return a}return[]};function w(b){var c=window;if(c.addEventListener)c.addEventListener("load",b,!1);else if(c.attachEvent)c.attachEvent("onload",b);else{var a=c.onload;c.onload=function(){b.call(this);a&&a.call(this)}}};var x;function y(b,c,a,d,e){this.h=b;this.j=c;this.l=a;this.f=e;this.g={height:window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight,width:window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth};this.i=d;this.b={};this.a=[];this.c={}}function z(b,c){var a,d,e=c.getAttribute("data-pagespeed-url-hash");if(a=e&&!(e in b.c))if(0>=c.offsetWidth&&0>=c.offsetHeight)a=!1;else{d=c.getBoundingClientRect();var f=document.body;a=d.top+("pageYOffset"in window?window.pageYOffset:(document.documentElement||f.parentNode||f).scrollTop);d=d.left+("pageXOffset"in window?window.pageXOffset:(document.documentElement||f.parentNode||f).scrollLeft);f=a.toString()+","+d;b.b.hasOwnProperty(f)?a=!1:(b.b[f]=!0,a=a<=b.g.height&&d<=b.g.width)}a&&(b.a.push(e),b.c[e]=!0)}y.prototype.checkImageForCriticality=function(b){b.getBoundingClientRect&&z(this,b)};u("pagespeed.CriticalImages.checkImageForCriticality",function(b){x.checkImageForCriticality(b)});u("pagespeed.CriticalImages.checkCriticalImages",function(){A(x)});function A(b){b.b={};for(var c=["IMG","INPUT"],a=[],d=0;d<c.length;++d)a=a.concat(v(document.getElementsByTagName(c[d])));if(a.length&&a[0].getBoundingClientRect){for(d=0;c=a[d];++d)z(b,c);a="oh="+b.l;b.f&&(a+="&n="+b.f);if(c=!!b.a.length)for(a+="&ci="+encodeURIComponent(b.a[0]),d=1;d<b.a.length;++d){var e=","+encodeURIComponent(b.a[d]);131072>=a.length+e.length&&(a+=e)}b.i&&(e="&rd="+encodeURIComponent(JSON.stringify(B())),131072>=a.length+e.length&&(a+=e),c=!0);C=a;if(c){d=b.h;b=b.j;var f;if(window.XMLHttpRequest)f=new XMLHttpRequest;else if(window.ActiveXObject)try{f=new ActiveXObject("Msxml2.XMLHTTP")}catch(r){try{f=new ActiveXObject("Microsoft.XMLHTTP")}catch(D){}}f&&(f.open("POST",d+(-1==d.indexOf("?")?"?":"&")+"url="+encodeURIComponent(b)),f.setRequestHeader("Content-Type","application/x-www-form-urlencoded"),f.send(a))}}}function B(){var b={},c;c=document.getElementsByTagName("IMG");if(!c.length)return{};var a=c[0];if(!("naturalWidth"in a&&"naturalHeight"in a))return{};for(var d=0;a=c[d];++d){var e=a.getAttribute("data-pagespeed-url-hash");e&&(!(e in b)&&0<a.width&&0<a.height&&0<a.naturalWidth&&0<a.naturalHeight||e in b&&a.width>=b[e].o&&a.height>=b[e].m)&&(b[e]={rw:a.width,rh:a.height,ow:a.naturalWidth,oh:a.naturalHeight})}return b}var C="";u("pagespeed.CriticalImages.getBeaconData",function(){return C});u("pagespeed.CriticalImages.Run",function(b,c,a,d,e,f){var r=new y(b,c,a,e,f);x=r;d&&w(function(){window.setTimeout(function(){A(r)},0)})});})();pagespeed.CriticalImages.Run('/ngx_pagespeed_beacon','https://archiveofourown.org/works/20797079/chapters/49428320','zph5gm4qfH',true,false,'fKWnEb0EF2c');</script><img alt="Archive of Our Own" class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAAqCAMAAAA3b6P4AAACslBMVEWXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACXAACpit0XAAAA5XRSTlMAAQIDBAUGBwgJCgsMDQ4PEBESFBUWFxgZGhscHR4fICEiIyQlJygpKissLi8wMTM0NTY3ODk6Ozw9PkBBQkNFR0hJSktMTU5PUFFSVFVWV1hZWltcXV5fY2RlZmhpamtsbW5vcHFyc3V2d3p7fX5/gIGCg4SFhoeIiouMjY6PkJGSlJWWl5iZmpucnZ6foKGipKWnqKmrrK2ur7CxsrO0tba3uLm6u7y9vr/AwsPFxsfIycrLzM7P0NLT1NXW19na29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+b1plRQAABBRJREFUSMedlvtb1FUQxgcEBMtQggUCxVACu1ApYmRmUqESkCkUREaS4h3JCDONEFPBoBQCJcDIGxkGKYGBkgGSAq4BARIXWWA//0c/7J39LvY0P82cd97nzJlzZuaIKvBRmVqmP/XOrrQNIbOVsNfyjq/3nYrs/1GlWjPe90v28wrgnOiDP7ddeN9WAE47O9DLQI6PksfDMWVjnfuDlCC3b4HbpYcOFjUC9UHKWywtQZNpjTmdgu60uSIis979HRr8bIT4YjVDqV6TFlPgVqjxjBegyM4MfSPepDsm9tAcb5mwHnpfMJmq39C+ZLQCytrfM3deUAylwWYL2+BTc4eICU4aNk/pLgm0DNQuqY+/Nk8zmuX0PmFx83V0eIiIyOPlmq3Wpw+tg1OG7Lk1c8YSzmZsqYhIhLp7pVLy3AugLUqnz73L15boHogUke1cW6ic+5n7QJvhLCLic4cTlmAGRIhdFhfdlcmPpUjCfSj3FpEZ9dQ5W6CFDPrLIc652rj2FWUi0f1wdZGI5DERbg56dlIvO6hyt1UTe8pEZKUa1JEiMVBhDu6GzbHc8LFZUSXHRUTC/oShBHG5DKkmbPUg1xPujSyxSba/sltEREJuA9tl0Qikz9JD8f1ovrjOVtvF7NexRqcsVgOfSIIW6pMDVe7z3zwLHDjFeSfb7GV/P6fXwrqATInuAvraWruB0U2bx4aenqKRJA/MMairhoAsCczr1TWH8dPLfO7w2VRtqKDZFFjsOHBY5JmNX549dzQ5ROQkLY9MQbZvKDCzNgHkGCvaLRGOznS2zQ6e2GJu7gXY7/3kiqQj52ubbo9C143asm2hLsrsD3jV8l2PAbcGsBRN9VuK7B+Gvc3N+WnDKEuqAtlz8FdT37J/5dhdk3vbxUb4Y23UusT08nZAobyTSDeoD8VUmKja3DCVcylk6LB5J7Qcts54Ncv13PVXDMQWLfC9o4SOMxqmd/TqocSKvZirTiIiTusM3NbM5aq9AGccPoYaB73jwn/ItWJ/xQ4RkTWVOupg4VqViEw7ApBTA5l6P9/T8LrV1veHA0RCirQANKU/q193KdZHEiUiMjc2vxUO2E9ml5MlXhn9ANRsVJmAWdUAjAaLiKoRaN9pRX6bdv9VjQD8FGv5HgNuAjS5ioj3Hd3jnyS+7RQfA+BSpONkMFwD5OvOVzEClZNmuV0hE/cAqqOmK7yjD4ENen1Jhpo+y6xt1SXmWoKNEtzS8qOn0Zi3jw7z1hg+BNCZ5m2z/DxmmFuZ7DKbATeBsYKgKX8/C6JNehjfmEZ3DlAb8YC/k1dVlrHx5LHaNNZ7GElzlQdJwOXaOA8REb9sSh2Myw5xn78s/0Fmpzc0V+TmVY1y2lP+h3jF5l9qvPpdnP4I/wITXDY67Xw1sAAAAABJRU5ErkJggg==" data-pagespeed-url-hash="300331198" onload="pagespeed.CriticalImages.checkImageForCriticality(this);"/></a> 
+  </h1>
+
+    <div id="login" class="dropdown">
+      <p class="user actions" role="menu">
+        <a id="login-dropdown" href="/users/login">Log In</a>
+      </p>
+      <div id="small_login" class="simple login">
+	<form id="new_user_session_small" class="new_user" action="/users/login" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;"/><input type="hidden" name="authenticity_token" value="aYqOMuyHCUpw+ja6AI1Kyn94XB7suogXpBxwMsFIXcKeDCpJlpAB+dFqBpXeguLF0AIt4abK+TmWPtt3aMNt7w=="/>
+	<dl>
+    <dt>
+      <label for="user_session_login_small">User name or email:</label></dt>
+    <dd><input id="user_session_login_small" type="text" name="user[login]"/></dd>
+    <dt><label for="user_session_password_small">Password:</label></dt>
+    <dd><input id="user_session_password_small" type="password" name="user[password]"/></dd>
+  </dl>
+  <p class="submit actions">
+    <label for="user_remember_me_small" class="action"><input type="checkbox" name="user[remember_me]" id="user_remember_me_small" value="1"/>Remember Me</label>
+    <input type="submit" name="commit" value="Log In"/>
+  </p>
+</form>
+<ul class="footnote actions">
+  <li><a href="/users/password/new">Forgot password?</a></li>
+    <li>
+      <a href="/invite_requests">Get an Invitation</a>
+    </li>
+</ul>
+
+</div>
+
+    </div>
+
+  <h3 class="landmark heading">Site Navigation</h3>
+  <ul class="primary navigation actions" role="navigation">
+    <li class="dropdown">
+      <a href="/menu/fandoms">Fandoms</a>
+      <ul class="menu" role="menu">
+  <li><a href="/media">All Fandoms</a></li>
+        <li id="medium_5"><a href="/media/Anime%20*a*%20Manga/fandoms">Anime &amp; Manga</a></li>
+        <li id="medium_3"><a href="/media/Books%20*a*%20Literature/fandoms">Books &amp; Literature</a></li>
+        <li id="medium_4"><a href="/media/Cartoons%20*a*%20Comics%20*a*%20Graphic%20Novels/fandoms">Cartoons &amp; Comics &amp; Graphic Novels</a></li>
+        <li id="medium_7"><a href="/media/Celebrities%20*a*%20Real%20People/fandoms">Celebrities &amp; Real People</a></li>
+        <li id="medium_2"><a href="/media/Movies/fandoms">Movies</a></li>
+        <li id="medium_6"><a href="/media/Music%20*a*%20Bands/fandoms">Music &amp; Bands</a></li>
+        <li id="medium_8"><a href="/media/Other%20Media/fandoms">Other Media</a></li>
+        <li id="medium_30198"><a href="/media/Theater/fandoms">Theater</a></li>
+        <li id="medium_1"><a href="/media/TV%20Shows/fandoms">TV Shows</a></li>
+        <li id="medium_476"><a href="/media/Video%20Games/fandoms">Video Games</a></li>
+        <li id="medium_9971"><a href="/media/Uncategorized%20Fandoms/fandoms">Uncategorized Fandoms</a></li>
+</ul>
+
+    </li>
+    <li class="dropdown">
+      <a href="/menu/browse">Browse</a>
+      <ul class="menu" role="menu">
+  <li><a href="/works">Works</a></li>
+  <li><a href="/bookmarks">Bookmarks</a></li>
+  <li><a href="/tags">Tags</a></li>
+  <li><a href="/collections">Collections</a></li>
+</ul>
+
+    </li>
+    <li class="dropdown">
+      <a href="/menu/search">Search</a>
+      <ul class="menu" role="menu">
+  <li><a href="/works/search">Works</a></li>
+  <li><a href="/bookmarks/search">Bookmarks</a></li>
+  <li><a href="/tags/search">Tags</a></li>
+  <li><a href="/people/search">People</a></li>
+</ul>
+
+    </li>
+    <li class="dropdown">
+      <a href="/menu/about">About</a>
+      <ul class="menu" role="menu">
+  <li><a href="/about">About Us</a></li>
+  <li><a href="/admin_posts">News</a></li>
+  <li><a href="/faq">FAQ</a></li>
+  <li><a href="/wrangling_guidelines">Wrangling Guidelines</a></li>
+  <li><a href="/donate">Donate or Volunteer</a></li>
+</ul>
+
+    </li>
+	  <li class="search"><form class="search" id="search" action="/works/search" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;"/>
+  <fieldset>
+    <legend>Search Works</legend>
+    <p>
+      <label class="landmark" for="site_search">Work Search:</label>
+      <input class="text" id="site_search" aria-describedby="site_search_tooltip" type="text" name="work_search[query]"/>
+      <span class="tip" role="tooltip" id="site_search_tooltip">tip: &quot;uchiha sasuke/uzumaki naruto&quot; angst kudos&gt;10</span>
+      <span class="submit actions"><input type="submit" value="Search" class="button"/></span>
+    </p>
+  </fieldset>
+</form></li>
+  </ul>
+
+
+
+  <div class="clear"></div>
+
+</div>
+
+
+
+<!-- END header -->
+
+      <div id="inner" class="wrapper">
+        <!-- BEGIN sidebar -->
+        <!-- END sidebar -->
+
+        <!-- BEGIN main -->
+        <div id="main" class="chapters-show region" role="main">
+          
+          <div class="flash"></div>
+          <!--page description, messages-->
+<!--/descriptions-->
+
+<!--subnav-->
+<!--/subnav-->
+
+  <!-- BEGIN work -->
+  <div class="work"><p class="landmark"><a name="top">&nbsp;</a></p>
+      <!-- BEGIN navigation -->
+<h3 class="landmark heading">Actions</h3>
+<ul class="work navigation actions" role="menu">
+
+
+
+    <li class="chapter entire"><a href="/works/20797079?view_full_work=true">Entire Work</a></li>
+
+
+      <li class="chapter next"><a href="/works/20797079/chapters/49658981#workskin">Next Chapter &#8594;</a></li>
+
+    <li class="chapter" aria-haspopup="true">
+      <noscript>
+        <a href="/works/20797079/navigate">Chapter Index</a>
+      </noscript>
+      <a class="hidden" href="#">Chapter Index</a>
+      <ul id="chapter_index" class="expandable secondary hidden">
+        <li>
+          <form action="/works/20797079/chapters/49428320" accept-charset="UTF-8" method="get"><input name="utf8" type="hidden" value="&#x2713;"/>
+            <p>
+              <select name="selected_id" id="selected_id"><option selected="selected" value="49428320">1. Before</option>
+<option value="49658981">2. After</option></select>
+              <span class="submit actions"><input type="submit" name="commit" value="Go"/></span>
+            </p>
+</form>        </li>
+        <li><a href="/works/20797079/navigate">Full-page index</a></li>
+      </ul>
+    </li>
+
+
+
+  <li class="comments" id="show_comments_link_top">
+      <a data-remote="true" href="/comments/show_comments?chapter_id=49428320">Comments </a>
+  </li>
+
+
+
+    <li class="share hidden">
+      <a class=" modal" title="Share Work" aria-controls="#modal" href="#share">Share</a>
+      <div id="share">
+
+  <p class="note">Copy and paste the following code to link back to this work (<kbd>CTRL A</kbd>/<kbd>CMD A</kbd> will select all), or use the Tweet or Tumblr links to share the work on your Twitter or Tumblr account.</p>
+  
+  <p>
+    <textarea cols="50" rows="4" id="embed_code">&lt;a href=&quot;http://archiveofourown.org/works/20797079&quot;&gt;&lt;strong&gt;Fellow Traveler&lt;/strong&gt;&lt;/a&gt; (17865 words) by &lt;a href=&quot;http://archiveofourown.org/users/quiet_wraith&quot;&gt;&lt;strong&gt;quiet_wraith&lt;/strong&gt;&lt;/a&gt;&lt;br /&gt;Chapters: 2/2&lt;br /&gt;Fandom: &lt;a href=&quot;http://archiveofourown.org/tags/Hunger%20Games%20Series%20-%20All%20Media%20Types&quot;&gt;Hunger Games Series - All Media Types&lt;/a&gt;&lt;br /&gt;Rating: Mature&lt;br /&gt;Warnings: Creator Chose Not To Use Archive Warnings&lt;br /&gt;Characters: Original Characters&lt;br /&gt;Additional Tags: Canon-Typical Behavior, Worldbuilding, The Capitol, Original Character-centric, The Rebellion&lt;br /&gt;Summary: &lt;p&gt;No regime, no matter how brutal, can last without the tacit acceptance of the majority. Of people who close their eyes to terrible things as long as they are not affected by them. Of people who could do something about things they disapprove of, but choose not to. Of people like Rhea Jag, who just want to do well on their exams and maintain their conditional acceptance into university. The Seventy-Fourth Hunger Games are approaching, however, and soon, it will be impossible to remain apolitical. Twoshot.&lt;/p&gt;</textarea>
+  </p>
+  
+  <ul>
+    
+    <li>
+      <a href="http://twitter.com/share" class="twitter-share-button" data-size="large" data-via="ao3org" data-text="Fellow Traveler by quiet_wraith - Hunger Games Series - All Media Types" data-url="http://archiveofourown.org/works/20797079">
+        Tweet
+      </a>
+    </li>
+      
+    <li>
+      <a href="http://tumblr.com/widgets/share/tool?canonicalUrl=http%3A%2F%2Farchiveofourown.org%2Fworks%2F20797079&title=Fellow%20Traveler%20%2817865%20words%29%20by%20quiet_wraith%20%5BAO3%5D&caption=Chapters%3A%202%2F2%3Cbr%20%2F%3EFandom%3A%20%3Ca%20href%3D%22http%3A%2F%2Farchiveofourown.org%2Ftags%2FHunger%2520Games%2520Series%2520-%2520All%2520Media%2520Types%22%3EHunger%20Games%20Series%20-%20All%20Media%20Types%3C%2Fa%3E%3Cbr%20%2F%3ERating%3A%20Mature%3Cbr%20%2F%3EWarnings%3A%20Creator%20Chose%20Not%20To%20Use%20Archive%20Warnings%3Cbr%20%2F%3ECharacters%3A%20Original%20Characters%3Cbr%20%2F%3EAdditional%20Tags%3A%20Canon-Typical%20Behavior%2C%20Worldbuilding%2C%20The%20Capitol%2C%20Original%20Character-centric%2C%20The%20Rebellion%3Cbr%20%2F%3ESummary%3A%20%3Cp%3ENo%20regime%2C%20no%20matter%20how%20brutal%2C%20can%20last%20without%20the%20tacit%20acceptance%20of%20the%20majority.%20Of%20people%20who%20close%20their%20eyes%20to%20terrible%20things%20as%20long%20as%20they%20are%20not%20affected%20by%20them.%20Of%20people%20who%20could%20do%20something%20about%20things%20they%20disapprove%20of%2C%20but%20choose%20not%20to.%20Of%20people%20like%20Rhea%20Jag%2C%20who%20just%20want%20to%20do%20well%20on%20their%20exams%20and%20maintain%20their%20conditional%20acceptance%20into%20university.%20The%20Seventy-Fourth%20Hunger%20Games%20are%20approaching%2C%20however%2C%20and%20soon%2C%20it%20will%20be%20impossible%20to%20remain%20apolitical.%20Twoshot.%3C%2Fp%3E" title="Share on Tumblr" style="display:inline-block; text-indent:-9999px; overflow:hidden; width:81px; height:20px; background:url('//platform.tumblr.com/v1/share_1.png') top left no-repeat transparent; border-bottom: none;" target="_blank">
+        Share on Tumblr
+      </a>
+    </li>
+      
+  </ul>
+  
+</div>
+
+
+    </li>
+
+
+    <li class="download" aria-haspopup="true">
+      <a href="#">Download</a>
+      <ul class="expandable secondary">
+          <li><a href="/downloads/20797079/Fellow%20Traveler.azw3?updated_at=1584652519">AZW3</a></li>
+          <li><a href="/downloads/20797079/Fellow%20Traveler.epub?updated_at=1584652519">EPUB</a></li>
+          <li><a href="/downloads/20797079/Fellow%20Traveler.mobi?updated_at=1584652519">MOBI</a></li>
+          <li><a href="/downloads/20797079/Fellow%20Traveler.pdf?updated_at=1584652519">PDF</a></li>
+          <li><a href="/downloads/20797079/Fellow%20Traveler.html?updated_at=1584652519">HTML</a></li>
+      </ul>
+    </li>
+</ul>
+<!-- END navigation -->
+
+
+
+<h3 class="landmark heading">Work Header</h3>
+
+<div class="wrapper">
+
+  <dl class="work meta group" role="complementary">
+          <dt class="rating tags">
+
+              Rating:
+          </dt>
+
+          <dd class="rating tags">
+            <ul class="commas">
+               <li><a class="tag" href="/tags/Mature/works">Mature</a></li>
+            </ul>
+          </dd>
+          <dt class="warning tags">
+
+              <a href="/tos_faq#tags">Archive Warning</a>:
+          </dt>
+
+          <dd class="warning tags">
+            <ul class="commas">
+               <li><a class="tag" href="/tags/Choose%20Not%20To%20Use%20Archive%20Warnings/works">Creator Chose Not To Use Archive Warnings</a></li>
+            </ul>
+          </dd>
+          <dt class="category tags">
+
+              Category:
+          </dt>
+
+          <dd class="category tags">
+            <ul class="commas">
+               <li><a class="tag" href="/tags/Gen/works">Gen</a></li>
+            </ul>
+          </dd>
+          <dt class="fandom tags">
+
+              Fandom:
+          </dt>
+
+          <dd class="fandom tags">
+            <ul class="commas">
+               <li><a class="tag" href="/tags/Hunger%20Games%20Series%20-%20All%20Media%20Types/works">Hunger Games Series - All Media Types</a></li>
+            </ul>
+          </dd>
+          <dt class="character tags">
+
+              Character:
+          </dt>
+
+          <dd class="character tags">
+            <ul class="commas">
+               <li><a class="tag" href="/tags/Original%20Characters/works">Original Characters</a></li>
+            </ul>
+          </dd>
+          <dt class="freeform tags">
+
+              Additional Tags:
+          </dt>
+
+          <dd class="freeform tags">
+            <ul class="commas">
+               <li><a class="tag" href="/tags/Canon-Typical%20Behavior/works">Canon-Typical Behavior</a></li><li><a class="tag" href="/tags/Worldbuilding/works">Worldbuilding</a></li><li><a class="tag" href="/tags/The%20Capitol/works">The Capitol</a></li><li><a class="tag" href="/tags/Original%20Character-centric/works">Original Character-centric</a></li><li><a class="tag" href="/tags/The%20Rebellion/works">The Rebellion</a></li>
+            </ul>
+          </dd>
+
+      <dt class="language">
+        Language:
+      </dt>
+      <dd class="language">
+        English
+      </dd>
+
+
+
+    <dt class="stats">Stats:</dt>
+    <dd class="stats">
+<!-- end of cache -->
+
+      <dl class="stats"><dt class="published">Published:</dt><dd class="published">2019-09-27</dd><dt class="status">Completed:</dt><dd class="status">2019-10-04</dd><dt class="words">Words:</dt><dd class="words">17865</dd><dt class="chapters">Chapters:</dt><dd class="chapters">2/2</dd><dt class="comments">Comments:</dt><dd class="comments">6</dd><dt class="kudos">Kudos:</dt><dd class="kudos">8</dd><dt class="hits">Hits:</dt><dd class="hits">56</dd></dl>
+      </dd>
+  </dl>
+</div>
+
+
+
+<!-- BEGIN section where work skin applies -->
+<div id="workskin">
+  <div class="preface group">
+    <h2 class="title heading">
+      Fellow Traveler
+    </h2>
+    <h3 class="byline heading">
+      <a rel="author" href="/users/quiet_wraith/pseuds/quiet_wraith">quiet_wraith</a>
+    </h3>
+
+
+        <div class="summary module" role="complementary">
+          <h3 class="heading">Summary:</h3>
+            <blockquote class="userstuff">
+              <p>No regime, no matter how brutal, can last without the tacit acceptance of the majority. Of people who close their eyes to terrible things as long as they are not affected by them. Of people who could do something about things they disapprove of, but choose not to. Of people like Rhea Jag, who just want to do well on their exams and maintain their conditional acceptance into university. The Seventy-Fourth Hunger Games are approaching, however, and soon, it will be impossible to remain apolitical. Twoshot.</p>
+            </blockquote>
+        </div>
+
+        <div class="notes module" role="complementary">
+  <h3 class="heading">Notes:</h3>
+
+
+
+
+
+    <blockquote class="userstuff">
+      <p>Rhea and her friends, just a bunch of ordinary students, prepare for exams and can't wait for the Hunger Games to start.</p>
+    </blockquote>
+
+</div>
+
+
+  </div>
+
+
+
+    <div id="chapters">
+      <!-- This partial requires local variable 'chapter' -->
+<div class="chapter" id="chapter-1">
+  <!-- chapter management -->
+
+
+  <div class="chapter preface group" role="complementary">
+    <h3 class="title">
+      <a href="/works/20797079/chapters/49428320">Chapter 1</a>: Before
+    </h3>
+
+    <!-- only display byline if different from the main byline -->
+
+
+  </div>
+
+  <!--main content-->
+  <div class="userstuff module" role="article">
+    <h3 class="landmark heading" id="work">Chapter Text</h3>
+    <p>The biology exam was in two weeks, and all her friends wanted to talk about was the upcoming Games. Because of course. Rhea flipped through her notes, trying to absorb the information, but it was impossible. The Reapings would be tomorrow, and she was both excited, and annoyed that studying would now become impossible until the Games were over. This was her sixth and final year of exam season also being Games season, and Rhea was still not used to it. At least next year would be different, university exams were way earlier. And she wouldn’t have this horde distracting her with their endless chatter. While the entire group was going to university, she was the only one going into nursing, so she wouldn’t be chatting with them all the time. Although she’d probably still manage to be distracted. Ugh.</p><p>“There is absolutely no way they will include killer terrain. Not after 72.” Nobody knew how Julius had managed to learn as much Games trivia as he had, he knew all the top 8’s and terrains and more. But 72 was the only time Rhea had really cared about who won, and she knew more than him about that one year.</p><p>“Did someone say ‘72’?” she asked with a grin. “That was a special case. The tributes got clothing that was unsuited for the weather so that they’d all have to run to the Cornucopia or freeze before the next day which led to, like, the biggest bloodbath ever, and then when the Careers stepped on that unstable rock, it was basically over. The Gamemakers just have to give the tributes clothes you can actually survive in and have natural food, and then it would have been way more fun.”</p><p>Julius looked up from his notes. “Actually, at 14 dead, that was only the third largest bloodbath. It was also the fifth-shortest Games, at 5 days long.”</p><p>Well, it had seemed like an eternity when Rhea had cheered on Josh Dirik of District Five as he outlasted his way into victory. She hadn’t much cared about him until he went to the Cornucopia immediately after the six cannon blasts that signified the death of the alliance. She had been so impressed by that daring, the way he guessed at who those blasts were for. After that, she watched his every move, and after his victory, she rewatched his clip like five thousand times. </p><p>He only got a three in training, but during his interview, he joked that there were many effective things you could do that were not particularly impressive(and Rhea had to admit, she kinda teared up when he addressed his friends and said he wished they’d find someone to replace him in their ballgames. That sort of frank acceptance was rare). When the gong sounded, he only ran close enough to the Cornucopia to grab a blanket and run into the mountains. All but two of the tributes had run to the Cornucopia and the fight was intense, so he went unnoticed by the audience until he was ambushed by the girl from 12. Josh managed to catch the rock she threw at him and throw it back at her with almost inhuman speed and precision, cracking her skull. He huddled there until the Careers died(with the help of a parachute from impressed sponsors), and then went to the Cornucopia. Some other tributes got the same idea, but he got there first, and was able to ambush and kill both who tried - the pair from 9 - under the cover of darkness. And that was it. A boring Games, but it was the most nerve-wracking thing Rhea had ever watched. </p><p>She tried to concentrate on her notes, but it was impossible. Rhea glanced at the top of the far wall, opposite to the table they were sitting at. As in every classroom, office, factory, and living room in Panem, the Portrait and the Seal hung proudly. President Snow’s face seemed to sternly gaze at her. It was freaky. Rhea grimaced and tried to block out the happy chatter of her friends and concentrated on her notes. When she looked up, Snow looked at her in quiet approval. Sometimes Rhea was willing to swear the portraits were alive. It was dumb, she knew, but they always managed to freak her out.</p><p>It was almost the end of the school day. Normally, Rhea would have been at home by now - she always left when she had a spare last thing in the day, especially since today was a Friday. But today, she had to haul herself to a preventative conversation. To make things worse, she didn’t even know why she had been ordered to go to one. Had someone lied to get her in trouble? Or did they hear something out of context? Rhea never said anything really improper when people she didn’t trust could hear, but any Capitolite knew that the walls had ears. What if?</p><p>Ah well. She would find out soon enough. The clock on the wall seemed to not be moving at all as Aliviana was talking about celebrity news to her twin sister, Eliviana, who wasn’t really part of their group. Ana did not seem to be as interested in Victors drama as Aliviana, though. It sometimes struck Rhea as odd that the sister who was academically strong was also the one who lived for gossip and drama. Most people thought that the two did not go together. </p><p>“Hey, Rhea, why are you still here? You never stay when you have a spare,” asked Marc, putting away his tablet. He had a meeting with Guidance to go to.</p><p>“I have this meeting afterschool,” she answered Marc’s question. Admitting the truth was a bad idea, it was bad enough that she knew it. She didn’t want random people to overhear that she had to go to preventative conversations. At least her friends knew her subtle wording, and she - theirs.</p><p>“Ouch,” said Marc. “How long’s it going to last?”</p><p>“Too long. I just want to go home and sleep.”</p><p>“Mood,” added Aliviana. “The Reapings are tomorrow, I’m gonna be glued to the television, phone in hand, the entire day. Gotta rest up so I don’t fall asleep before I can really get analyzing.” She loved to spend her time on Games forums, discussing, analyzing, and predicting.</p><p>It was soon time for the conversation, so Rhea packed her things, grabbed her bag, and left to a small chorus of goodbyes and promises to text if anything particularly crazy happened during non-mandatory. She only watched the mandatory portion of the Games because she didn’t like sitting in front of the television. It felt weird, to just sit and sit and sit.</p><p>As she walked, Rhea became more and more nervous. What if someone had overheard her saying something improper? She never told jokes in public places, but her friends did sometimes. Were they going to accuse her of having Rebel sympathies? People vanished for that kind of stuff. She hoped it was just a misunderstanding, her parents would kill her if it was something serious. Heart in her throat, she knocked on the door.</p><p>“Come in!” said the voice of the social worker, but when she went inside, there was also a Peacekeeper sitting on the couch and fiddling with their phone.</p><p>“Um, hello,” she said, trying not to panic.</p><p>Prima seemed to sense her mounting terror. “Do not worry,” she said gently, “The Peacekeeper is just because of some sensitive information that should not be passed to more people than absolutely necessary.”</p><p>“Oh!” said Rhea. “Is this because of the Rebel propaganda I reported?” She hadn’t wanted to report it, but if she didn’t, they’d ask why. She would have been seen picking it up by the cameras, after all.</p><p>“Partially,” said the Peacekeeper. “I suppose we should do this fast, so I can be out of your hair quickly. What did you think when you found it?”</p><p>Rhea had been walking home when she had seen the folded piece of paper in a crack in the wall. She had opened it, realized before reading a word what it was, and still read it. Even though she had only read it once, it was still stuck in her head, perfectly memorized. It was a pretty badly written poem, but it was kind of catchy.</p><p> </p><p>
+  <em>The president’s portrait hangs on the wall</em><br/>
+<em>Long years in power have taken their toll.</em><br/>
+<em>This toll has been paid in human lives,</em><br/>
+<em>The murder of innocents as an act of compromise.</em>
+</p><p>
+  <em>Kidnappings and arrests, disappearances and tortures</em><br/>
+<em>And they tell us to be grateful for our good fortunes!</em><br/>
+<em>Respect long since eroded, our fists are clenched</em><br/>
+<em>With the blood of others’ children, our hands are drenched.</em>
+</p><p>
+  <em>Let’s be rid of this portrait up on the wall!<br/>
+Come on, fellow citizens, let’s take up this call.</em>
+</p><p> </p><p>“Well, it’s Rebel propaganda,” said Rhea. “It’s foolish and mendacious.” She wasn’t sure why she was using fancy words all of a sudden, but whatever. “I am not going to take seriously something that insults the President himself.” Snow had allegedly saved them all from the destruction of the Dark Days and the Rebels were too ignorant to know that. Rhea didn’t think so, but she wasn’t dumb enough to say that where others could hear.</p><p>The Peacekeeper was typing. “Very well then,” she said, “I will go now.” She closed the door softly, leaving Rhea alone with Prima. Her heart was still beating too fast, but she wasn’t scared anymore. Was this all? Prima still looked tense.</p><p>Prima fiddled with a notebook. “I received a worrying anonymous report about something you said. They claim that you said that the Games were unfair because of the age discrepancy. Please enlighten me, what was actually the case?”</p><p>The last of the worry drained out of Rhea. This, she could spin. If someone had somehow overheard the joke about Snow and the pig farm, she would have been screwed. “They heard it out of context! I’m not anti-Games - I just said - it was the other way around-”</p><p>“Breathe.”</p><p>Rhea paused before trying again. “I said that the people in remote Districts are dumb because nobody ever volunteers but they blame Snow for killing their children. If they don’t want 12-year-olds to die, shouldn’t they just get 18-year-olds to volunteer? Maybe they’d be less poor then, too, with the winnings they could get.” That was the most pro-Capitol way she could spin it. By now, it was as natural as breathing. Having friends who cracked politically dangerous jokes in the library made her good at spin.</p><p>“Ah,” said Prima. “So you blame the Districts for their situation?”</p><p>That was a very harsh way to put it. “Yes! I mean, who else could be at fault?”</p><p>“Well, that’s no problem then.” Prima clearly also wanted the week to end already. “I do not see need to contact your parents nor to write you up. You’re free to go, enjoy the Games!” Being a good student was useful in some more subtle ways. Everyone thought you followed the rules, and they thought that they could control you by threatening your admissions chances - which, to be honest, they kind of could. </p><p>“You too!” said Rhea, leaving. Were all preventative conversation so easy? Probably yes. They were <em>preventative</em>, meant to warn people to watch their words. For actual suspected Rebels, there were interrogations and questioning at The Building That Could Not Be Photographed. She put it out of her mind. The Reapings were tomorrow! </p><p>Rhea practically ran home. She dragged herself up five flights of stairs to get to her apartment, and breathed a sigh of relief when there was no light showing through the peephole. That meant that nobody was home. She quickly put down her things, changed, dumped her empty lunch containers into the sink, and started poking around for food. On the table, there was a plastic container with boiled potatoes and chicken. The fridge yielded a fresh cucumber, so she grabbed that as well. Rhea quickly ate with her hands, as she was too lazy to get a fork, and was done in a few minutes. She ran to her room and woke up her computer.</p><p>The original plan was studying, but Rhea instead browsed prediction threads until nine and then forced herself to go to bed. The Reapings would start at eight AM, so she set an alarm for seven-thirty.</p><p>She didn’t need it. Rhea woke up at seven-twenty, turned off the alarm, and immediately went to her laptop. She quickly found the stream but kept it muted, as Templesmith’s voice made her want to shoot something, preferably herself. The rest of her family would be watching on the television in the living room, but her little siblings were loud and annoying when they had to sit still and watch. Better to put in her earbuds and watch the webstream on her computer. Rhea took out her phone, and sent a text to Aliviana.</p><p>
+  <em>“You watching?”</em>
+</p><p>
+  <em>“Course Im watching. U?”</em>
+</p><p>
+  <em>“Flickerman’s hair is better than last year’s.”</em>
+</p><p>
+  <em>“Lol yeah that was highkey an abomination”</em>
+</p><p>
+  <em>“U still obsessed with 5?”</em>
+</p><p>
+  <em>“I’m not obsessed.”</em>
+</p><p>
+  <em>“Hhahaha”</em>
+</p><p>
+  <em>“U said he was cute”</em>
+</p><p>
+  <em>“Don’t deny”</em>
+</p><p>
+  <em>“It’s starting! Turning off phone”</em>
+</p><p> </p><p>Rhea put away her phone, annoyed at her friend’s spelling. Aliviana never had any problems when handwriting, but a screen ruined everything somehow. Rhea shook her head, and looked at the screen. They were showing One. She unmuted the feed, adjusting her headphones.</p><p>“Are you sure you don’t want to watch with us?” asked Mom from the living room.</p><p>“Yes!” she shouted back. Rhea turned her attention back to the screen. Fortunately, it wasn’t mandatory to watch the endless recitations that preceded each District’s Reaping. The crowd was already restless and tired. One had millions of people living in it, and just the Reaping-eligible didn’t come close to fitting in the main square. From above, though, it was clear that they were carefully positioned. A fifteen-year-old girl and fourteen-year-old boy had their names called out but were immediately replaced by older volunteers. The same thing happened in Two, where an eighteen-year-old ran to replace a twelve-year-old who turned out to be his little brother. Rhea exhaled in relief. The little ones never had a chance, it was good when they were replaced with those that did. Three had two eighteen-year-olds Reaped and Four had two volunteers, but after that, she knew it would become a horrorshow. It was now the turn of Five, and she had an odd fondness for Five. </p><p>Seventeen-year-old Adam Slick didn’t look too good, but fifteen-year-old Amber Heath looked tough and wiry. Rhea grabbed the money she had earned last summer from her little storage box and stuffed it in her wallet while keeping an eye on the feed. Josh Dirik sat on the stage, looking like a ghost next to the other Victors. She wished he could be happy. Maybe Heath could win. Would that help?</p><p>After that, it all fell off a cliff. Twelve-year-olds were Reaped and nobody volunteered, just as nobody stepped forward for the boy from Ten even though he limped badly. In Twelve, a sixteen-year-old volunteered to take the place of her little sister which was an insane relief, and then Haymitch Abernathy fell off the stage which was hilarious. </p><p>Her phone had been chiming the entire time, so she took and sorted through the barrage of texts while listening to the feed. Most of them were easy to deal with, so she left Aliviana’s commentary to the end.</p><p>
+  <em>“Did u see the girl from 2? She looks deadly”</em>
+</p><p>
+  <em>“Hey thats ur beloved on the screen! Haha”</em>
+</p><p>
+  <em>“u thik either of them can win?”</em>
+</p><p>
+  <em>“oh no 2 12 year olds”</em>
+</p><p>
+  <em>“bet u the limping one will make it to top 8”</em>
+</p><p>
+  <em>“Ooh, volunteer from 12! this is gonna be awesme”</em>
+</p><p>
+  <em>“Julius just texted me that 12 had their </em><br/>
+<em>last volunteer twenty years ago. Wow.</em><br/>
+<em>And it really sucks for 6, they got no</em><br/>
+<em>chance. If the boy from 10 makes it to</em><br/>
+<em>top 8, I will die laughing. I think Heath has a</em><br/>
+<em>decent chance if the arena’s good for survival.</em><br/>
+<em>She looks smart. Slick seems too cowed,</em><br/>
+<em>but maybe he’ll turn out to be a fighter. Who</em><br/>
+<em>are you gonna sponsor?”</em>
+</p><p>
+  <em>“boy from 2 and girl from 12 cuz they</em><br/>
+<em>volunteered for their siblings. And boy from</em><br/>
+<em>10 for the meme”</em>
+</p><p>
+  <em>“Ahahaha”</em>
+</p><p>
+  <em>“u gonna watch the parade?”</em>
+</p><p>
+  <em>“nah, I want to sleep. You can tell me Monday<br/>
+morning what happened”</em>
+</p><p>And that was that. Rhea spent the rest of the weekend doing nothing on her laptop. She opened the chat her friends had and messaged them. Julius wasn’t there at all. Aliviana was watching old recap videos while her sister was making bets online(the winners got imaginary Web points and fame in a forum where everyone was anonymous anyway). Rhea also poked around the forums and made some bets, though not for money (Five was making it to top 8, you heard it here first). The chat soon morphed into a six-way argument over who should win, and then it was time for the parade but Rhea went to bed instead. Sure, it was mandatory, but the chance that the Peacekeepers would run around the city making sure that nobody dared to be asleep was equal to zero.</p><p>The next morning, she dropped off the money into the donation box outside the main office. There were twenty-four boxes, one for each tribute. When one died the money would go the other tribute from their District, when both died, it would be put in the Mentor’s account and saved for next year. Rhea donated five hundred dollars to Amber before heading up to their usual table outside the library. She got there second. Julius was there already, and he was maniacally texting.</p><p>“How was the parade?”</p><p>“Fuck if I know,” he said with a grin. “I was too busy. We had two things happen. We finally bought out my cousin!”</p><p>His cousin had been turned into an Avox for spreading Rebel propaganda and had spent the past year in the deep sewers. She looked around to make sure nobody noticed his politically dangerous joy. Nobody, except maybe the portrait if it had suddenly gained sapience. Although maybe the country would be better off if the portrait took over.</p><p>“Did you get him reassigned?”</p><p>“Yeah,” said Julius, nodding enthusiastically. “And he now lives with us and goes to work just like anyone else. Well, he isn’t paid, so he’s now a complete dependent, but we’ll survive. And then the Peacekeepers turned up because of his brother’s conspiracy theories - you know, the one about Thirteen.” Only recycled footage was ever shown on the television, because the remote probes kept on saying the same thing and there wasn’t a point to going out and filming when it was just an update on how everything was still the same. However, Julius’ cousin was convinced that Thirteen was secretly still a thing and that was why nobody ever went there. “There was a lot of arguing, we spent the entire weekend just dealing with everything, I only had time to watch a five-minute recap. Did anything else crazy happen?”</p><p>“Nothing that wasn’t in the recap. So what else happened?”</p><p>“They finally deciphered Portius’ texts!”</p><p>“Um, what? Who’s Portius?”</p><p>“Oh, crap, did I not tell you about that? He’s the one who lived in the forest for two months-”</p><p>“Yeah, beyond the boundary! You told me about that. And then the Peacekeepers accused him of trying to go to the Districts and spread propaganda-”</p><p>There was no fence surrounding the Capitol. Technically speaking, you could run off to the Districts, but why would you want to do that? At least here, nobody starved.</p><p>“Yeah, yeah, but it’s not that. In the forest, he found buried treasure. A metal box. Inside there were sheets of paper with stuff written on it in a weird language, and a vinyl record in a case which turned out to contain music. Really nice music. Eventually, the historians at the State Library managed to figure out that the papers contained the lyrics to the songs, because of what repeated at what times. And now, they were able to transcribe the songs using that alphabet, and also ours! I sang the songs!“</p><p>At that moment, Aliviana and Ana walked up. “Did you see the parade last night?” demanded Aliviana.</p><p>“No,” said Julius immediately, enthusiasm gone. “I was just telling Rhea what happened-” and then he quickly repeated what he had told her, excitement coming back. “So basically, they transcribed the songs into English, and then tried to match it with the other alphabet.”</p><p>That seemed pretty cool, but it was also the most useless thing ever. Although that was kind of Julius’ thing. His only goal in life was to be allowed into the State Library and learn about the world before the Dark Days. </p><p>“So what happened during the parade?” Rhea asked Aliviana, who was practically jumping out of her skin in anticipation.</p><p>“The tributes from Twelve were holding hands and were on fire!”</p><p>Huh, that was pretty weird. “Holding hands?”</p><p>“Yeah! I can pull up a video-”</p><p>Julius butted in. “One second! Ugh, have mercy, I only watched the Reaping five-minute recap, can we go about this in chronological order?”</p><p>“Oh yeah!” said Ana. “Who do you think will win?”</p><p>He grinned. Quickly, Julius crooked his finger and turned on his phone. His other hand flicked over the screen. “So, here’s the thing. Expected winners same as always - the volunteers. Not sure about the girl from Twelve, though, that was pure replacement of someone weak and valued. She looks quite strong but I don’t know from what, her survival and combat skills could be on any level. The rest are darkhorse possibilities at best. The boy from Eleven, both from Three, the boy from Twelve, the girl from Seven-”</p><p>“The girl from Five,” butted in Rhea. If Julius didn’t think she stood a chance, did she really?</p><p>Fortunately, he nodded. “Her too. That’s basically all that look strong enough to fight and survive. The boy from Ten could actually live quite long if he chose a hide-and-stalk strategy, he’s big and healthy. However, he could easily be chased down if someone picked him as a target first thing.”</p><p>Wow. She hadn’t considered that the boy from Ten stood a chance in any way, shape, or form. By now, there was a small crowd gathered around Julius, and he was basking in the attention. Some of the girls were staring at him, and Rhea rolled her eyes. He only liked girls that could argue with him, but nobody in the school knew even half of the facts that he used to prop up his arguments. He looked up and sighed. “What, do you want an overview of every single tribute?”</p><p>Everyone nodded. “Aw, come on, I was going to study. Anyway, I’m only going off what they look like and how they composed themselves. The weepy ones might toughen up, the strong ones might turn out to know nothing about combat. I might be able to create a decent prediction table after the training scores and a better one after the interviews, but it is all a crapshoot until I see the arena.” Julius was waving his hands around madly at this point. “Plus, someone might pull a Mason again, or there might be a flood - more than you expect is up to chance. I think the stronger tributes have gotten laxer now, they tend to underestimate the weaker tributes and it could definitely bite them. But seriously, it’s all about the arena.” </p><p>Rhea saw her chance. “If it’s like 72 again, it’s gonna be all about control of the Cornucopia. I think it hinges on whether there will be food and water outside of it.”</p><p>Julius nodded. “There’s no way they will have an unsurvivable landscape, though. I think they learned the lesson there.”</p><p>“Do you think they’ll have an artificial arena this time?” asked Aria, another one of Rhea’s friends and fellow sufferers of uni apps. She had rainbow hair and switched between ten different pairs of earrings. Today, hers were little flames. “It’s been five years in a row of real landscapes.”</p><p>“No way,” said Julius. “They’re saving up the creativity for next year. For now, they want to stick to the tried and true. Artificial arenas either work really well or really badly, I think the Gamemakers don’t want to risk too often. And the Head Engineer, what’s her face, has five kids, she doesn’t want to mess around too much. Neither do the Gamemakers, I bet, not after that scandal with Crane.” This was absolutely not the place to say things like that. “They could end up with Fifty or with Twenty-seven, it’s too risky.”</p><p>Fifty had been the one with the poisonous everything, but she didn’t know Twenty-seven. Fortunately, someone else asked the question. Julius sat up straight and relaxed slightly into his chair. He loved to tell people things they did not know. </p><p>“That was actually the year they first had interviews, which made it even worse. The arena was seven interconnected small rooms on three levels of a building. An hourglass, the Cornucopia in the middle, three above, three below. It was also absolute blackness. There wasn’t any visible light at all, the cameras had to be specially rented because there had always been enough light at night before to not necessitate infrared cameras or whatever. Basically, it was boring and it was over in less than a day. And everyone had gotten attached to the tributes after the interviews, so it sucked for them, watching tributes they were cheering for die without knowing it was them or who was even on screen at the moment.” Rhea disliked the interviews for the same reason. It seemed like a mistake, and the government’s mistakes always stressed her out. Nearly all people with Rebel sympathies stated that it was watching the interviews and growing attached that had made them that way. The Games weren’t a reality show, they were a warning to everyone about the price of rebellion. Monetizing them made the meaning get lost.</p><p>Julius was still going on. “Anyway, I put money on the arena being natural. The girl from Eleven has more of a chance than you could imagine if it’s familiar to her, by the way. She grew up around food, she knows what’s edible. If the arena even vaguely resembles what grows in Eleven - and if the bloodbath doesn’t kill them - then I say the girl gets top 8 and the boy could win. Also, we should get to class.”</p><p>On that weird note, Rhea went to Literature class. It was just time to work on their final essays, and she was done already. She watched the recap of the parade and talked to her neighbours instead of studying for biology. Unfortunately, none of them shared her fondness for Heath. Most of them were going to be cheering for the likely winners, like One, Two, Four, and Twelve.</p><p>Several days passed that way until the day that the training scores would be announced. Rhea was parked in the library with her friends, as there was no class during mandatory watching. They could have gone down to the auditorium and watched it on the big television, but Rhea was perfectly content without the idiotic jokes of some other students. And it was nice to have Julius and Aliviana give their analysis without hordes asking questions.</p><p>The video suddenly started playing, but it wasn’t the actual scores yet. They were now doing interviews with some of the mentors. Julius was actually taking notes. He seemed way more dedicated this year, the opposite of Rhea.</p><p>“Are you actually going to be betting?” asked Gaius. He always worried about everyone.</p><p>Julius grinned. “I am eighteen now. My Web bets have been solid in the past years, might as well go big.”</p><p>“I’ll bet against you, then!” said Aliviana. “I actually predicted the winner before the arena last time!”</p><p>“It does not take intelligence to predict that the boy from Two will win!”</p><p>“And I got twenty of the final rankings right!” Aliviana was refusing to concede.</p><p>“Alright, that was actually fucking amazing. Still, it was a boring arena.”</p><p>Ana looked up from the computer, shocked. “How was it <em>boring</em>? It was almost all fighting!”</p><p>Julius smiled. “Exactly,” he said, stabbing the table with a finger. “Boring. It’s obvious who will win in a fight. But survival...who can tell? When will the mutts be sent in? What kind? Will the Gamemakers unleash traps or let the conditions run their course? Who will outlast - the small or the big? There are so many variables in an arena that kills. In an easy arena, it’s just stalk, stab, win. Boring.” His eyes were shining now.</p><p>“That’s an odd perspective,” said Gaius. “Isn’t combat way more fun to watch than tributes slowly dying of thirst?”</p><p>“I think you’ll have to agree to disagree here,” said Ana. “It’s starting.”</p><p>The scores began to be announced, Julius commenting on everything. “So One, Two, and Four all got eight to ten, that’s expected, nothing changes,” he said after the scores for Four were announced. “Three, dunno. A three and a five. Maybe they suck, maybe they are pretending to suck, maybe what they didn’t demonstrate will end up keeping one of them alive. Nothing I can say.”</p><p>“You can say ‘Seventy-second Hunger Games’,” butted in Rhea. “And ‘Josh Dirik’. He got a three.”</p><p>“I refuse to accept the possibility that this will be a survival arena.”</p><p>Slick got a four, Heath a seven. </p><p>“The girl might stand a chance.”</p><p>Most of the rest got around a five, but the girl from Eleven got a seven, the boy from Twelve an eight, and the girl from Twelve an eleven.</p><p>Julius smirked. “Told you they look good.”</p><p>Aliviana rolled her eyes. “Yes, I’m sure the girl from Eleven will absolutely destroy in the bloodbath.”</p><p>“She’s going to run in the opposite direction of the Cornucopia.”</p><p>“Unless there is no other way to get food.”</p><p>“For the billionth time, the arena will be easy to survive in!” Rhea laughed with the rest. It was too much fun to rile up Julius when he was confident. She looked at the clock, and grabbed her bag. Now all there was left was the interviews, and then the Games would actually start. And exams, too. The math exam was in four days. She walked to class, and felt the pressure slowly crushing her.</p><p>Worn out from all the studying, Rhea went to bed early that night and fell asleep to the beginning of the interview. She woke up the next morning to several passionate texts from Aliviana.</p><p>
+  <em>“Katniss and peeta are together!!”</em><br/>
+<em>“oh no”</em><br/>
+<em>“noooooo”</em><br/>
+<em>“who do i cheer for??????? aaaaaa”</em>
+</p><p>It took Rhea several seconds to remember who in the world were Katniss and Peeta. She quickly checked the news to get the real story, and rolled her eyes.</p><p>
+  <em>“Eh, I highly doubt both of them will survive the first day.”<br/>
+“And they aren’t together.”</em>
+</p><p>At school, of course, half of the conversation was about just that. The other half, fortunately, was predictions. At their usual table outside the library, Julius was on his computer. Rhea looked over his shoulder. He was placing bets in a Web betting-house.</p><p>“Are you seriously spending money on this?” she asked. He almost never went out for lunch, how could he afford this?</p><p>Julius shrugged. “I’ve been saving up money for this for years. Aliviana sent me her ranking prediction and it sucks, can you tell her that? I don’t have her number.”</p><p>
+  <em>“Julius thinks your predictions suck.”</em>
+</p><p>Rhea put her phone in her pocket and thought about the Games. Wow, she had really fallen out of the loop this year. As a small child she had been the only one in her class who actually <em>watched</em> the Games, later she had stayed up late watching and discussing, and now she suddenly didn’t care. Exams were more important. </p><p>“I didn’t watch the interviews. What happened?”</p><p>Her friends filled her in until it was time to go to the auditorium. The Games were about to begin! There would be two hours of mandatory watching (well, more like two and a half), and then most of her classes would have the Games on because it’s not like they were doing anything, anyway.</p><p>“Julius!” hissed Aliviana. “A dollar on the arena being deadly!”</p><p>“Fine!”</p><p>The auditorium was packed. Even the kids like Rhea who skipped assemblies were there. You could actually get arrested for not watching, or so she had heard. There were enough seats for everyone, but barely. They suffered through standing for the anthem, listening to a speech on Rebel saboteurs - all of the ceremony - while getting more and more excited. The big screen flashed to life, showing a concrete wall. The tributes were in their cylinders! Pity that they were unable to hear the final predictions before, but whatever. It was about to start!</p><p>Everyone cheered as the image rose and rose, and Rhea’s heart sped up as she saw bright sunlight - and a forest in summer!</p><p>Julius was on his feet, screaming in joy.</p><p>“I WIN!!!” he shrieked, and fell back into his seat. “That’s a dollar from you, Aliviana, and a few hundred from the Web!” He closed his mouth and took deep breaths. Rhea turned to the screen to see that the countdown was already starting. The camera was panning to show all of the tributes, but a small image in the corner showed a view from the top, with tributes marked in glowing dots. The tributes stood on a small open field that was surrounded with a pine forest, a lake, and a cliff that led to a grain field. The camera panned to Heath. She looked good.</p><p>The school counted down with the glowing clock on the Cornucopia. “FIVE! FOUR! THREE! TWO! ONE!” </p><p>And it was on. Rhea saw Heath running around the outside of the ring of items before the screen split to show the various fights taking place. They boy from Eleven killed the boy from Four before running away. The other volunteers (except the girl from Twelve) fought to get to each other and stood in a circle, guarding each other’s backs. Some of the other kids, especially the younger ones, would be grimacing at the deaths, but Rhea was just dizzy from trying to keep track. Eventually, she took her eyes from the screen. Julius was on his phone, poking at the screen with his finger. One eye on the phone screen, one eye on the television. His teeth were clenched. She took a deep breath and looked around as the volunteers and the boy from Twelve were finishing off the dying that littered the ground. They had been alive just half an hour ago.</p><p>Some of the kids were hiding their faces in their hands. They would be roasted for this by their teachers, that was for sure. The Portrait gazed down in disapproval at their conduct. Rhea suddenly remembered the elementary-school joke about the portraits all having cameras in them. She grimaced and looked away. Julius was now doing commentary and it was way more fun to listen to than Templesmith’s.</p><p>“That’s odd. The boy from Twelve got an eight, that doesn’t seem high enough for the rest of the pack. Still, that’s very impressive for someone like him.” The pack went into the woods to hunt, and the camera now showed brief clips of the other tributes walking around. Most were in the forest but a few had climbed off the cliff and were in the field. The camera cut back to the pack. They found two tributes and finished them off quickly. “Also, I told you that the girl from Eleven and both from Twelve stand a chance.”</p><p>“Yes, yes, we know how good you are at this,” said Ana, rolling her eyes and poking her sister for no reason. The rest of the mandatory viewing was replays of deaths and narrow escapes and shots of tributes walking or sitting.</p><p>In fact, the rest of the day was like that. Rhea went to class but did nothing other than watching the Games, just like everyone else in Panem probably. When she got home, she turned on the feed on her computer and watched it while pretending to study. She went to bed before the anthem and, of course, ended up with a lot to catch up on. Quickly watching a recap, she texted Aliviana.</p><p>
+  <em>“The boy from 12 is a corpse. The rest will</em><br/>
+<em>finish him off as soon as a couple more are</em><br/>
+<em>dead. And did you see how the girl overheard</em><br/>
+<em>everything? hahaha” </em>
+</p><p>Then, she texted Julius.</p><p>
+  <em>“Is 11 dead a lot?”</em>
+</p><p>However, she only got the answer from Julius himself that morning at school.</p><p>“It’s pretty average,” he said. “Rare for someone from Four to die in the first day, but it’s just as rare that someone from Eleven destroys like that.”</p><p>For the next few days, nothing really happened in the Games, which was good. Rhea had more than enough to worry about without that. Exams were starting that week, and she was spending all of her time flipping through bio notes and doing endless problems for physics and chem. The first exam was math, though, which she wasn’t too worried about. Calc had sounded horrifying before the year, but now it was about infinity times better than chem or bio. Or Lit. That was just legal torture.</p><p>The exam went horribly. She forgot to memorize how to find the derivative using first principles and also did not remember its definition. For that, she scribbled something about finding the slope at a point right before handing in the exam an hour before it was over. At least the actual problems hadn’t been too bad, but Rhea had gotten unreasonable answers for a few so that sucked. And it was followed by the Lit exam, which was insidious. They just had to read a piece of Rebel propaganda and explain why it was false - but it was so subtle, it was hard to come up with a rebuttal that wasn’t addressed by it. Was this real propaganda or was someone reliable asked to write it? Were the teachers going to report anyone who wasn’t scathing enough?</p><p>Ah well, who cared. It was over now. At home, Rhea watched the Games for a few minutes before deciding there was a better way to celebrate.</p><p>“Mom?” she asked, leaning out of her bedroom door. “I’m going out to meet Aliviana.”</p>
+  </div>
+  <!--/main-->
+
+
+</div>
+
+<!-- end of cache -->
+
+    </div>
+  
+  
+    </div>
+    <!-- END work skin -->
+  </div>
+  <!-- END work -->
+
+  <!-- BEGIN comment section -->
+  <!-- Gets embedded anywhere we need to list comments on a top-level commentable. We need the local variable "commentable" here. -->
+<div id="feedback" class="feedback" role="complementary">
+
+  <h3 class="landmark heading">Actions</h3>
+
+  <ul class="actions" role="navigation">
+      <li><a href="#main">&#8593; Top</a></li>
+
+
+      <li><a href="/works/20797079/chapters/49658981#workskin">Next Chapter &#8594;</a></li>
+
+
+
+
+      <li>
+        <form id="new_kudo" action="/kudos" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;"/><input type="hidden" name="authenticity_token" value="RvMrDvQa8j+P+yaBjj11tHdnjLqKt044mHRddxiMaW2xdY91jg36jC5rFq5QMt272B39RcDHPxaqVvYysQdZQA=="/>
+          <input value="20797079" type="hidden" name="kudo[commentable_id]" id="kudo_commentable_id"/>
+          <input value="Work" type="hidden" name="kudo[commentable_type]" id="kudo_commentable_type"/>
+          <input type="submit" name="commit" value="Kudos ♥" id="kudo_submit"/>
+</form>      </li>
+
+
+
+
+        <li id="show_comments_link"><a data-remote="true" href="/comments/show_comments?chapter_id=49428320">Comments (4)</a></li>
+  </ul>
+
+  <div id="kudos_message"></div>
+
+  <h3 class="landmark heading"><a name="comments">Comments</a></h3>
+
+  
+
+    <div id="kudos">
+      <p class="kudos">
+          <a href="/users/MorsXmordrE">MorsXmordrE</a>, <a href="/users/Caladmir19">Caladmir19</a>, <a href="/users/TheEmeraldDoe">TheEmeraldDoe</a>, <a href="/users/solomivan">solomivan</a>, and <a href="/users/AlynnaStrong">AlynnaStrong</a>
+             as well as 
+          3 guests
+         left kudos on this work!
+        <span class="kudos_expanded hidden">
+          <a id="kudos_collapser" href="#">(collapse)</a>
+        </span>
+      </p>
+</div>
+
+
+    <div id="add_comment_placeholder" title="top level comment">
+      <div id="add_comment">
+        <!-- expects the local variables comment, commentable, and button_name -->
+<div class="post comment" id="comment_form_for_49428320">
+  <form id="comment_for_49428320" class="new_comment" action="/chapters/49428320/comments" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;"/><input type="hidden" name="authenticity_token" value="u/qLhivsTvGS5O2A3ISqU6EVWwSy4S+v8zgTrlPr53xMfC/9UftGQjN03a8CiwJcDm8q+/iRXoHBGrjr+mDXUQ=="/>
+    <fieldset>
+      <legend>Post Comment</legend>
+
+
+
+
+
+
+        <dl>
+          <dt class="landmark">Note:</dt>
+          <dd class="instructions comment_form">All fields are required. Your email address will not be published.</dd>
+          <dt><label for="comment_name_for_49428320">Name: </label></dt>
+          <dd>
+            <input id="comment_name_for_49428320" type="text" name="comment[name]"/>
+            <script>var validation_for_comment_name_for_49428320=new LiveValidation('comment_name_for_49428320',{wait:500,onlyOnBlur:false});validation_for_comment_name_for_49428320.add(Validate.Presence,{"failureMessage":"Please enter your name.","validMessage":""});</script>
+          </dd>
+          <dt><label for="comment_email_for_49428320">Email: </label></dt>
+          <dd>
+            <input id="comment_email_for_49428320" type="text" name="comment[email]"/>
+            <script>var validation_for_comment_email_for_49428320=new LiveValidation('comment_email_for_49428320',{wait:500,onlyOnBlur:false});validation_for_comment_email_for_49428320.add(Validate.Presence,{"failureMessage":"Please enter your email address.","validMessage":""});</script>
+          </dd>
+        </dl>
+
+        
+      <p>
+        <label for="comment_content_for_49428320" class="landmark">Comment</label>
+        <textarea id="comment_content_for_49428320" class="comment_form observe_textlength" title="Enter Comment" name="comment[comment_content]">
+</textarea>
+        <input type="hidden" id="controller_name_for_49428320" name="controller_name" value="chapters"/>
+      </p>
+      <p class="character_counter"><span id="comment_content_for_49428320_counter" class="value" data-maxlength="10000" aria-live="polite" aria-valuemax="10000" aria-valuenow="comment_content_for_49428320">10000</span> characters left</p>
+      <script>var validation_for_comment_content_for_49428320=new LiveValidation('comment_content_for_49428320',{wait:500,onlyOnBlur:false});validation_for_comment_content_for_49428320.add(Validate.Presence,{"failureMessage":"Brevity is the soul of wit, but we need your comment to have text in it.","validMessage":""});validation_for_comment_content_for_49428320.add(Validate.Length,{"maximum":"10000","tooLongMessage":"must be less than 10000 characters long."});</script>
+      <p class="submit actions">
+        <input type="submit" name="commit" value="Comment" id="comment_submit_for_49428320" data-disable-with="Please wait..."/>
+      </p>
+    </fieldset>
+</form></div>
+<div class="clear"></div>
+
+      </div>
+    </div>
+
+  <!-- If we have javascript, here is where the comments will be spiffily inserted -->
+  <!-- If not, and show_comments is true, here is where the comments will be rendered -->
+  <div id="comments_placeholder" style="display:none;">
+  </div>
+
+
+</div>
+<!-- END comments -->
+
+  <!-- END comment section -->
+
+          <div class="clear"><!--presentational--></div>
+        </div>
+        <!-- END main -->
+      </div>
+      <!-- BEGIN footer -->
+<div id="footer" role="contentinfo" class="region">
+	<h3 class="landmark heading">Footer</h3>
+  <ul class="navigation actions" role="navigation">
+    <li class="module group">
+      <h4 class="heading">About the Archive</h4>
+      <ul class="menu">
+        <li><a href="/site_map">Site Map</a></li>
+        <li><a href="/diversity">Diversity Statement</a></li>
+        <li><a href="/tos">Terms of Service</a></li>
+        <li><a href="/dmca">DMCA Policy</a> </li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Contact Us</h4>
+      <ul class="menu">
+        <li><a href="/abuse_reports/new">Report Abuse</a></li>
+        <li><a href="/support">Technical Support and Feedback</a></li>
+      </ul>
+    </li>
+    <li class="module group">
+      <h4 class="heading">Development</h4>
+      <ul class="menu">
+          <li><a href="https://github.com/otwcode/otwarchive/commits/v0.9.280.2">otwarchive v0.9.280.2</a></li>
+        <li><a href="/known_issues">Known Issues</a></li>
+        <li><a href="http://www.gnu.org/licenses/gpl-2.0.html" title="View License">GPL</a> by the <a href="http://transformativeworks.org/" title="The Organization for Transformative Works">OTW</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
+<!-- END footer -->
+
+    </div>
+    <!-- check to see if this controller/action allow tinymce before we load the gigantor js; see application_helper -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js" type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.0/jquery-ui.min.js" type="text/javascript"></script>
+<!-- if user has googleapis blocked for some reason we need a fallback -->
+<script type="text/javascript">if(typeof jQuery=='undefined'){document.write(unescape("%3Cscript src='/javascripts/jquery.min.js' type='text/javascript'%3E%3C/script%3E"));document.write(unescape("%3Cscript src='/javascripts/jquery-ui.min.js' type='text/javascript'%3E%3C/script%3E"));}</script>
+
+
+<script type="text/javascript">$j=jQuery.noConflict();</script>
+<script src="/javascripts/jquery.scrollTo.min.js"></script>
+<script src="/javascripts/jquery.livequery.min.js"></script>
+<script src="/javascripts/rails.js"></script>
+<script src="/javascripts/application.js"></script>
+<script src="/javascripts/bootstrap/bootstrap-dropdown.min.js"></script>
+<script src="/javascripts/jquery-shuffle.js"></script>
+<script src="/javascripts/jquery.tokeninput.min.js"></script>
+<script src="/javascripts/jquery.trap.min.js"></script>
+<script src="/javascripts/ao3modal.min.js"></script>
+<script src="/javascripts/jquery.cookie.js"></script>
+
+<script src="/javascripts/filters.min.js"></script>
+
+
+  <script>$j(document).ready(function(){if($j.cookie("accepted_tos")!=20180523){$j("body").prepend("<div id=\"tos_prompt\" class=\"hidden\">\n  <h2 class=\"heading\">\n    <span>Archive of Our Own<\/span>\n  <\/h2>\n  <div class=\"agreement\">\n    <p class=\"summary\">\n      On Archive of Our Own (AO3), users can make profiles, create works and\n            other Content, post comments, give Kudos, create Collections and \n            Bookmarks, participate in Challenges, import works, and more. Any \n            information you publish in a comment, profile, work, or Content that you \n            post or import onto AO3 including in summaries, notes and tags, \n            will be accessible by the public (unless you limit access to a work only \n            to those with AO3 Accounts), and it will be available to \n            AO3 personnel. Be mindful when sharing personal information, \n            including  your religious or political views, health, racial background, \n            country of origin, sexual identity and/or personal relationships. To \n            learn more, check out our <a href=\"/tos\">Terms of Service<\/a> and <a href=\"/tos#privacy\">Privacy Policy<\/a>.\n    <\/p>\n\n    <p class=\"confirmation\">\n      <input type=\"checkbox\" id=\"tos_agree\" />\n      <label for=\"tos_agree\">I have read &amp; understood the new Terms of Service and Privacy Policy<\/label>\n    <\/p>\n\n      <p class=\"submit\">\n        <button name=\"button\" type=\"button\" disabled=\"disabled\" id=\"accept_tos\">I agree/consent to its terms<\/button>\n      <\/p>\n\n  <\/div>\n<\/div>\n\n<script>\n//<![CDATA[\n\n  $j(document).ready(function() {\n    var container = $j(\"#tos_prompt\");\n    var outer = $j(\"#outer\");\n    var button = $j(\"#accept_tos\");\n\n    setTimeout(showTOSPrompt, 1500);\n\n    function showTOSPrompt() {\n      $j.when(container.fadeIn(500)).done(function() {\n        outer.addClass(\"hidden\").attr(\"aria-hidden\", \"true\");\n      });\n\n      $j(\"#tos_agree\").on(\"click\", function() {\n        button.attr(\"disabled\", !this.checked);\n        if (this.checked) {\n          button.on(\"click\", function() {\n            // Expires in 20 years, like a Rails permanent cookie\n            $j.cookie(\"accepted_tos\", \"20180523\", { expires: 7300, path: \"/\" });\n            outer.removeClass(\"hidden\").removeAttr(\"aria-hidden\");\n            $j.when(container.fadeOut(500)).done(function() {\n              container.remove();\n            });\n          });\n        };\n      }).change();\n    };\n  });\n\n//]]]]><![CDATA[>\n<\/script>");}});</script>
+  <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+
+          <script>var name_id="#comment_name_for_49428320";var email_id="#comment_email_for_49428320";if(!$j(name_id).val()){$j(name_id).val($j.cookie('comment_name'));}if(!$j(email_id).val()){$j(email_id).val($j.cookie('comment_email'));}</script>
+
+  </body>
+</html>

@@ -1,7 +1,13 @@
 use {
-    crate::{backend::BackendWorker, models::sync, workers::worker::WorkerData},
+    crate::{
+        backend::BackendWorker,
+        models::sync,
+        workers::{
+            scraper::{Site, Sites},
+            worker::WorkerData,
+        },
+    },
     std::sync::atomic::Ordering,
-    story_dl::{Site, Sites},
 };
 
 macro_rules! stop {
@@ -42,7 +48,9 @@ pub async fn task(state: WorkerData) -> anyhow::Result<()> {
             sync::Sites::FanFictionNet => Sites::FanFictionNet,
         };
 
-        // let details = site.get_details(&task.url).await?;
+        let mut init = site.init_from_url(task.url.as_str())?;
+
+        let details = init.get_details().await?;
 
         stop!('l, state);
 

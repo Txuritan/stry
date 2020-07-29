@@ -1,5 +1,4 @@
 pub mod backend;
-pub mod commands;
 pub mod frontend;
 pub mod models;
 pub mod workers;

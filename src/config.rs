@@ -1,5 +1,6 @@
 use {
     crate::backend::{BackendType, StorageType},
+    clap::ArgMatches,
     std::{
         fs,
         io::{self, prelude::*},
@@ -32,11 +33,8 @@ macro_rules! over {
     };
 }
 
-pub fn load_config(
-    path: Option<String>,
-    mut cfg_override: ConfigOverride,
-) -> anyhow::Result<Arc<Config>> {
-    let path = if let Some(path) = path {
+pub fn load_config(matches: &ArgMatches<'_>) -> anyhow::Result<Arc<Config>> {
+    let path = if let Some(path) = matches.value_of("config").map(String::from) {
         path
     } else {
         String::from("stry.ron")
@@ -56,6 +54,8 @@ pub fn load_config(
     } else {
         Config::default()
     };
+
+    let mut cfg_override = get_config_overrides(matches)?;
 
     if let Some(host) = cfg_override.host.take() {
         let mut parts = host
@@ -122,6 +122,76 @@ pub fn load_config(
     over!(cfg, cfg_override, logging.thread_names);
 
     Ok(Arc::new(cfg))
+}
+
+fn get_config_overrides(args: &ArgMatches<'_>) -> anyhow::Result<ConfigOverride> {
+    let typ = match args.value_of("backend-type") {
+        Some("sqlite") => Some(BackendType::Sqlite),
+        Some("postgres") => Some(BackendType::Sqlite),
+        _ => None,
+    };
+
+    let cfg_override = ConfigOverride {
+        host: args.value_of("server-ip").map(String::from),
+        port: args.value_of("server-port").map(String::from),
+        workers: args
+            .value_of("workers")
+            .map(FromStr::from_str)
+            .transpose()?,
+        database: DatabaseOverride {
+            typ,
+            storage: if let Some(typ) = typ {
+                Some(match typ {
+                    BackendType::Sqlite => StorageTypeOverride::File {
+                        location: args.value_of("backend-file").map(String::from),
+                    },
+                    BackendType::Postgres => StorageTypeOverride::Parts {
+                        username: args.value_of("backend-username").map(String::from),
+                        password: args.value_of("backend-password").map(String::from),
+                        host: args.value_of("backend-host").map(String::from),
+                        port: args.value_of("backend-port").map(String::from),
+                        database: args.value_of("backend-database").map(String::from),
+                    },
+                })
+            } else {
+                None
+            },
+        },
+        executor: ExecutorOverride {
+            core_threads: None,
+            max_threads: None,
+        },
+        logging: LoggingOverride {
+            ansi: if args.occurrences_of("tracing-ansi") == 0 {
+                None
+            } else {
+                Some(args.is_present("tracing-ansi"))
+            },
+            directory: args.value_of("tracing-directory").map(String::from),
+            level: args
+                .value_of("tracing-level")
+                .map(FromStr::from_str)
+                .transpose()?,
+            json: if args.occurrences_of("tracing-json") == 0 {
+                None
+            } else {
+                Some(args.is_present("tracing-json"))
+            },
+            prefix: args.value_of("tracing-prefix").map(String::from),
+            thread_ids: if args.occurrences_of("tracing-thread-ids") == 0 {
+                None
+            } else {
+                Some(args.is_present("tracing-thread-ids"))
+            },
+            thread_names: if args.occurrences_of("tracing-thread-names") == 0 {
+                None
+            } else {
+                Some(args.is_present("tracing-thread-names"))
+            },
+        },
+    };
+
+    Ok(cfg_override)
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]

@@ -42,7 +42,7 @@ r2d2_sqlite = "0.16"
 rusqlite = { version = "0.23", features = [ "bundled", "chrono" ] }
 
 # Frontend
-warp = { version = "0.2", default-features = false }
+warp = { version = "0.2", default-features = false, features = [ "compression" ] }
 
 # Frontend/API
 juniper = { git = "https://github.com/graphql-rust/juniper", rev = "f19d498254d3e5d2a008c483943facaf3ddcc4fe", default-features = false, features = [ "chrono" ] }

@@ -65,10 +65,6 @@ openssl = { version = "0.10", features = [ "vendored" ] }
 # Scraping/EPub
 pulldown-cmark  = { version = "0.7", default-features = false }
 uuid = { version = "0.8", features = [ "v4" ] }
-zip = "0.5"
-
-# Workers
-tonic = "0.3"
 
 # Other
 clap = "2.33"
@@ -76,9 +72,6 @@ ctrlc = "3.1"
 pest = "2.1"
 pest_derive = "2.1"
 ron = "0.6"
-
-[build-dependencies]
-tonic-build = "0.3"
 
 [dev-dependencies]
 pretty_assertions = "0.6"

@@ -1,1 +1,2 @@
 bom.txt    linguist-generated=true
+src/**/*.html   linguist-vendored=true

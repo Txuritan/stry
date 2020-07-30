@@ -17,7 +17,7 @@ const SINGLE_CHAPTER_MARKDOWN: &str = include_str!("./data/archive-of-our-own/si
 #[test]
 #[allow(non_snake_case)]
 fn multiple_chapters__chapter() {
-    pretty_assertions::assert_eq!(
+    assert_eq!(
         Chapter {
             name: String::from("Before"),
             main: String::from(MULTIPLE_CHAPTERS_MARKDOWN),
@@ -32,7 +32,7 @@ fn multiple_chapters__chapter() {
 #[test]
 #[allow(non_snake_case)]
 fn multiple_chapters__details() {
-    pretty_assertions::assert_eq!(Details {
+   assert_eq!(Details {
         name: String::from("Fellow Traveler"),
         summary: String::from("No regime, no matter how brutal, can last without the tacit acceptance of the majority. Of people who close their eyes to terrible things as long as they are not affected by them. Of people who could do something about things they disapprove of, but choose not to. Of people like Rhea Jag, who just want to do well on their exams and maintain their conditional acceptance into university. The Seventy-Fourth Hunger Games are approaching, however, and soon, it will be impossible to remain apolitical. Twoshot. "),
         chapters: 2,
@@ -50,7 +50,7 @@ fn multiple_chapters__details() {
 #[test]
 #[allow(non_snake_case)]
 fn single_chapter__chapter() {
-    pretty_assertions::assert_eq!(
+    assert_eq!(
         Chapter {
             name: String::from("Little Cog"),
             main: String::from(SINGLE_CHAPTER_MARKDOWN),
@@ -65,7 +65,7 @@ fn single_chapter__chapter() {
 #[test]
 #[allow(non_snake_case)]
 fn single_chapter__details() {
-    pretty_assertions::assert_eq!(Details {
+    assert_eq!(Details {
         name: String::from("Little Cog"),
         summary: String::from("When he was twelve years old, Dey Brown joined the Peacekeeper Academy.\n\nWhen he was seventeen years old, the Rebellion broke out.\n\nWhen he was ninety-three years old, his past was unearthed.\n\nIt is doubtful that even a tenth of a percent of the Peacekeepers faced any sort of justice, but perhaps, just perhaps, there was a steady trickle of cases to remind them that their crimes were not forgotten. "),
         chapters: 1,

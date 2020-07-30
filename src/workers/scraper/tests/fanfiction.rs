@@ -30,7 +30,7 @@ fn multiple_chapters__chapter() {
 #[test]
 #[allow(non_snake_case)]
 fn multiple_chapters__details() {
-    pretty_assertions::assert_eq!(Details {
+    assert_eq!(Details {
         name: String::from("Fellow Traveler"),
         summary: String::from("It is not the fanatic who keeps a regime going, but the fellow traveler. A person willing to overlook terrible things. A person willing to condone terrible things. A person like Rhea Jag, who just wants to do well on her exams and doesn't care for politics. But the Seventy-Fourth Hunger Games draw near, and soon, it will be impossible to remain apolitical, if it ever was. Twoshot."),
         chapters: 2,
@@ -63,7 +63,7 @@ fn single_chapter__chapter() {
 #[test]
 #[allow(non_snake_case)]
 fn single_chapter__details() {
-    pretty_assertions::assert_eq!(Details {
+    assert_eq!(Details {
         name: String::from("Little Cog"),
         summary: String::from("When he was twelve years old, Dey Brown joined the Peacekeeper Academy. When he was seventeen years old, the Rebellion broke out. When he was ninety-three years old, his past was unearthed. It is doubtful that even a small percentage of the Peacekeepers faced any sort of justice, but perhaps there was a steady trickle of cases to remind them that their crimes were not forgotten."),
         chapters: 1,

@@ -73,9 +73,6 @@ pest = "2.1"
 pest_derive = "2.1"
 ron = "0.6"
 
-[dev-dependencies]
-pretty_assertions = "0.6"
-
 [profile.release]
 codegen-units = 1
 incremental = false

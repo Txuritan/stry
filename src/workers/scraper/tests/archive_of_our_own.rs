@@ -1,9 +1,9 @@
 use {
-    chrono::prelude::*,
     crate::workers::scraper::{
         archive_of_our_own,
         models::{Chapter, Details, Language, Rating, State},
     },
+    chrono::prelude::*,
 };
 
 const MULTIPLE_CHAPTERS_HTML: &str =

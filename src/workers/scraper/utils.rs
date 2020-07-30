@@ -13,11 +13,7 @@ pub fn inner_html(
     html.select(selector)
         .first()
         .and_then(|sd| sd.inner_html())
-        .ok_or_else(|| anyhow::anyhow!(
-            "Sector element for site {} not found: {}",
-            name,
-            selector
-        ))
+        .ok_or_else(|| anyhow::anyhow!("Sector element for site {} not found: {}", name, selector))
 }
 
 pub fn string(
@@ -28,11 +24,7 @@ pub fn string(
     html.select(selector)
         .first()
         .and_then(|sd| sd.text())
-        .ok_or_else(|| anyhow::anyhow!(
-            "Sector element for site {} not found: {}",
-            name,
-            selector
-        ))
+        .ok_or_else(|| anyhow::anyhow!("Sector element for site {} not found: {}", name, selector))
 }
 
 pub fn string_vec(
@@ -44,11 +36,7 @@ pub fn string_vec(
         .into_iter()
         .map(|ele| ele.text())
         .collect::<Option<Vec<_>>>()
-        .ok_or_else(|| anyhow::anyhow!(
-            "Sector element for site {} not found: {}",
-            name,
-            selector
-        ))
+        .ok_or_else(|| anyhow::anyhow!("Sector element for site {} not found: {}", name, selector))
 }
 
 #[cfg(all(target_os = "linux", target_arch = "x86_64"))]

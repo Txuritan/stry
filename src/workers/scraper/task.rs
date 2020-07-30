@@ -50,11 +50,9 @@ pub async fn task(state: WorkerData) -> anyhow::Result<()> {
 
         let mut init = site.init_from_url(task.url.as_str())?;
 
-        let details = init.get_details().await?;
-
         stop!('l, state);
 
-        // Store story details
+        let details = init.get_details().await?;
 
         stop!('l, state);
 

@@ -1,9 +1,9 @@
 use {
-    chrono::prelude::*,
     crate::workers::scraper::{
         fanfiction,
         models::{Chapter, Details, Language, Rating, State},
     },
+    chrono::prelude::*,
 };
 
 const MULTIPLE_CHAPTERS_HTML: &str = include_str!("./data/fanfiction/multiple-chapters.html");

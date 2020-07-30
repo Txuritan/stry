@@ -7,6 +7,7 @@ use {
         Uri,
     },
     chrono::{TimeZone, Utc},
+    fenn::StringExt,
     std::str,
 };
 
@@ -109,11 +110,13 @@ pub fn get_details(body: impl Into<Document>) -> anyhow::Result<Details> {
         .next()
         .map(|ele| ele.text())
         .flatten()
-        .ok_or_else(|| anyhow::anyhow!(
-            "Sector element for site {} not found: {}",
-            NAME,
-            STORY_AUTHOR
-        ))?;
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "Sector element for site {} not found: {}",
+                NAME,
+                STORY_AUTHOR
+            )
+        })?;
 
     let origins: Vec<String> = html
         .select(STORY_ORIGINS)
@@ -122,12 +125,7 @@ pub fn get_details(body: impl Into<Document>) -> anyhow::Result<Details> {
         .map(|ele| {
             ele.text()
                 .map(|mut text| {
-                    if text.ends_with("Crossover") {
-                        let len = text.len();
-                        let new_len = len.saturating_sub("Crossover".len());
-
-                        text.truncate(new_len);
-                    }
+                    text.trim_end_matches("Crossover");
 
                     text
                 })
@@ -140,11 +138,13 @@ pub fn get_details(body: impl Into<Document>) -> anyhow::Result<Details> {
                 })
         })
         .flatten()
-        .ok_or_else(|| anyhow::anyhow!(
-            "Sector element for site {} not found: {}",
-            NAME,
-            STORY_ORIGINS
-        ))?;
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "Sector element for site {} not found: {}",
+                NAME,
+                STORY_ORIGINS
+            )
+        })?;
 
     let mut chapters = 1u32;
     let mut language = Language::English;
@@ -266,12 +266,7 @@ pub fn get_chapter(body: impl Into<Document>) -> anyhow::Result<Chapter> {
             .expect("[chapter_text] HTML is missing the chapter text node, did the html change?"),
     )?;
 
-    while main.ends_with(' ') {
-        let len = main.len();
-        let new_len = len.saturating_sub(" ".len());
-
-        main.truncate(new_len);
-    }
+    main.trim_end();
 
     Ok(Chapter {
         name: html

@@ -7,7 +7,7 @@ use {
         utils::req,
         Uri,
     },
-    std::{fmt, sync::Arc, convert::TryInto},
+    std::{convert::TryInto, fmt, sync::Arc},
 };
 
 #[derive(Clone, Copy, Debug, Hash, Ord, PartialOrd, Eq, PartialEq)]
@@ -148,7 +148,9 @@ impl Site for Sites {
         T: TryInto<Uri>,
         <T as TryInto<Uri>>::Error: std::error::Error,
     {
-        let url: Uri = url.try_into().map_err(|err| anyhow::anyhow!("Unable to convert string to URL: {}", err))?;
+        let url: Uri = url
+            .try_into()
+            .map_err(|err| anyhow::anyhow!("Unable to convert string to URL: {}", err))?;
 
         match self {
             Sites::ArchiveOfOurOwn => archive_of_our_own::id_from_url(&url).map(|id| SiteRef {

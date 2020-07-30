@@ -25,10 +25,11 @@ pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
 #[async_trait::async_trait]
 impl Backend for SqliteBackend {
+    #[tracing::instrument(skip(_backend, storage, _version))]
     async fn init(
         _backend: BackendType,
         storage: StorageType,
-        _: Arc<Vec<LibVersion>>,
+        _version: Arc<Vec<LibVersion>>,
     ) -> anyhow::Result<Self> {
         if let StorageType::File { location } = storage {
             let manager = SqliteConnectionManager::file(&location)

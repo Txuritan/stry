@@ -20,6 +20,11 @@ pub async fn start(
     let routes = akibisuto_stylus::route()
         .or(api::route(state.clone()))
         .or(enable(enable_frontend).and(user::route(state.clone())))
+        // I want to use brotli, but Firefpx isn't adding new features to HTTP (non HTTPS),
+        // as such it only sends `Accept-Encoding: gzip, deflate`.
+        // That means I'll either wrap the server in NGINX, or allow for TLS through the config.
+        // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1218924
+        .with(warp::compression::gzip())
         .with(warp::trace::request());
 
     let (addr, server) = warp::serve(routes)

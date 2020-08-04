@@ -334,7 +334,8 @@ impl BackendStory for SqliteBackend {
                 }))
             }
         })
-        .await?? {
+        .await??
+        {
             Some(ids) => ids,
             None => return Ok(None),
         };

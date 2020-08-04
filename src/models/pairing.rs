@@ -48,7 +48,7 @@ impl fmt::Display for Pairing {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "<li><a class=\"label background--yellow\" href=\"/pairing/{}\">{}</a></li>",
+            "<li><a class=\"label color__yellow\" href=\"/pairings/{}\">{}</a></li>",
             self.id,
             self.characters
                 .iter()

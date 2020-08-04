@@ -3,11 +3,11 @@
 {% block style %}{% endblock %}
 
 {% block content %}
-<div label-list>
+<ul class="label__list">
 {% for resource in resources %}
-    <a label l-bg="{{ resource.color().0 }}" d-bg="{{ resource.color().1 }}" href="/{{ typ }}/{{ resource.id() }}">{{ resource.name() }}</a>
+    {{ resource }}
 {% endfor %}
-</div>
+</ul>
 {{ pagination|safe }}
 {% endblock %}
 

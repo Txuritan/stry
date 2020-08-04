@@ -4,7 +4,11 @@ pub mod story;
 
 use {
     crate::{
-        frontend::user::{pagination::Pagination, readable::Readable, utils::WebError},
+        frontend::user::{
+            pagination::Pagination,
+            readable::Readable,
+            utils::{Resource, WebError},
+        },
         models,
         version::{GIT_VERSION, VERSION},
     },
@@ -70,41 +74,32 @@ where
 
 #[derive(Template)]
 #[template(path = "explore.html")]
-pub struct ResourceList<'a> {
+pub struct ResourceList {
     version: &'static str,
     git: &'static str,
 
     title: String,
     search: Option<String>,
 
-    typ: String,
-
     pagination: String,
 
-    resources: Vec<&'a dyn models::Resource>,
+    resources: Vec<Resource>,
 }
 
-impl<'a> ResourceList<'a> {
+impl ResourceList {
     pub fn new(
         title: impl Into<String>,
-        typ: models::RouteType,
+        url: String,
         page: i32,
         pages: i32,
-        resources: Vec<&'a dyn models::Resource>,
+        resources: Vec<Resource>,
     ) -> Self {
         Self {
             version: VERSION,
             git: GIT_VERSION,
             title: title.into(),
             search: None,
-            pagination: Pagination::new(
-                format!("/explore/{}", typ),
-                None,
-                pages as u32,
-                page as u32,
-            )
-            .to_string(),
-            typ: typ.to_string(),
+            pagination: Pagination::new(url, None, pages as u32, page as u32).to_string(),
             resources,
         }
     }

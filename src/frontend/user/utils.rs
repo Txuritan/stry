@@ -1,12 +1,79 @@
 use {
+    crate::models::{Author, Character, Origin, Tag, Warning},
     askama::Template,
-    std::future::Future,
+    std::{fmt, future::Future, str::FromStr},
     warp::{
         http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
         hyper::Body,
         Rejection, Reply,
     },
 };
+
+#[derive(Clone, Copy, Debug)]
+pub enum Items {
+    Authors,
+    Characters,
+    Friends,
+    Origins,
+    Pairings,
+    Tags,
+    Warnings,
+}
+
+impl fmt::Display for Items {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Items::Authors => write!(f, "authors"),
+            Items::Characters => write!(f, "characters"),
+            Items::Friends => write!(f, "friends"),
+            Items::Origins => write!(f, "origins"),
+            Items::Pairings => write!(f, "pairings"),
+            Items::Tags => write!(f, "tags"),
+            Items::Warnings => write!(f, "warnings"),
+        }
+    }
+}
+
+impl FromStr for Items {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let lower = s.to_lowercase();
+
+        match lower.as_str() {
+            "authors" => Ok(Items::Authors),
+            "characters" => Ok(Items::Characters),
+            "origins" => Ok(Items::Origins),
+            "tags" => Ok(Items::Tags),
+            "warnings" => Ok(Items::Warnings),
+            _ => anyhow::bail!("Unknown path"),
+        }
+    }
+}
+
+pub enum Resource {
+    Author(Author),
+    Character(Character),
+    Friend(),
+    Origin(Origin),
+    Pairing(),
+    Tag(Tag),
+    Warning(Warning),
+}
+
+impl fmt::Display for Resource {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Resource::Author(entity) => entity.fmt(f),
+            Resource::Character(entity) => entity.fmt(f),
+            Resource::Friend() => todo!(),
+            Resource::Origin(entity) => entity.fmt(f),
+            Resource::Pairing() => todo!(),
+            Resource::Tag(entity) => entity.fmt(f),
+            Resource::Warning(entity) => entity.fmt(f),
+        }
+    }
+}
 
 pub struct WebError {
     pub code: u32,

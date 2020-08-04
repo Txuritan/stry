@@ -37,6 +37,7 @@ pub trait Node {
     fn id(&self) -> &str;
 }
 
+#[deprecated = "remove"]
 pub trait Resource {
     fn id(&self) -> &str;
     fn name(&self) -> &str;

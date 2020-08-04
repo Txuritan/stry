@@ -1,7 +1,7 @@
 use {
     crate::{
         backend::DataBackend,
-        models::{List, Node, Resource},
+        models::{List, Node},
     },
     chrono::{DateTime, Utc},
     std::fmt,
@@ -44,31 +44,9 @@ impl Node for Author {
     }
 }
 
-impl Resource for Author {
-    fn id(&self) -> &str {
-        &self.id
-    }
-
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn created(&self) -> &DateTime<Utc> {
-        &self.created
-    }
-
-    fn updated(&self) -> &DateTime<Utc> {
-        &self.updated
-    }
-
-    fn color(&self) -> (&str, &str) {
-        ("background--blue", "background--blue")
-    }
-}
-
 impl fmt::Display for Author {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "<a href=\"/author/{}\">{}</a>", self.id, self.name)
+        write!(f, "<a href=\"/authors/{}\">{}</a>", self.id, self.name)
     }
 }
 

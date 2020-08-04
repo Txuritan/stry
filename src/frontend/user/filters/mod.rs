@@ -5,7 +5,7 @@ pub mod story;
 use {
     crate::{
         backend::DataBackend,
-        frontend::user::handlers,
+        frontend::user::{handlers, utils::Items},
         models::{Paging, Search},
     },
     warp::{filters::BoxedFilter, Filter, Reply},
@@ -29,7 +29,7 @@ pub fn dashboard(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,
 
 pub fn explore(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
     warp::path("explore")
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<Items>())
         .and(warp::query::<Paging>())
         .and(state)
         .and(warp::path::end())
@@ -48,7 +48,7 @@ pub fn index(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
 
 pub fn item(state: BoxedFilter<(DataBackend,)>) -> BoxedFilter<(impl Reply,)> {
     warp::get()
-        .and(warp::path::param::<String>())
+        .and(warp::path::param::<Items>())
         .and(warp::path::param::<String>())
         .and(warp::query::<Paging>())
         .and(state)

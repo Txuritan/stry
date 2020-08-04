@@ -1,48 +1,23 @@
 use {
     crate::{
-        pages::{explore, ResourceList, StoryList},
-        utils::wrap,
+        backend::{
+            BackendAuthor, BackendCharacter, BackendOrigin, BackendTag, BackendWarning, DataBackend,
+        },
+        frontend::user::{
+            pages::{ErrorPage, ResourceList},
+            utils::{wrap, Items, Resource},
+        },
+        models::Paging,
     },
     askama::Template,
-    std::borrow::Cow,
-    stry_backend::DataBackend,
-    stry_common::backend::{BackendAuthor, BackendOrigin, BackendStory, BackendTag},
-    stry_common::models::{Paging, Resource, RouteType},
-    warp::{reject::not_found, Rejection, Reply},
+    warp::{Rejection, Reply},
 };
 
-pub async fn authors(paging: Paging, backend: DataBackend) -> Result<impl Reply, Rejection> {
-    wrap(move || async move {
-        let mut norm = paging.normalize();
-
-        if norm.page_size == Paging::default().page_size {
-            norm.page_size = 50;
-        }
-
-        let (count, authors) = backend
-            .all_authors(norm.page, norm.page_size)
-            .await?
-            .into_parts();
-
-        let rendered: String = explore::AuthorList::new(
-            format!("{} | authors | explore", paging.page),
-            paging.page,
-            (count + (norm.page_size - 1)) / norm.page_size,
-            authors,
-        )
-        .render()?;
-
-        Ok(rendered)
-    }).await
-}
-
 pub async fn explore(
-    typ: String,
+    item: Items,
     paging: Paging,
     backend: DataBackend,
 ) -> Result<impl Reply, Rejection> {
-    let rt = parse(&typ)?;
-
     wrap(move || async move {
         let mut norm = paging.normalize();
 
@@ -50,70 +25,95 @@ pub async fn explore(
             norm.page_size = 50;
         }
 
-        match rt {
-            RouteType::Authors => {
-                let (count, authors) = backend
-                    .all_authors(norm.page, norm.page_size)
-                    .await?
-                    .into_parts();
+        let data = match item {
+            Items::Authors => match backend.all_authors(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, entities) = list.into_parts();
 
-                let rendered: String = ResourceList::new(
-                    format!("{} | authors | explore", paging.page),
-                    rt,
-                    paging.page,
-                    (count + (norm.page_size - 1)) / norm.page_size,
-                    authors.iter().map(|a| a as &dyn Resource).collect(),
-                )
-                .render()?;
+                    Some((
+                        format!("{} | authors | explore", paging.page),
+                        count,
+                        entities.into_iter().map(Resource::Author).collect(),
+                    ))
+                }
+                None => None,
+            },
+            Items::Characters => match backend.all_characters(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, entities) = list.into_parts();
 
-                Ok(rendered)
-            }
-            RouteType::Origins => {
-                let (count, origins) = backend
-                    .all_origins(norm.page, norm.page_size)
-                    .await?
-                    .into_parts();
-
-                let rendered: String = ResourceList::new(
-                    format!("{} | origins | explore", paging.page),
-                    rt,
-                    paging.page,
-                    (count + (norm.page_size - 1)) / norm.page_size,
-                    origins.iter().map(|a| a as &dyn Resource).collect(),
-                )
-                .render()?;
-
-                Ok(rendered)
-            }
-            RouteType::Characters | RouteType::Pairings | RouteType::Tags | RouteType::Warnings => {
-                // let (count, tags) = backend
-                //     .all_tags_of_type(
-                //         match rt {
-                //             RouteType::Characters => TagType::Character,
-                //             RouteType::Pairings => TagType::Pairing,
-                //             RouteType::Tags => TagType::General,
-                //             RouteType::Warnings => TagType::Warning,
-                //             _ => unreachable!(),
-                //         },
-                //         norm.page,
-                //         norm.page_size,
-                //     )
-                //     .await?
-                //     .into_parts();
-
-                // let rendered: String = ResourceList::new(
-                //     format!("{} | {} | explore", paging.page, rt),
-                //     rt,
-                //     paging.page,
-                //     (count + (norm.page_size - 1)) / norm.page_size,
-                //     tags.iter().map(|a| a as &dyn Resource).collect(),
-                // )
-                // .render()?;
-
-                // Ok(rendered)
-
-                // TODO: separate now that these are different tables
+                    Some((
+                        format!("{} | characters | explore", paging.page),
+                        count,
+                        entities.into_iter().map(Resource::Character).collect(),
+                    ))
+                }
+                None => None,
+            },
+            Items::Friends => {
+                // TODO: finish the backend handle for this
                 todo!()
+            }
+            Items::Origins => match backend.all_origins(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, entities) = list.into_parts();
+
+                    Some((
+                        format!("{} | origins | explore", paging.page),
+                        count,
+                        entities.into_iter().map(Resource::Origin).collect(),
+                    ))
+                }
+                None => None,
+            },
+            Items::Pairings => {
+                // TODO: finish the backend handle for this
+                todo!()
+            }
+            Items::Tags => match backend.all_tags(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, entities) = list.into_parts();
+
+                    Some((
+                        format!("{} | tags | explore", paging.page),
+                        count,
+                        entities.into_iter().map(Resource::Tag).collect(),
+                    ))
+                }
+                None => None,
+            },
+            Items::Warnings => match backend.all_warnings(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, entities) = list.into_parts();
+
+                    Some((
+                        format!("{} | warnings | explore", paging.page),
+                        count,
+                        entities.into_iter().map(Resource::Warning).collect(),
+                    ))
+                }
+                None => None,
+            },
+        };
+
+        match data {
+            Some((title, count, resources)) => {
+                let rendered: String = ResourceList::new(
+                    title,
+                    format!("/explore/{}", item),
+                    paging.page,
+                    (count + (norm.page_size - 1)) / norm.page_size,
+                    resources,
+                )
+                .render()?;
+
+                Ok(rendered)
+            }
+            None => {
+                let rendered =
+                    ErrorPage::not_found(format!("404 not found | {} | explore", item)).render()?;
+
+                Ok(rendered)
             }
         }
     })

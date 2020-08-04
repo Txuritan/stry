@@ -5,7 +5,7 @@
 {% block content %}
 <ul class="label__list">
 {% for resource in resources %}
-    {{ resource }}
+    {{ resource|safe }}
 {% endfor %}
 </ul>
 {{ pagination|safe }}

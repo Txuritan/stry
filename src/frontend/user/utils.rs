@@ -61,17 +61,61 @@ pub enum Resource {
     Warning(Warning),
 }
 
+impl Resource {
+    pub fn id(&self) -> &str {
+        match self {
+            Resource::Author(entity) => &entity.id,
+            Resource::Character(entity) => &entity.id,
+            Resource::Friend() => todo!(),
+            Resource::Origin(entity) => &entity.id,
+            Resource::Pairing() => todo!(),
+            Resource::Tag(entity) => &entity.id,
+            Resource::Warning(entity) => &entity.id,
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            Resource::Author(entity) => &entity.name,
+            Resource::Character(entity) => &entity.name,
+            Resource::Friend() => todo!(),
+            Resource::Origin(entity) => &entity.name,
+            Resource::Pairing() => todo!(),
+            Resource::Tag(entity) => &entity.name,
+            Resource::Warning(entity) => &entity.name,
+        }
+    }
+
+    pub fn color(&self) -> &str {
+        match self {
+            Resource::Author(_) => "color__blue",
+            Resource::Character(_) => "color__purple",
+            Resource::Friend() => todo!(),
+            Resource::Origin(_) => "color__green",
+            Resource::Pairing() => todo!(),
+            Resource::Tag(_) => "color__silver",
+            Resource::Warning(_) => "color__red",
+        }
+    }
+}
+
 impl fmt::Display for Resource {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "<li><a class=\"label {}\" href=\"/", self.color())?;
+
         match self {
-            Resource::Author(entity) => entity.fmt(f),
-            Resource::Character(entity) => entity.fmt(f),
-            Resource::Friend() => todo!(),
-            Resource::Origin(entity) => entity.fmt(f),
-            Resource::Pairing() => todo!(),
-            Resource::Tag(entity) => entity.fmt(f),
-            Resource::Warning(entity) => entity.fmt(f),
+            Resource::Author(_) => write!(f, "authors")?,
+            Resource::Character(_) => write!(f, "characters")?,
+            Resource::Friend() => write!(f, "friends")?,
+            Resource::Origin(_) => write!(f, "origins")?,
+            Resource::Pairing() => write!(f, "pairings")?,
+            Resource::Tag(_) => write!(f, "tags")?,
+            Resource::Warning(_) => write!(f, "warnings")?,
         }
+
+        write!(f, "/{}\">{}</a></li>", self.id(), self.name())?;
+
+        Ok(())
     }
 }
 

@@ -39,7 +39,7 @@ impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "<li><a class=\"label color__gray\" href=\"/tags/{}\">{}</a></li>",
+            "<li><a class=\"label color__silver\" href=\"/tags/{}\">{}</a></li>",
             self.id, self.name
         )
     }

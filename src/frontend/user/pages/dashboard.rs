@@ -1,6 +1,6 @@
 use {
     crate::{
-        models::Worker,
+        models::{Worker, WorkerTask},
         version::{LibVersion, BOM, GIT_VERSION, VERSION},
     },
     askama::Template,
@@ -66,15 +66,17 @@ pub struct Tasks<'w> {
     title: &'static str,
 
     workers: &'w [Worker],
+    tasks: &'w [WorkerTask]
 }
 
 impl<'w> Tasks<'w> {
-    pub fn new(workers: &'w [Worker]) -> Self {
+    pub fn new(workers: &'w [Worker], tasks: &'w [WorkerTask]) -> Self {
         Self {
             version: VERSION,
             git: GIT_VERSION,
             title: "tasks | dashboard",
             workers,
+            tasks,
         }
     }
 }

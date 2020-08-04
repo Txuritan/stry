@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block style %}table{display:flex;flex-flow:column wrap}table tbody,table thead{display:flex;flex:1 1;flex-wrap:wrap}@media all and (max-width:1024px){table tbody.break,table thead.break{display:block}}table tbody tr,table thead tr{display:flex;flex:1 1}@media all and (max-width:1024px){table tbody tr.break,table thead tr.break{display:block}}table tbody tr td,table tbody tr th,table thead tr td,table thead tr th{display:flex;width:var(--column-width)}table tbody tr td.flex-grow,table tbody tr th.flex-grow,table thead tr td.flex-grow,table thead tr th.flex-grow{flex-grow:1}@media all and (max-width:1024px){table tbody tr td.break,table tbody tr th.break,table thead tr td.break,table thead tr th.break{display:block;width:100%}}table tbody tr td span,table tbody tr th span,table thead tr td span,table thead tr th span{line-height:2.2rem}@media all and (max-width:1024px){table thead.break-hide{display:none}}table thead tr th{text-align:left}table tbody tr td{padding:0 .5rem}{% endblock %}
+{% block style %}table{display:flex;flex-flow:column wrap;width:100%}table tbody,table thead{display:flex;flex:1 1;flex-wrap:wrap}table tbody{flex-direction:column}@media all and (max-width:1024px){table tbody.break,table thead.break{display:block}}table tbody tr,table thead tr{display:flex;flex:1 1}@media all and (max-width:1024px){table tbody tr.break,table thead tr.break{display:block}}table tbody tr td,table tbody tr th,table thead tr td,table thead tr th{display:flex;width:var(--column-width)}table tbody tr td.flex-grow,table tbody tr th.flex-grow,table thead tr td.flex-grow,table thead tr th.flex-grow{flex-grow:1}@media all and (max-width:1024px){table tbody tr td.break,table tbody tr th.break,table thead tr td.break,table thead tr th.break{display:block;width:100%}}table tbody tr td span,table tbody tr th span,table thead tr td span,table thead tr th span{line-height:2.2rem}@media all and (max-width:1024px){table thead.break-hide{display:none}}table thead tr th{text-align:left}table tbody tr td{padding:0 .5rem}{% endblock %}
 
 {% block content %}
 <p><b>Working:</b></p>
-<table style="width: 100%;">
+<table>
     <thead class="break-hide">
         <tr>
             <th style="--column-width: 9rem"><span>Worker</span></th>
@@ -19,22 +19,14 @@
         {% if worker.task.is_some() %}
         {% let task_ref = worker.task.as_ref().unwrap() %}
         <tr class="break">
-            <td class="break"style="--column-width: 9rem">
-                <span>Worker #{{ worker.id }}</span>
-            </td>
-            <td class="break flex-grow">
-                <span><a href="{{ task_ref.url }}">{{ task_ref.name }}</a></span>
-            </td>
-            <td class="break" style="--column-width: 15rem">
-                <span><a href="{{ task_ref.site.url() }}">{{ task_ref.site }}</a></span>
-            </td>
+            <td class="break"style="--column-width: 9rem"><span>Worker #{{ worker.id }}</span></td>
+            <td class="break flex-grow"><span><a href="{{ task_ref.url }}">{{ task_ref.name }}</a></span></td>
+            <td class="break" style="--column-width: 15rem"><span><a href="{{ task_ref.site.url() }}">{{ task_ref.site }}</a></span></td>
             <td class="break" style="--column-width: 15rem"><progress max="{{ task_ref.chapters }}" value="{{ task_ref.chapter }}">{{ task_ref.chapter }} / {{ task_ref.chapters }}</progress></td>
         </tr>
         {% else %}
         <tr class="break">
-            <td class="break"style="--column-width: 9rem">
-                <span>Worker #{{ worker.id }}</span>
-            </td>
+            <td class="break"style="--column-width: 9rem"><span>Worker #{{ worker.id }}</span></td>
             <td class="break flex-grow"></td>
             <td class="break" style="--column-width: 15rem"></td>
             <td class="break" style="--column-width: 15rem"></td>
@@ -45,6 +37,23 @@
 </table>
 
 <p><b>Waiting:</b></p>
+<table>
+    <thead class="break-hide">
+        <tr>
+            <th class="flex-grow"><span>Name</span></th>
+            <th style="--column-width: 15rem"><span>Site</span></th>
+        </tr>
+    </thead>
+
+    <tbody class="break">
+        {% for task in tasks %}
+        <tr class="break">
+            <td class="break flex-grow"><span><a href="{{ task.url }}">{{ task.name }}</a></span></td>
+            <td class="break" style="--column-width: 15rem"><span><a href="{{ task.site.url() }}">{{ task.site }}</a></span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
 
 {% block script %}

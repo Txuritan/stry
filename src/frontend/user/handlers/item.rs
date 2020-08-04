@@ -1,7 +1,8 @@
 use {
     crate::{
         backend::{
-            BackendAuthor, BackendCharacter, BackendOrigin, BackendTag, BackendWarning, DataBackend,
+            BackendAuthor, BackendCharacter, BackendOrigin, BackendPairing, BackendTag,
+            BackendWarning, DataBackend,
         },
         frontend::user::{
             pages::{ErrorPage, StoryList},
@@ -73,7 +74,6 @@ pub async fn item(
                     None => None,
                 }
             }
-            Items::Friends => None,
             Items::Origins => {
                 let stories = backend
                     .origin_stories(id.clone(), norm.page, norm.page_size)
@@ -97,7 +97,39 @@ pub async fn item(
                     None => None,
                 }
             }
-            Items::Pairings => None,
+            Items::Pairings => {
+                let stories = backend
+                    .pairing_stories(id.clone(), norm.page, norm.page_size)
+                    .await
+                    .context(format!("Unable to search backend for {}s stories", item))?;
+
+                match stories {
+                    Some(list) => {
+                        let (count, stories) = list.into_parts();
+
+                        // UNWRAP: database wouldn't return any stories it author didn't exist
+                        let entity = backend.get_pairing(id.clone()).await?.unwrap();
+
+                        Some((
+                            format!(
+                                "{} | {} | {}",
+                                paging.page,
+                                entity
+                                    .characters
+                                    .iter()
+                                    .map(|c| &*c.name)
+                                    .collect::<Vec<&str>>()
+                                    .join(if entity.platonic { "&" } else { "/" }),
+                                item
+                            ),
+                            format!("/{}/{}", item, id),
+                            count,
+                            stories,
+                        ))
+                    }
+                    None => None,
+                }
+            }
             Items::Tags => {
                 let stories = backend
                     .tag_stories(id.clone(), norm.page, norm.page_size)

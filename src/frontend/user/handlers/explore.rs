@@ -1,7 +1,8 @@
 use {
     crate::{
         backend::{
-            BackendAuthor, BackendCharacter, BackendOrigin, BackendTag, BackendWarning, DataBackend,
+            BackendAuthor, BackendCharacter, BackendOrigin, BackendPairing, BackendTag,
+            BackendWarning, DataBackend,
         },
         frontend::user::{
             pages::{ErrorPage, ResourceList},
@@ -50,10 +51,6 @@ pub async fn explore(
                 }
                 None => None,
             },
-            Items::Friends => {
-                // TODO: finish the backend handle for this
-                todo!()
-            }
             Items::Origins => match backend.all_origins(norm.page, norm.page_size).await? {
                 Some(list) => {
                     let (count, entities) = list.into_parts();
@@ -66,10 +63,18 @@ pub async fn explore(
                 }
                 None => None,
             },
-            Items::Pairings => {
-                // TODO: finish the backend handle for this
-                todo!()
-            }
+            Items::Pairings => match backend.all_pairings(norm.page, norm.page_size).await? {
+                Some(list) => {
+                    let (count, entities) = list.into_parts();
+
+                    Some((
+                        format!("{} | pairings | explore", paging.page),
+                        count,
+                        entities.into_iter().map(Resource::Pairing).collect(),
+                    ))
+                }
+                None => None,
+            },
             Items::Tags => match backend.all_tags(norm.page, norm.page_size).await? {
                 Some(list) => {
                     let (count, entities) = list.into_parts();

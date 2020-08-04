@@ -1,5 +1,5 @@
 use {
-    crate::models::{Author, Character, Origin, Tag, Warning},
+    crate::models::{Author, Character, Origin, Pairing, Tag, Warning},
     askama::Template,
     std::{fmt, future::Future, str::FromStr},
     warp::{
@@ -13,7 +13,6 @@ use {
 pub enum Items {
     Authors,
     Characters,
-    Friends,
     Origins,
     Pairings,
     Tags,
@@ -25,7 +24,6 @@ impl fmt::Display for Items {
         match self {
             Items::Authors => write!(f, "authors"),
             Items::Characters => write!(f, "characters"),
-            Items::Friends => write!(f, "friends"),
             Items::Origins => write!(f, "origins"),
             Items::Pairings => write!(f, "pairings"),
             Items::Tags => write!(f, "tags"),
@@ -44,6 +42,7 @@ impl FromStr for Items {
             "authors" => Ok(Items::Authors),
             "characters" => Ok(Items::Characters),
             "origins" => Ok(Items::Origins),
+            "pairings" => Ok(Items::Pairings),
             "tags" => Ok(Items::Tags),
             "warnings" => Ok(Items::Warnings),
             _ => anyhow::bail!("Unknown path"),
@@ -54,9 +53,8 @@ impl FromStr for Items {
 pub enum Resource {
     Author(Author),
     Character(Character),
-    Friend(),
     Origin(Origin),
-    Pairing(),
+    Pairing(Pairing),
     Tag(Tag),
     Warning(Warning),
 }
@@ -66,23 +64,10 @@ impl Resource {
         match self {
             Resource::Author(entity) => &entity.id,
             Resource::Character(entity) => &entity.id,
-            Resource::Friend() => todo!(),
             Resource::Origin(entity) => &entity.id,
-            Resource::Pairing() => todo!(),
+            Resource::Pairing(entity) => &entity.id,
             Resource::Tag(entity) => &entity.id,
             Resource::Warning(entity) => &entity.id,
-        }
-    }
-
-    pub fn name(&self) -> &str {
-        match self {
-            Resource::Author(entity) => &entity.name,
-            Resource::Character(entity) => &entity.name,
-            Resource::Friend() => todo!(),
-            Resource::Origin(entity) => &entity.name,
-            Resource::Pairing() => todo!(),
-            Resource::Tag(entity) => &entity.name,
-            Resource::Warning(entity) => &entity.name,
         }
     }
 
@@ -90,9 +75,8 @@ impl Resource {
         match self {
             Resource::Author(_) => "color__blue",
             Resource::Character(_) => "color__purple",
-            Resource::Friend() => todo!(),
             Resource::Origin(_) => "color__green",
-            Resource::Pairing() => todo!(),
+            Resource::Pairing(_) => "color__yellow",
             Resource::Tag(_) => "color__silver",
             Resource::Warning(_) => "color__red",
         }
@@ -106,14 +90,33 @@ impl fmt::Display for Resource {
         match self {
             Resource::Author(_) => write!(f, "authors")?,
             Resource::Character(_) => write!(f, "characters")?,
-            Resource::Friend() => write!(f, "friends")?,
             Resource::Origin(_) => write!(f, "origins")?,
-            Resource::Pairing() => write!(f, "pairings")?,
+            Resource::Pairing(_) => write!(f, "pairings")?,
             Resource::Tag(_) => write!(f, "tags")?,
             Resource::Warning(_) => write!(f, "warnings")?,
         }
 
-        write!(f, "/{}\">{}</a></li>", self.id(), self.name())?;
+        write!(f, "/{}\">", self.id())?;
+
+        match self {
+            Resource::Author(entity) => write!(f, "{}", entity.name)?,
+            Resource::Character(entity) => write!(f, "{}", entity.name)?,
+            Resource::Origin(entity) => write!(f, "{}", entity.name)?,
+            Resource::Pairing(entity) => write!(
+                f,
+                "{}",
+                entity
+                    .characters
+                    .iter()
+                    .map(|c| &*c.name)
+                    .collect::<Vec<&str>>()
+                    .join(if entity.platonic { "&" } else { "/" })
+            )?,
+            Resource::Tag(entity) => write!(f, "{}", entity.name)?,
+            Resource::Warning(entity) => write!(f, "{}", entity.name)?,
+        }
+
+        write!(f, "</a></li>")?;
 
         Ok(())
     }

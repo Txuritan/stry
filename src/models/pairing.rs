@@ -54,7 +54,7 @@ impl fmt::Display for Pairing {
                 .iter()
                 .map(|c| &*c.name)
                 .collect::<Vec<&str>>()
-                .join("/")
+                .join(if self.platonic { "&" } else { "/" })
         )
     }
 }

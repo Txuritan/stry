@@ -1,7 +1,7 @@
 use {
     crate::{
         backend::{
-            sqlite::utils::{SqliteExt, SqliteStmtExt},
+            sqlite::utils::{SqliteExt, SqliteStmtExt, Total, Wrapper},
             BackendStory, SqliteBackend,
         },
         models::{
@@ -9,7 +9,7 @@ use {
             story::{StoryPart, StoryRow},
             Author, Character, Entity, List, Origin, Pairing, Square, Story, Tag, Warning,
         },
-        search::{SearchParser, SearchTypes, SearchValue, VecSearchExt},
+        search::{SearchParser, SearchValue},
     },
     anyhow::Context,
     std::borrow::Cow,
@@ -280,62 +280,151 @@ impl BackendStory for SqliteBackend {
     #[tracing::instrument(skip(self))]
     async fn search_stories(
         &self,
-        _input: Cow<'static, str>,
-        _offset: i32,
-        _limit: i32,
+        input: Cow<'static, str>,
+        offset: i32,
+        limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
-        // let search = SearchParser::parse_to_structure(input.as_ref())?;
+        let ids = match tokio::task::spawn_blocking({
+            let inner = self.clone();
+            let input = input.to_owned();
 
-        // let count = search.type_count();
+            move || -> anyhow::Result<Option<List<Entity>>> {
+                let search = SearchParser::parse_to_structure(&input)?;
 
-        // // TODO: maybe wrap this in a blocking call
-        // let (and, not): (Vec<SearchValue<'_>>, Vec<SearchValue<'_>>) =
-        //     search.into_iter().partition(|sv| sv.is_included());
+                let (and, not): (Vec<SearchValue<'_>>, Vec<SearchValue<'_>>) =
+                    search.into_iter().partition(|value| value.is_included());
+                let (mut query, mut params) = query_from_parts(and, not);
 
-        // let split_and = and.split_on_type();
-        // let split_not = not.split_on_type();
+                let conn = inner.0.get()?;
 
-        // let mut buff = String::with_capacity((200 * count) + 60);
+                let row: Option<Total> = tracing::trace_span!("get_count")
+                    .in_scope(|| conn.type_query_row_anyhow(&query, &params))?;
 
-        // buff.push_str("SELECT id FROM story WHERE ");
+                let total: Total = match row {
+                    Some(total) => total,
+                    None => return Ok(None),
+                };
 
-        // for (search_type, values) in split_and {
-        //     if values.is_none() {
-        //         continue;
-        //     }
+                query.push_str(" LIMIT ? OFFSET ? ");
 
-        //     let values = values.unwrap();
+                let mut stmt = tracing::trace_span!("prepare").in_scope(|| conn.prepare(&query))?;
 
-        //     match search_type {
-        //         SearchTypes::Characters => buff.push_str(
-        //             "id IN (SELECT s.id FROM story s, story_characters sc, character c WHERE s.id = sc.story_id AND c.id = sc.character_id AND (lower(c.name) IN ("
-        //         ),
-        //         SearchTypes::Fandoms => buff.push_str(
-        //             "id IN (SELECT s.id FROM story s, story_origin so, origin o WHERE s.id = so.story_id AND o.id = so.origin_id AND (lower(o.name) IN ("
-        //         ),
-        //         SearchTypes::Friends => {}
-        //         SearchTypes::General => buff.push_str(
-        //             "id IN (SELECT s.id FROM story s, story_tag st, tag t WHERE s.id = st.story_id AND t.id = st.tag_id AND (lower(t.name) IN ("
-        //         ),
-        //         SearchTypes::Pairings => buff.push_str(
-        //             ""
-        //         ),
-        //         SearchTypes::Rating => {}
-        //     }
+                params.push(Wrapper::Num(limit));
+                params.push(Wrapper::Num(offset));
 
-        //     buff.push_str(")))");
-        // }
+                let rows = tracing::trace_span!("get_ids").in_scope(|| {
+                    stmt.query_map_anyhow(&params, |row| {
+                        Ok(Entity {
+                            id: row
+                                .get(0)
+                                .context("Attempting to get row index 0 for warning story id")?,
+                        })
+                    })
+                })?;
 
-        // for (search_type, values) in split_not {
-        //     if values.is_none() {
-        //         continue;
-        //     }
+                let items: Vec<Entity> =
+                    match rows.map(|items| items.collect::<Result<Vec<Entity>, _>>()) {
+                        Some(items) => items?,
+                        None => return Ok(None),
+                    };
 
-        //     let values = values.unwrap();
-        // }
+                Ok(Some(List {
+                    total: total.total,
+                    items,
+                }))
+            }
+        })
+        .await?? {
+            Some(ids) => ids,
+            None => return Ok(None),
+        };
 
-        // buff.push_str(" ORDER BY updated DESC;");
+        let (total, entities) = ids.into_parts();
 
-        todo!()
+        let mut items = Vec::with_capacity(limit as usize);
+
+        for Entity { id } in entities {
+            let story = match self
+                .get_story(id.into())
+                .instrument(tracing::trace_span!("get_story"))
+                .await?
+            {
+                Some(story) => story,
+                None => return Ok(None),
+            };
+
+            items.push(story);
+        }
+
+        Ok(Some(List { total, items }))
+    }
+}
+
+#[tracing::instrument(level = "debug")]
+fn query_from_parts<'p>(
+    and: Vec<SearchValue<'p>>,
+    not: Vec<SearchValue<'p>>,
+) -> (String, Vec<Wrapper<'p>>) {
+    let (and_empty, and_len) = (and.is_empty(), and.len());
+    let (not_empty, not_len) = (not.is_empty(), not.len());
+
+    let mut query_buff = String::with_capacity((and.len() + not.len()) * 175);
+    let mut param_buff = Vec::new();
+
+    if !and_empty {
+        for (i, value) in and.into_iter().enumerate() {
+            query_from_value(value, &mut query_buff, &mut param_buff, true);
+
+            if i != and_len - 1 {
+                query_buff.push_str("INTERSECT\n");
+            }
+        }
+    }
+
+    if !not_empty {
+        if !and_empty {
+            query_buff.push_str("EXCEPT\n");
+        }
+
+        for (i, value) in not.into_iter().enumerate() {
+            query_from_value(value, &mut query_buff, &mut param_buff, false);
+
+            if i != not_len - 1 {
+                query_buff.push_str("EXCEPT\n");
+            }
+        }
+    }
+
+    query_buff.push_str("ORDER BY 2");
+
+    (query_buff, param_buff)
+}
+
+#[tracing::instrument(level = "debug")]
+fn query_from_value<'p>(
+    value: SearchValue<'p>,
+    query_buff: &mut String,
+    param_buff: &mut Vec<Wrapper<'p>>,
+    _is_and: bool,
+) {
+    match value {
+        SearchValue::Friends(_, _characters) => {}
+        SearchValue::Pairing(_, _characters) => {}
+        SearchValue::Character(_, name) => {
+            query_buff.push_str("SELECT S.Id, S.Updated FROM Story S, StoryCharacter SC WHERE S.Id = SC.StoryId AND SC.CharacterId = (SELECT Id FROM Character WHERE LOWER(Name) LIKE LOWER(?))\n");
+            param_buff.push(Wrapper::Cow(name));
+        }
+        SearchValue::Fandom(_, name) => {
+            query_buff.push_str("SELECT S.Id, S.Updated FROM Story S, StoryOrigin SO WHERE S.Id = SO.StoryId AND SO.OriginId = (SELECT Id FROM Origin WHERE LOWER(Name) LIKE LOWER(?))\n");
+            param_buff.push(Wrapper::Cow(name));
+        }
+        SearchValue::General(_, name) => {
+            query_buff.push_str("SELECT S.Id, S.Updated FROM Story S, StoryTag ST WHERE S.Id = ST.StoryId AND ST.TagId = (SELECT Id FROM Tag WHERE LOWER(Name) LIKE LOWER(?))\n");
+            param_buff.push(Wrapper::Cow(name));
+        }
+        SearchValue::Rating(_, rating) => {
+            query_buff.push_str("SELECT Id, Updated AS StoryId FROM Story WHERE Rating = ?\n");
+            param_buff.push(Wrapper::Rating(rating));
+        }
     }
 }

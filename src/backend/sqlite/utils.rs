@@ -1,8 +1,26 @@
 use {
+    crate::models::Rating,
     anyhow::Context,
     rusqlite::{Row, Rows, ToSql},
-    std::marker::PhantomData,
+    std::{borrow::Cow, marker::PhantomData},
 };
+
+#[derive(Debug)]
+pub enum Wrapper<'p> {
+    Cow(Cow<'p, str>),
+    Rating(Rating),
+    Num(i32),
+}
+
+impl<'p> ToSql for Wrapper<'p> {
+    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput<'_>> {
+        match self {
+            Wrapper::Cow(cow) => cow.to_sql(),
+            Wrapper::Rating(rating) => rating.to_sql(),
+            Wrapper::Num(num) => num.to_sql(),
+        }
+    }
+}
 
 pub trait FromRow {
     fn from_row(row: &Row<'_>) -> anyhow::Result<Self>

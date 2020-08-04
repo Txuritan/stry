@@ -32,7 +32,7 @@ fn multiple_chapters__chapter() {
 #[test]
 #[allow(non_snake_case)]
 fn multiple_chapters__details() {
-   assert_eq!(Details {
+    assert_eq!(Details {
         name: String::from("Fellow Traveler"),
         summary: String::from("No regime, no matter how brutal, can last without the tacit acceptance of the majority. Of people who close their eyes to terrible things as long as they are not affected by them. Of people who could do something about things they disapprove of, but choose not to. Of people like Rhea Jag, who just want to do well on their exams and maintain their conditional acceptance into university. The Seventy-Fourth Hunger Games are approaching, however, and soon, it will be impossible to remain apolitical. Twoshot. "),
         chapters: 2,

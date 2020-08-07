@@ -4,6 +4,7 @@ use {
         frontend::user::{pages, utils::wrap},
     },
     askama::Template,
+    chrono::Utc,
     warp::{
         http::{
             header::{HeaderValue, LOCATION},
@@ -24,6 +25,8 @@ pub async fn chapter(
     backend: DataBackend,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
+        let time = Utc::now();
+
         let mut chapter_page = chapter_page as i32;
 
         if chapter_page == 0 {
@@ -43,6 +46,7 @@ pub async fn chapter(
                                     "chapter {}: {} | {}",
                                     chapter_page, chapter.name, story.name
                                 ),
+                                time,
                                 chapter_page,
                                 story,
                                 chapter,
@@ -52,10 +56,10 @@ pub async fn chapter(
                             Ok(rendered.into_response())
                         }
                         None => {
-                            let rendered = pages::ErrorPage::server_error(format!(
-                                "503 server error | {}",
-                                story.name
-                            ))
+                            let rendered = pages::ErrorPage::server_error(
+                                format!("503 server error | {}", story.name),
+                                time,
+                            )
                             .render()?;
 
                             Ok(rendered.into_response())
@@ -75,7 +79,7 @@ pub async fn chapter(
                 }
             }
             None => {
-                let rendered = pages::ErrorPage::server_error("404 not found").render()?;
+                let rendered = pages::ErrorPage::server_error("404 not found", time).render()?;
 
                 Ok(rendered.into_response())
             }

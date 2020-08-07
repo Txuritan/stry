@@ -5,6 +5,7 @@ use {
         models::{Paging, Search},
     },
     askama::Template,
+    chrono::Utc,
     warp::{Rejection, Reply},
 };
 
@@ -14,6 +15,8 @@ pub async fn index(
     pool: DataBackend,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
+        let time = Utc::now();
+
         let norm = paging.normalize();
 
         match pool
@@ -26,6 +29,7 @@ pub async fn index(
                 let page = pages::Search::new(
                     search.search.clone(),
                     search.search,
+                    time,
                     paging.page,
                     total / norm.page_size,
                     items,

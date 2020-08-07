@@ -1,6 +1,7 @@
 use {
     crate::models::{Author, Character, Origin, Pairing, Tag, Warning},
     askama::Template,
+    chrono::Utc,
     std::{fmt, future::Future, str::FromStr},
     warp::{
         http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
@@ -147,6 +148,8 @@ where
             Ok(response)
         }
         Err(err) => {
+            let time = Utc::now();
+
             {
                 let span = tracing::error_span!("Response error");
                 let _enter = span.enter();
@@ -161,7 +164,8 @@ where
             *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
 
             if let Ok(rendered) =
-                crate::frontend::user::pages::ErrorPage::server_error("503 server error").render()
+                crate::frontend::user::pages::ErrorPage::server_error("503 server error", time)
+                    .render()
             {
                 *res.body_mut() = Body::from(rendered);
             }

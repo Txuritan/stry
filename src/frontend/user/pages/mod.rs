@@ -13,6 +13,7 @@ use {
         version::{GIT_VERSION, VERSION},
     },
     askama::Template,
+    chrono::{DateTime, Duration, Utc},
 };
 
 #[derive(Template)]
@@ -26,6 +27,7 @@ where
 
     title: T,
     search: Option<String>,
+    duration: Duration,
 
     error: WebError,
 }
@@ -36,6 +38,7 @@ where
 {
     pub fn new(
         title: T,
+        time: DateTime<Utc>,
         code: u32,
         name: &'static str,
         icon: &'static str,
@@ -46,6 +49,8 @@ where
             git: GIT_VERSION,
 
             title,
+            duration: Utc::now().signed_duration_since(time),
+
             error: WebError {
                 code,
                 name,
@@ -57,13 +62,14 @@ where
         }
     }
 
-    pub fn not_found(title: T) -> Self {
-        Self::new(title, 404, "Not Found", "danger", "")
+    pub fn not_found(title: T, time: DateTime<Utc>) -> Self {
+        Self::new(title, time, 404, "Not Found", "danger", "")
     }
 
-    pub fn server_error(title: T) -> Self {
+    pub fn server_error(title: T, time: DateTime<Utc>) -> Self {
         Self::new(
             title,
+            time,
             503,
             "Server Error",
             "danger",
@@ -80,6 +86,7 @@ pub struct ResourceList {
 
     title: String,
     search: Option<String>,
+    duration: Duration,
 
     pagination: String,
 
@@ -89,6 +96,7 @@ pub struct ResourceList {
 impl ResourceList {
     pub fn new(
         title: impl Into<String>,
+        time: DateTime<Utc>,
         url: String,
         page: i32,
         pages: i32,
@@ -98,6 +106,7 @@ impl ResourceList {
             version: VERSION,
             git: GIT_VERSION,
             title: title.into(),
+            duration: Utc::now().signed_duration_since(time),
             search: None,
             pagination: Pagination::new(url, None, pages as u32, page as u32).to_string(),
             resources,
@@ -113,6 +122,7 @@ pub struct StoryList {
 
     title: String,
     search: Option<String>,
+    duration: Duration,
 
     pagination: String,
 
@@ -122,6 +132,7 @@ pub struct StoryList {
 impl StoryList {
     pub fn new(
         title: impl Into<String>,
+        time: DateTime<Utc>,
         url: impl Into<String>,
         page: i32,
         pages: i32,
@@ -131,6 +142,7 @@ impl StoryList {
             version: VERSION,
             git: GIT_VERSION,
             title: title.into(),
+            duration: Utc::now().signed_duration_since(time),
             search: None,
             pagination: Pagination::new(url, None, pages as u32, page as u32).to_string(),
             stories,
@@ -146,6 +158,7 @@ pub struct Search {
 
     title: String,
     search: Option<String>,
+    duration: Duration,
 
     pagination: String,
 
@@ -156,6 +169,7 @@ impl Search {
     pub fn new(
         title: impl Into<String>,
         search: String,
+        time: DateTime<Utc>,
         page: i32,
         pages: i32,
         stories: Vec<models::Story>,
@@ -169,6 +183,7 @@ impl Search {
             version: VERSION,
             git: GIT_VERSION,
             title: title.into(),
+            duration: Utc::now().signed_duration_since(time),
             pagination: Pagination::new(
                 format!(
                     "/search/{}",

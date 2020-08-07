@@ -5,6 +5,7 @@ use {
         version::{GIT_VERSION, VERSION},
     },
     askama::Template,
+    chrono::{DateTime, Duration, Utc},
 };
 
 #[derive(Template)]
@@ -15,6 +16,7 @@ pub struct Chapter {
 
     title: String,
     search: Option<String>,
+    duration: Duration,
 
     pagination: String,
     page: i32,
@@ -26,6 +28,7 @@ pub struct Chapter {
 impl Chapter {
     pub fn new(
         title: impl Into<String>,
+        time: DateTime<Utc>,
         page: i32,
         story: models::Story,
         chapter: models::Chapter,
@@ -34,6 +37,7 @@ impl Chapter {
             version: VERSION,
             git: GIT_VERSION,
             title: title.into(),
+            duration: Utc::now().signed_duration_since(time),
             search: None,
             pagination: Pagination::new(
                 format!("/story/{}", story.id),
@@ -58,6 +62,7 @@ pub struct Index {
 
     title: String,
     search: Option<String>,
+    duration: Duration,
 
     story: models::Story,
 }

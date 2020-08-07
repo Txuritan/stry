@@ -4,6 +4,7 @@ use {
         version::{LibVersion, BOM, GIT_VERSION, VERSION},
     },
     askama::Template,
+    chrono::{DateTime, Duration, Utc},
 };
 
 #[derive(Template)]
@@ -13,17 +14,19 @@ pub struct About<'l> {
     git: &'static str,
 
     title: &'static str,
+    duration: Duration,
 
     licenses: &'static str,
     versions: &'l [LibVersion],
 }
 
 impl<'l> About<'l> {
-    pub fn new(versions: &'l [LibVersion]) -> Self {
+    pub fn new(time: DateTime<Utc>, versions: &'l [LibVersion]) -> Self {
         Self {
             version: VERSION,
             git: GIT_VERSION,
             title: "about | dashboard",
+            duration: Utc::now().signed_duration_since(time),
             licenses: BOM,
             versions,
         }
@@ -37,6 +40,7 @@ pub struct Database {
     git: &'static str,
 
     title: String,
+    duration: Duration,
 }
 
 #[derive(Template)]
@@ -46,6 +50,7 @@ pub struct Settings {
     git: &'static str,
 
     title: String,
+    duration: Duration,
 }
 
 #[derive(Template)]
@@ -55,6 +60,7 @@ pub struct Stats {
     git: &'static str,
 
     title: String,
+    duration: Duration,
 }
 
 #[derive(Template)]
@@ -64,17 +70,19 @@ pub struct Tasks<'w> {
     git: &'static str,
 
     title: &'static str,
+    duration: Duration,
 
     workers: &'w [Worker],
-    tasks: &'w [WorkerTask]
+    tasks: &'w [WorkerTask],
 }
 
 impl<'w> Tasks<'w> {
-    pub fn new(workers: &'w [Worker], tasks: &'w [WorkerTask]) -> Self {
+    pub fn new(time: DateTime<Utc>, workers: &'w [Worker], tasks: &'w [WorkerTask]) -> Self {
         Self {
             version: VERSION,
             git: GIT_VERSION,
             title: "tasks | dashboard",
+            duration: Utc::now().signed_duration_since(time),
             workers,
             tasks,
         }

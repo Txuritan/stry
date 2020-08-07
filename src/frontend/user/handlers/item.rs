@@ -12,6 +12,7 @@ use {
     },
     anyhow::Context,
     askama::Template,
+    chrono::Utc,
     std::borrow::Cow,
     warp::{Rejection, Reply},
 };
@@ -23,6 +24,8 @@ pub async fn item(
     backend: DataBackend,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
+        let time = Utc::now();
+
         let norm = paging.normalize();
 
         let id: Cow<'static, str> = id.into();
@@ -182,6 +185,7 @@ pub async fn item(
             Some((title, url, total, items)) => {
                 let rendered: String = StoryList::new(
                     title,
+                    time,
                     url,
                     paging.page,
                     (total + (norm.page_size - 1)) / norm.page_size,
@@ -193,7 +197,7 @@ pub async fn item(
                 Ok(rendered)
             }
             None => {
-                let rendered = ErrorPage::not_found("404 not found").render()?;
+                let rendered = ErrorPage::not_found("404 not found", time).render()?;
 
                 Ok(rendered)
             }

@@ -11,6 +11,7 @@ use {
         models::{Paging, RouteType},
     },
     askama::Template,
+    chrono::Utc,
     warp::{reject::not_found, Rejection, Reply},
 };
 
@@ -18,6 +19,8 @@ pub use crate::frontend::user::handlers::{explore::explore, item::item};
 
 pub async fn index(paging: Paging, backend: DataBackend) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
+        let time = Utc::now();
+
         let norm = paging.normalize();
 
         match backend.all_stories(norm.page, paging.page_size).await? {
@@ -26,6 +29,7 @@ pub async fn index(paging: Paging, backend: DataBackend) -> Result<impl Reply, R
 
                 let rendered = StoryList::new(
                     "home",
+                    time,
                     "/",
                     paging.page,
                     (total + (paging.page_size - 1)) / paging.page_size,

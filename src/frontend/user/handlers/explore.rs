@@ -11,6 +11,7 @@ use {
         models::Paging,
     },
     askama::Template,
+    chrono::Utc,
     warp::{Rejection, Reply},
 };
 
@@ -20,6 +21,8 @@ pub async fn explore(
     backend: DataBackend,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
+        let time = Utc::now();
+
         let mut norm = paging.normalize();
 
         if norm.page_size == Paging::default().page_size {
@@ -105,6 +108,7 @@ pub async fn explore(
             Some((title, count, resources)) => {
                 let rendered: String = ResourceList::new(
                     title,
+                    time,
                     format!("/explore/{}", item),
                     paging.page,
                     (count + (norm.page_size - 1)) / norm.page_size,
@@ -116,7 +120,8 @@ pub async fn explore(
             }
             None => {
                 let rendered =
-                    ErrorPage::not_found(format!("404 not found | {} | explore", item)).render()?;
+                    ErrorPage::not_found(format!("404 not found | {} | explore", item), time)
+                        .render()?;
 
                 Ok(rendered)
             }

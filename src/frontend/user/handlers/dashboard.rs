@@ -4,12 +4,15 @@ use {
         frontend::user::{pages::dashboard, utils::wrap},
     },
     askama::Template,
+    chrono::Utc,
     warp::{reply, Rejection, Reply},
 };
 
 pub async fn about(pool: DataBackend) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
-        let rendered: String = dashboard::About::new(&pool.versions).render()?;
+        let time = Utc::now();
+
+        let rendered: String = dashboard::About::new(time, &pool.versions).render()?;
 
         Ok(rendered)
     })

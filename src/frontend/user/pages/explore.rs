@@ -1,6 +1,7 @@
 use {
     crate::pagination::Pagination,
     askama::Template,
+    chrono::{DateTime, Duration, Utc},
     stry_common::{models, utils::Readable},
 };
 
@@ -12,6 +13,7 @@ pub struct AuthorList {
 
     title: String,
     search: Option<String>,
+    duration: Duration,
 
     pagination: String,
 
@@ -20,7 +22,7 @@ pub struct AuthorList {
 
 impl AuthorList {
     pub fn new(
-        title: impl Into<String>,
+        title: impl Into<String>,time: DateTime<Utc>,
         page: u32,
         pages: u32,
         authors: Vec<models::Author>,
@@ -29,6 +31,7 @@ impl AuthorList {
             version: stry_common::VERSION,
             git: stry_common::GIT_VERSION,
             title: title.into(),
+            duration: Utc::now().signed_duration_since(time),
             search: None,
             pagination: Pagination::new("/explore/author", None, pages, page).to_string(),
             authors,

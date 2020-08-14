@@ -1,6 +1,6 @@
 use {
     crate::{
-        frontend::user::{pagination::Pagination, readable::Readable},
+        frontend::user::{pagination::Pagination, readable::Readable, utils::filters},
         models,
         version::{GIT_VERSION, VERSION},
     },
@@ -42,6 +42,7 @@ impl Chapter {
             pagination: Pagination::new(
                 format!("/story/{}", story.id),
                 Some("/"),
+                Some("#chapter-name"),
                 story.chapters as u32,
                 page as u32,
             )

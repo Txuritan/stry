@@ -1,15 +1,16 @@
 use {crate::frontend::user::readable::Readable, std::fmt};
 
 pub struct Pagination {
-    bet: Option<&'static str>,
+    infix: Option<&'static str>,
+    postfix: Option<&'static str>,
     pagers: Vec<Pager>,
     url: String,
 }
 
 impl Pagination {
-    pub fn new(url: impl Into<String>, bet: Option<&'static str>, pages: u32, page: u32) -> Self {
+    pub fn new(url: impl Into<String>, infix: Option<&'static str>, postfix: Option<&'static str>, pages: u32, page: u32) -> Self {
         Self {
-            bet,
+            infix, postfix,
             pagers: Self::paginate(pages, page),
             url: url.into(),
         }
@@ -60,49 +61,62 @@ impl fmt::Display for Pagination {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, r#"<div class="pagination">"#)?;
 
-        let bet = self.bet.as_ref().unwrap_or_else(|| &"?page=");
+        let infix = self.infix.as_ref().unwrap_or_else(|| &"?page=");
 
         for pager in &self.pagers {
             match pager {
-                Pager::Priv(d, n) => writeln!(
-                    f,
-                    r#"<li class="pagination__item{}"><a href="{}{}{}">prev</a></li>"#,
+                Pager::Priv(d, n) => {
+                    write!(f, r#"<li class="pagination__item"#)?;
                     if *d {
-                        " pagination__item--disabled"
-                    } else {
-                        ""
-                    },
-                    self.url,
-                    bet,
-                    n
-                )?,
+                        write!(f, " pagination__item--disabled")?;
+                    }
+                    write!(f, r#"">"#)?;
+
+                    write!(f, r#"<a href="{}{}{}"#, self.url, infix, n)?;
+                    if let Some(postfix) = self.postfix.as_ref() {
+                        write!(f, "{}", postfix)?;
+                    }
+                    write!(f, r#"">prev</a>"#)?;
+
+                    writeln!(f, "</li>")?;
+                },
 
                 Pager::Num(d, n) => writeln!(
                     f,
-                    r#"<li class="pagination__item{}"><a href="{}{}{}">{}</a></li>"#,
+                    r#"<li class="pagination__item{}"><a href="{}{}{}{}">{}</a></li>"#,
                     if *d {
                         " pagination__item--disabled"
                     } else {
                         ""
                     },
                     self.url,
-                    bet,
+                    infix,
                     n,
+                    if let Some(postfix) = self.postfix.as_ref() {
+                        *postfix
+                    } else {
+                        ""
+                    },
                     n.readable(),
                 )?,
                 Pager::Ellipse => writeln!(f, r#"<li class="pagination__item"><p>...</p></li>"#)?,
 
                 Pager::Next(d, n) => writeln!(
                     f,
-                    r#"<li class="pagination__item{}"><a href="{}{}{}">next</a></li>"#,
+                    r#"<li class="pagination__item{}"><a href="{}{}{}{}">next</a></li>"#,
                     if *d {
                         " pagination__item--disabled"
                     } else {
                         ""
                     },
                     self.url,
-                    bet,
-                    n
+                    infix,
+                    n,
+                    if let Some(postfix) = self.postfix.as_ref() {
+                        *postfix
+                    } else {
+                        ""
+                    },
                 )?,
             }
         }

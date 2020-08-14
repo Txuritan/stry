@@ -10,6 +10,20 @@ use {
     },
 };
 
+pub mod filters {
+    use pulldown_cmark::{Parser, Options, html};
+
+    pub fn markdown(input: &str) -> ::askama::Result<String> {
+        let parser = Parser::new_ext(input, Options::empty());
+
+        let mut output = String::with_capacity(input.len() + (input.len() / 5));
+
+        html::push_html(&mut output, parser);
+
+        Ok(output)
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum Items {
     Authors,

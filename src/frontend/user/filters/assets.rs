@@ -109,7 +109,6 @@ pub fn js() -> BoxedFilter<(impl Reply,)> {
         .and_then(|file: String| async move {
             match file.as_str() {
                 "easymde.js" => Ok(Js::new(resource!("assets/js/easymde.js"))),
-                "marked.js" => Ok(Js::new(resource!("assets/js/marked.js"))),
                 "mousetrap.js" => Ok(Js::new(resource!("assets/js/mousetrap.js"))),
                 "stry.js" => Ok(Js::new(resource!("assets/js/stry.js"))),
                 "stry-dashboard.js" => Ok(Js::new(resource!("assets/js/stry-dashboard.js"))),

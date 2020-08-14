@@ -108,7 +108,7 @@ impl ResourceList {
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
-            pagination: Pagination::new(url, None, pages as u32, page as u32).to_string(),
+            pagination: Pagination::new(url, None, None, pages as u32, page as u32).to_string(),
             resources,
         }
     }
@@ -144,7 +144,7 @@ impl StoryList {
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
-            pagination: Pagination::new(url, None, pages as u32, page as u32).to_string(),
+            pagination: Pagination::new(url, None, None, pages as u32, page as u32).to_string(),
             stories,
         }
     }
@@ -189,6 +189,7 @@ impl Search {
                     "/search/{}",
                     serde_urlencoded::to_string(SearchUrl { search: &search })?
                 ),
+                None,
                 None,
                 pages as u32,
                 page as u32,

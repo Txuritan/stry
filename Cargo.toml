@@ -17,6 +17,7 @@ async-trait = "0.1"
 bytes = "0.5"
 futures = "0.3"
 pin-project = "0.4"
+pulldown-cmark  = { version = "0.7", default-features = false }
 serde = { version = "1.0", features = [ "derive" ] }
 tokio = { version = "0.2", features = [ "blocking", "rt-threaded", "sync" ] }
 tracing = "0.1"
@@ -63,7 +64,6 @@ markup5ever_arcdom = "0.1"
 openssl = { version = "0.10", features = [ "vendored" ] }
 
 # Scraping/EPub
-pulldown-cmark  = { version = "0.7", default-features = false }
 uuid = { version = "0.8", features = [ "v4" ] }
 
 # Other

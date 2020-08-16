@@ -1,30 +1,31 @@
 use {
-    pretty_assertions::assert_eq,
-    stry_backend_sqlite::test_utils::setup,
-    stry_common::{
-        backend::BackendAuthor,
-        models::{Author, List, Rating, State, Story},
+    crate::{
+        backend::{
+            sqlite::test_utils::setup,
+            test_helpers::{character, StoryBuilder},
+            BackendCharacter,
+        },
+        models::{Character, List, Rating, State, Story},
     },
-    stry_common_helpers::{author, StoryBuilder},
     tokio::runtime::Runtime,
 };
-
-const DATA: &str = include_str!("test-data.sql");
-const SCHEMA: &str = include_str!("../schema.sql");
 
 #[test]
 pub fn get() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
-    async fn run() -> anyhow::Result<Option<Author>> {
-        let backend = setup(SCHEMA, DATA)?;
+    async fn run() -> anyhow::Result<Option<Character>> {
+        let backend = setup()?;
 
-        let author = backend.get_author("ZqYCf8".into()).await?;
+        let character = backend.get_character("2crUDM".into()).await?;
 
-        Ok(author)
+        Ok(character)
     }
 
-    assert_eq!(Some(author("ZqYCf8", "author 1")), rt.block_on(run())?);
+    assert_eq!(
+        Some(character("2crUDM", "character 1")),
+        rt.block_on(run())?
+    );
 
     Ok(())
 }
@@ -33,21 +34,22 @@ pub fn get() -> anyhow::Result<()> {
 pub fn get_all() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
-    async fn run() -> anyhow::Result<Option<List<Author>>> {
-        let backend = setup(SCHEMA, DATA)?;
+    async fn run() -> anyhow::Result<Option<List<Character>>> {
+        let backend = setup()?;
 
-        let authors = backend.all_authors(0, 10).await?;
+        let characters = backend.all_characters(0, 10).await?;
 
-        Ok(authors)
+        Ok(characters)
     }
 
     assert_eq!(
         Some(List {
-            total: 3,
+            total: 4,
             items: vec![
-                author("ZqYCf8", "author 1"),
-                author("zsGEjQ", "author 2"),
-                author("WbWWRz", "author 3"),
+                character("2crUDM", "character 1"),
+                character("9Tb66w", "character 2"),
+                character("iV5yY4", "character 3"),
+                character("SqWCU9", "character 4"),
             ]
         }),
         rt.block_on(run())?,
@@ -61,9 +63,9 @@ pub fn get_stories() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Story>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
-        let stories = backend.author_stories("ZqYCf8".into(), 0, 10).await?;
+        let stories = backend.character_stories("2crUDM".into(), 0, 10).await?;
 
         Ok(stories)
     }

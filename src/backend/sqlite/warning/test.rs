@@ -1,23 +1,21 @@
 use {
-    pretty_assertions::assert_eq,
-    stry_backend_sqlite::test_utils::setup,
-    stry_common::{
-        backend::BackendWarning,
+    crate::{
+        backend::{
+            sqlite::test_utils::setup,
+            test_helpers::{warning, StoryBuilder},
+            BackendWarning,
+        },
         models::{List, Rating, State, Story, Warning},
     },
-    stry_common_helpers::{warning, StoryBuilder},
     tokio::runtime::Runtime,
 };
-
-const DATA: &str = include_str!("test-data.sql");
-const SCHEMA: &str = include_str!("../schema.sql");
 
 #[test]
 pub fn get() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<Warning>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let warning = backend.get_warning("brVRkN".into()).await?;
 
@@ -34,7 +32,7 @@ pub fn get_all() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Warning>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let warnings = backend.all_warnings(0, 10).await?;
 
@@ -61,7 +59,7 @@ pub fn get_stories() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Story>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let stories = backend.warning_stories("brVRkN".into(), 0, 10).await?;
 

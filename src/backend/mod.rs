@@ -4,6 +4,9 @@ pub mod sqlite;
 pub mod nanoid;
 pub mod spec;
 
+#[cfg(test)]
+pub mod test_helpers;
+
 use {
     crate::{
         backend::{postgres::PostgresBackend, sqlite::SqliteBackend},

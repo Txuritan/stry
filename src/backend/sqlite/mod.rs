@@ -20,6 +20,11 @@ use {
     std::sync::Arc,
 };
 
+pub const SCHEMA: &str = rewryte::schema!("sqlite", "src/backend/schema.dal");
+
+#[cfg(test)]
+pub const TEST_DATA: &str = include_str!("test-data.sql");
+
 #[derive(Clone, Debug)]
 pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
@@ -48,21 +53,23 @@ impl Backend for SqliteBackend {
     }
 }
 
-#[doc(hidden)]
+#[cfg(test)]
 pub mod test_utils {
-    use {super::SqliteBackend, r2d2::Pool, r2d2_sqlite::SqliteConnectionManager};
+    use {
+        super::{SqliteBackend, SCHEMA, TEST_DATA},
+        r2d2::Pool,
+        r2d2_sqlite::SqliteConnectionManager,
+    };
 
-    pub fn setup(schema: &str, data: &str) -> anyhow::Result<SqliteBackend> {
-        let manager = SqliteConnectionManager::memory()
-            .with_init(|c| c.execute_batch("PRAGMA foreign_keys=1;"));
+    pub fn setup() -> anyhow::Result<SqliteBackend> {
+        let manager = SqliteConnectionManager::memory().with_init(|c| {
+            c.execute_batch("PRAGMA foreign_keys=1;")?;
+            c.execute_batch(SCHEMA)?;
+            c.execute_batch(TEST_DATA)?;
+            Ok(())
+        });
 
         let pool = Pool::new(manager)?;
-
-        let conn = pool.get()?;
-
-        conn.execute_batch(schema)?;
-
-        conn.execute_batch(data)?;
 
         Ok(SqliteBackend(pool))
     }

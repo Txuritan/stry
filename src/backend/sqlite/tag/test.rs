@@ -1,23 +1,21 @@
 use {
-    pretty_assertions::assert_eq,
-    stry_backend_sqlite::test_utils::setup,
-    stry_common::{
-        backend::BackendTag,
+    crate::{
+        backend::{
+            sqlite::test_utils::setup,
+            test_helpers::{tag, StoryBuilder},
+            BackendTag,
+        },
         models::{List, Rating, State, Story, Tag},
     },
-    stry_common_helpers::{tag, StoryBuilder},
     tokio::runtime::Runtime,
 };
-
-const DATA: &str = include_str!("test-data.sql");
-const SCHEMA: &str = include_str!("../schema.sql");
 
 #[test]
 pub fn get() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<Tag>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let tag = backend.get_tag("V3VEAR".into()).await?;
 
@@ -34,7 +32,7 @@ pub fn get_all() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Tag>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let tags = backend.all_tags(0, 10).await?;
 
@@ -62,7 +60,7 @@ pub fn get_stories() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Story>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let stories = backend.tag_stories("V3VEAR".into(), 0, 10).await?;
 

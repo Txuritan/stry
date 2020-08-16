@@ -11,7 +11,7 @@ use {
 };
 
 pub mod filters {
-    use pulldown_cmark::{Parser, Options, html};
+    use pulldown_cmark::{html, Options, Parser};
 
     pub fn markdown(input: &str) -> ::askama::Result<String> {
         let parser = Parser::new_ext(input, Options::empty());

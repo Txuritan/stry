@@ -8,9 +8,16 @@ pub struct Pagination {
 }
 
 impl Pagination {
-    pub fn new(url: impl Into<String>, infix: Option<&'static str>, postfix: Option<&'static str>, pages: u32, page: u32) -> Self {
+    pub fn new(
+        url: impl Into<String>,
+        infix: Option<&'static str>,
+        postfix: Option<&'static str>,
+        pages: u32,
+        page: u32,
+    ) -> Self {
         Self {
-            infix, postfix,
+            infix,
+            postfix,
             pagers: Self::paginate(pages, page),
             url: url.into(),
         }
@@ -79,7 +86,7 @@ impl fmt::Display for Pagination {
                     write!(f, r#"">prev</a>"#)?;
 
                     writeln!(f, "</li>")?;
-                },
+                }
 
                 Pager::Num(d, n) => writeln!(
                     f,

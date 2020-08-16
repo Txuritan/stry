@@ -1,23 +1,21 @@
 use {
-    pretty_assertions::assert_eq,
-    stry_backend_sqlite::test_utils::setup,
-    stry_common::{
-        backend::BackendOrigin,
+    crate::{
+        backend::{
+            sqlite::test_utils::setup,
+            test_helpers::{origin, StoryBuilder},
+            BackendOrigin,
+        },
         models::{List, Origin, Rating, State, Story},
     },
-    stry_common_helpers::{origin, StoryBuilder},
     tokio::runtime::Runtime,
 };
-
-const DATA: &str = include_str!("test-data.sql");
-const SCHEMA: &str = include_str!("../schema.sql");
 
 #[test]
 pub fn get() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<Origin>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let origin = backend.get_origin("Nb4ynY".into()).await?;
 
@@ -34,7 +32,7 @@ pub fn get_all() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Origin>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let origins = backend.all_origins(0, 10).await?;
 
@@ -57,7 +55,7 @@ pub fn get_stories() -> anyhow::Result<()> {
     let mut rt = Runtime::new()?;
 
     async fn run() -> anyhow::Result<Option<List<Story>>> {
-        let backend = setup(SCHEMA, DATA)?;
+        let backend = setup()?;
 
         let stories = backend.origin_stories("Nb4ynY".into(), 0, 10).await?;
 

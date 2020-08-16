@@ -30,6 +30,7 @@ tracing-subscriber = "0.2"
 # Backend
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 rand = { version = "0.7" }
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "sqlite" ] }
 
 # Backend/PostgreSQL
 bb8 = "0.4"

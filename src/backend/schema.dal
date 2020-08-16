@@ -1,5 +1,5 @@
 /* Core */
-table Settings {
+table Settings? {
     Key text [primary key]
     Value text
 
@@ -15,7 +15,7 @@ table Settings {
 
 
 /* Story */
-table Author {
+table Author? {
     Id text [primary key]
 
     Name text
@@ -24,7 +24,7 @@ table Author {
     Updated dateTime [default: now()]
 }
 
-table Chapter {
+table Chapter? {
     Id text [primary key]
 
     Name text
@@ -39,7 +39,7 @@ table Chapter {
     Updated dateTime [default: now()]
 }
 
-table Story {
+table Story? {
     Id text [primary key]
 
     Name text
@@ -57,7 +57,7 @@ table Story {
 
 
 /* Tags */
-table Character {
+table Character? {
     Id text [primary key]
 
     Name text
@@ -66,7 +66,7 @@ table Character {
     Updated dateTime [default: now()]
 }
 
-table Origin {
+table Origin? {
     Id text [primary key]
 
     Name text
@@ -75,7 +75,7 @@ table Origin {
     Updated dateTime [default: now()]
 }
 
-table Pairing {
+table Pairing? {
     Id text [primary key]
 
     Hash text
@@ -85,7 +85,7 @@ table Pairing {
     Updated dateTime [default: now()]
 }
 
-table Tag {
+table Tag? {
     Id text [primary key]
 
     Name text
@@ -94,7 +94,7 @@ table Tag {
     Updated dateTime [default: now()]
 }
 
-table Warning {
+table Warning? {
     Id text [primary key]
 
     Name text
@@ -107,7 +107,7 @@ table Warning {
 
 
 /* Linking tables */
-table StoryAuthor {
+table StoryAuthor? {
     StoryId text [primary key, ref: Story.Id]
     AuthorId text [primary key, ref: Author.Id]
 
@@ -115,7 +115,7 @@ table StoryAuthor {
     Updated dateTime [default: now()]
 }
 
-table StoryChapter {
+table StoryChapter? {
     StoryId text [primary key, ref: Story.Id]
     ChapterId text [primary key, ref: Chapter.Id]
 
@@ -125,7 +125,7 @@ table StoryChapter {
     Updated dateTime [default: now()]
 }
 
-table StoryCharacter {
+table StoryCharacter? {
     StoryId text [primary key, ref: Story.Id]
     CharacterId text [primary key, ref: Character.Id]
 
@@ -133,7 +133,7 @@ table StoryCharacter {
     Updated dateTime [default: now()]
 }
 
-table StoryOrigin {
+table StoryOrigin? {
     StoryId text [primary key, ref: Story.Id]
     OriginId text [primary key, ref: Origin.Id]
 
@@ -141,7 +141,7 @@ table StoryOrigin {
     Updated dateTime [default: now()]
 }
 
-table StoryPairing {
+table StoryPairing? {
     StoryId text [primary key, ref: Story.Id]
     PairingId text [primary key, ref: Pairing.Id]
 
@@ -149,7 +149,7 @@ table StoryPairing {
     Updated dateTime [default: now()]
 }
 
-table StoryTag {
+table StoryTag? {
     StoryId text [primary key, ref: Story.Id]
     TagId text [primary key, ref: Tag.Id]
 
@@ -157,7 +157,7 @@ table StoryTag {
     Updated dateTime [default: now()]
 }
 
-table StoryWarning {
+table StoryWarning? {
     StoryId text [primary key, ref: Story.Id]
     WarningId text [primary key, ref: Warning.Id]
 
@@ -166,7 +166,7 @@ table StoryWarning {
 }
 
 
-table PairingCharacter {
+table PairingCharacter? {
     PairingId text [primary key, ref: Pairing.Id]
     CharacterId text [primary key, ref: Character.Id]
 
@@ -182,18 +182,18 @@ table PairingCharacter {
 
 
 /* Workers */
-table Worker {
+table Worker? {
     Id number [primary key]
 
     State text [primary key]
 
-    Task text? [ref: WorkerTask.Id]
+    Task text! [ref: WorkerTask.Id]
 
     Created dateTime [default: now()]
     Updated dateTime [default: now()]
 }
 
-table WorkerTask {
+table WorkerTask? {
     Id text [primary key]
 
     Name text
@@ -202,7 +202,7 @@ table WorkerTask {
 
     Chapter number
     Chapters number
-    Next number?
+    Next number!
 
     Completed bool
 
@@ -210,13 +210,15 @@ table WorkerTask {
     Updated dateTime [default: now()]
 }
 
-enum WorkerState {}
+enum WorkerState? {
+    DummyState
+}
 
 
 
 
 /* Worker Story */
-table WorkerAuthor {
+table WorkerAuthor? {
     Id text [primary key]
 
     Name text
@@ -225,7 +227,7 @@ table WorkerAuthor {
     Updated dateTime [default: now()]
 }
 
-table WorkerChapter {
+table WorkerChapter? {
     Id text [primary key]
 
     Name text
@@ -240,7 +242,7 @@ table WorkerChapter {
     Updated dateTime [default: now()]
 }
 
-table WorkerStory {
+table WorkerStory? {
     Id text [primary key]
 
     Name text
@@ -258,7 +260,7 @@ table WorkerStory {
 
 
 /* WorkerTags */
-table WorkerCharacter {
+table WorkerCharacter? {
     Id text [primary key]
 
     Name text
@@ -267,7 +269,7 @@ table WorkerCharacter {
     Updated dateTime [default: now()]
 }
 
-table WorkerOrigin {
+table WorkerOrigin? {
     Id text [primary key]
 
     Name text
@@ -276,14 +278,14 @@ table WorkerOrigin {
     Updated dateTime [default: now()]
 }
 
-table WorkerPairing {
+table WorkerPairing? {
     Id text [primary key]
 
     Created dateTime [default: now()]
     Updated dateTime [default: now()]
 }
 
-table WorkerTag {
+table WorkerTag? {
     Id text [primary key]
 
     Name text
@@ -292,7 +294,7 @@ table WorkerTag {
     Updated dateTime [default: now()]
 }
 
-table WorkerWarning {
+table WorkerWarning? {
     Id text [primary key]
 
     Name text

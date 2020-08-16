@@ -3,40 +3,14 @@ pub mod test;
 
 use {
     crate::{
-        backend::{
-            sqlite::utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
-            BackendOrigin, BackendStory, SqliteBackend,
-        },
+        backend::{sqlite::utils::Total, BackendOrigin, BackendStory, SqliteBackend},
         models::{Entity, List, Origin, Story},
     },
     anyhow::Context,
+    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
     tracing_futures::Instrument,
 };
-
-impl FromRow for Origin {
-    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Origin {
-            id: row
-                .get(0)
-                .context("Attempting to get row index 0 for origin")?,
-
-            name: row
-                .get(1)
-                .context("Attempting to get row index 1 for origin")?,
-
-            created: row
-                .get(2)
-                .context("Attempting to get row index 2 for origin")?,
-            updated: row
-                .get(3)
-                .context("Attempting to get row index 3 for origin")?,
-        })
-    }
-}
 
 #[async_trait::async_trait]
 impl BackendOrigin for SqliteBackend {

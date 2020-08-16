@@ -3,40 +3,14 @@ pub mod test;
 
 use {
     crate::{
-        backend::{
-            sqlite::utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
-            BackendStory, BackendWarning, SqliteBackend,
-        },
+        backend::{sqlite::utils::Total, BackendStory, BackendWarning, SqliteBackend},
         models::{Entity, List, Story, Warning},
     },
     anyhow::Context,
+    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
     tracing_futures::Instrument,
 };
-
-impl FromRow for Warning {
-    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Warning {
-            id: row
-                .get(0)
-                .context("Attempting to get row index 0 for warning")?,
-
-            name: row
-                .get(1)
-                .context("Attempting to get row index 1 for warning")?,
-
-            created: row
-                .get(2)
-                .context("Attempting to get row index 2 for warning")?,
-            updated: row
-                .get(3)
-                .context("Attempting to get row index 3 for warning")?,
-        })
-    }
-}
 
 #[async_trait::async_trait]
 impl BackendWarning for SqliteBackend {

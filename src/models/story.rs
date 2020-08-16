@@ -1,7 +1,7 @@
 use {
     crate::{
         backend::DataBackend,
-        models::{Author, Character, List, Origin, Pairing, Series, Tag, Warning},
+        models::{Author, Character, List, Origin, Pairing, Rating, Series, State, Tag, Warning},
     },
     chrono::{DateTime, Utc},
     std::fmt,
@@ -49,13 +49,13 @@ impl Story {
         &self.summary
     }
 
-    pub fn rating(&self) -> Rating {
-        self.square.rating
-    }
+    // pub fn rating(&self) -> Rating {
+    //     self.square.rating
+    // }
 
-    pub fn state(&self) -> State {
-        self.square.state
-    }
+    // pub fn state(&self) -> State {
+    //     self.square.state
+    // }
 
     pub fn chapters(&self) -> i32 {
         self.chapters
@@ -152,29 +152,29 @@ impl From<List<Story>> for StoryList {
     }
 }
 
-#[rustfmt::skip]
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(juniper::GraphQLEnum)]
-#[derive(postgres_types::ToSql, postgres_types::FromSql)]
-#[derive(serde::Deserialize, serde::Serialize)]
-#[postgres(name = "rating")]
-pub enum Rating {
-    #[serde(rename = "explicit")]
-    #[postgres(name = "explicit")]
-    Explicit,
+// #[rustfmt::skip]
+// #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+// #[derive(juniper::GraphQLEnum)]
+// #[derive(postgres_types::ToSql, postgres_types::FromSql)]
+// #[derive(serde::Deserialize, serde::Serialize)]
+// #[postgres(name = "rating")]
+// pub enum Rating {
+//     #[serde(rename = "explicit")]
+//     #[postgres(name = "explicit")]
+//     Explicit,
 
-    #[serde(rename = "mature")]
-    #[postgres(name = "mature")]
-    Mature,
+//     #[serde(rename = "mature")]
+//     #[postgres(name = "mature")]
+//     Mature,
 
-    #[serde(rename = "teen")]
-    #[postgres(name = "teen")]
-    Teen,
+//     #[serde(rename = "teen")]
+//     #[postgres(name = "teen")]
+//     Teen,
 
-    #[serde(rename = "general")]
-    #[postgres(name = "general")]
-    General,
-}
+//     #[serde(rename = "general")]
+//     #[postgres(name = "general")]
+//     General,
+// }
 
 impl Rating {
     pub fn title(self) -> &'static str {
@@ -202,54 +202,29 @@ impl fmt::Display for Rating {
     }
 }
 
-impl rusqlite::types::FromSql for Rating {
-    fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
-        value
-            .as_str()
-            .and_then(|s| match s.to_lowercase().as_str() {
-                "explicit" => Ok(Rating::Explicit),
-                "mature" => Ok(Rating::Mature),
-                "teen" => Ok(Rating::Teen),
-                "general" => Ok(Rating::General),
-                _ => Err(rusqlite::types::FromSqlError::InvalidType),
-            })
-    }
-}
+// #[rustfmt::skip]
+// #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+// #[derive(juniper::GraphQLEnum)]
+// #[derive(postgres_types::ToSql, postgres_types::FromSql)]
+// #[derive(serde::Deserialize, serde::Serialize)]
+// #[postgres(name = "state")]
+// pub enum State {
+//     #[serde(rename = "completed")]
+//     #[postgres(name = "completed")]
+//     Completed,
 
-impl rusqlite::types::ToSql for Rating {
-    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
-        match self {
-            Rating::Explicit => Ok("explicit".into()),
-            Rating::Mature => Ok("mature".into()),
-            Rating::Teen => Ok("teen".into()),
-            Rating::General => Ok("general".into()),
-        }
-    }
-}
+//     #[serde(rename = "in-progress")]
+//     #[postgres(name = "in-progress")]
+//     InProgress,
 
-#[rustfmt::skip]
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(juniper::GraphQLEnum)]
-#[derive(postgres_types::ToSql, postgres_types::FromSql)]
-#[derive(serde::Deserialize, serde::Serialize)]
-#[postgres(name = "state")]
-pub enum State {
-    #[serde(rename = "completed")]
-    #[postgres(name = "completed")]
-    Completed,
+//     #[serde(rename = "hiatus")]
+//     #[postgres(name = "hiatus")]
+//     Hiatus,
 
-    #[serde(rename = "in-progress")]
-    #[postgres(name = "in-progress")]
-    InProgress,
-
-    #[serde(rename = "hiatus")]
-    #[postgres(name = "hiatus")]
-    Hiatus,
-
-    #[serde(rename = "abandoned")]
-    #[postgres(name = "abandoned")]
-    Abandoned,
-}
+//     #[serde(rename = "abandoned")]
+//     #[postgres(name = "abandoned")]
+//     Abandoned,
+// }
 
 impl State {
     pub fn title(self) -> &'static str {
@@ -274,34 +249,6 @@ impl fmt::Display for State {
                 State::Abandoned => "background--red",
             }
         )
-    }
-}
-
-impl rusqlite::types::FromSql for State {
-    fn column_result(value: rusqlite::types::ValueRef) -> rusqlite::types::FromSqlResult<Self> {
-        value
-            .as_str()
-            .and_then(|s| match s.to_lowercase().as_str() {
-                "completed" => Ok(State::Completed),
-                "in-progress" => Ok(State::InProgress),
-                "hiatus" => Ok(State::Hiatus),
-                "abandoned" => Ok(State::Abandoned),
-                invalid => {
-                    tracing::debug!("Invalid state value: {}", invalid);
-                    Err(rusqlite::types::FromSqlError::InvalidType)
-                }
-            })
-    }
-}
-
-impl rusqlite::types::ToSql for State {
-    fn to_sql(&self) -> rusqlite::Result<rusqlite::types::ToSqlOutput> {
-        match self {
-            State::Completed => Ok("completed".into()),
-            State::InProgress => Ok("in-progress".into()),
-            State::Hiatus => Ok("hiatus".into()),
-            State::Abandoned => Ok("abandoned".into()),
-        }
     }
 }
 

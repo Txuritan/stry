@@ -30,7 +30,7 @@ use {
     std::sync::Arc,
 };
 
-pub const SCHEMA: &str = rewryte::schema!("sqlite", "src/backend/schema.dal");
+pub const SCHEMA: &str = rewryte::schema!("sqlite", "src/schema.dal");
 
 #[cfg(test)]
 pub const TEST_DATA: &str = include_str!("test-data.sql");

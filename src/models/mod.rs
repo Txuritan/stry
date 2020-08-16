@@ -1,3 +1,5 @@
+pub mod generated;
+
 pub mod api;
 pub mod author;
 pub mod chapter;
@@ -8,47 +10,27 @@ pub mod pairing;
 pub mod series;
 pub mod site;
 pub mod story;
-pub mod sync;
 pub mod tag;
 pub mod warning;
 pub mod worker;
 
-use {
-    chrono::{DateTime, Utc},
-    std::fmt,
-};
+use std::fmt;
 
 pub use self::{
-    author::Author,
-    chapter::Chapter,
-    character::Character,
+    generated::{
+        Author, Chapter, Character, Origin, Pairing as PairingRow, Rating, State,
+        Story as StoryRow, Tag, Warning, Worker as WorkerRow, WorkerSite, WorkerState, WorkerTask,
+    },
     notification::{Level, Notification},
-    origin::Origin,
     pairing::Pairing,
     series::Series,
     site::Site,
-    story::{Rating, Square, State, Story},
-    tag::Tag,
-    warning::Warning,
-    worker::{Worker, WorkerTask},
+    story::{Square, Story},
+    worker::Worker,
 };
 
 pub trait Node {
     fn id(&self) -> &str;
-}
-
-#[deprecated = "remove"]
-pub trait Resource {
-    fn id(&self) -> &str;
-    fn name(&self) -> &str;
-    fn created(&self) -> &DateTime<Utc>;
-    fn updated(&self) -> &DateTime<Utc>;
-
-    fn color(&self) -> (&str, &str);
-}
-
-pub trait Schema {
-    fn schema(m: &mut impl fmt::Write) -> fmt::Result;
 }
 
 #[rustfmt::skip]

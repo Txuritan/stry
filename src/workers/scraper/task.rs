@@ -1,7 +1,7 @@
 use {
     crate::{
         backend::BackendWorker,
-        models::sync,
+        models::WorkerSite,
         workers::{
             scraper::{Site, Sites},
             worker::WorkerData,
@@ -44,8 +44,8 @@ pub async fn task(state: WorkerData) -> anyhow::Result<()> {
         stop!('l, state);
 
         let site = match task.site {
-            sync::Sites::ArchiveOfOurOwn => Sites::ArchiveOfOurOwn,
-            sync::Sites::FanFictionNet => Sites::FanFictionNet,
+            WorkerSite::ArchiveOfOurOwn => Sites::ArchiveOfOurOwn,
+            WorkerSite::FanFictionNet => Sites::FanFictionNet,
         };
 
         let mut init = site.init_from_url(task.url.as_str())?;

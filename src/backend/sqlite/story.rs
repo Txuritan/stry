@@ -1,17 +1,18 @@
 use {
     crate::{
         backend::{
-            sqlite::utils::{SqliteExt, SqliteStmtExt, Total, Wrapper},
+            sqlite::utils::{Total, Wrapper},
             BackendStory, SqliteBackend,
         },
         models::{
-            pairing::PairingPart,
             story::{StoryPart, StoryRow},
-            Author, Character, Entity, List, Origin, Pairing, Square, Story, Tag, Warning,
+            Author, Character, Entity, List, Origin, Pairing, PairingRow, Square, Story, Tag,
+            Warning,
         },
         search::{SearchParser, SearchValue},
     },
     anyhow::Context,
+    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
     tracing_futures::Instrument,
 };
@@ -107,7 +108,7 @@ impl BackendStory for SqliteBackend {
                 let mut character_stmt = conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM StoryCharacter SC LEFT JOIN Character C ON SC.CharacterId = C.Id WHERE SC.StoryId = ? ORDER BY C.Name;")?;
                 let mut warning_stmt = conn.prepare("SELECT W.Id, w.Name, w.Created, w.Updated FROM StoryWarning SW LEFT JOIN Warning W ON SW.WarningId = W.Id WHERE SW.StoryId = ? ORDER BY W.Name;")?;
 
-                let mut story_pairings_stmt = conn.prepare("SELECT P.Id, P.Platonic, P.Created, P.Updated FROM StoryPairing SP LEFT JOIN Pairing P ON P.Id = SP.PairingId WHERE SP.StoryId = ? ORDER BY (SELECT GROUP_CONCAT(C.Name, '/') FROM PairingCharacter PC LEFT JOIN Character C ON C.Id = PC.CharacterId WHERE PC.PairingId = P.Id);")?;
+                let mut story_pairings_stmt = conn.prepare("SELECT P.Id, P.Hash, P.Platonic, P.Created, P.Updated FROM StoryPairing SP LEFT JOIN Pairing P ON P.Id = SP.PairingId WHERE SP.StoryId = ? ORDER BY (SELECT GROUP_CONCAT(C.Name, '/') FROM PairingCharacter PC LEFT JOIN Character C ON C.Id = PC.CharacterId WHERE PC.PairingId = P.Id);")?;
                 let mut pairing_stmt = conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM Pairing P LEFT JOIN PairingCharacter PC ON PC.PairingId = P.Id LEFT JOIN Character C ON PC.CharacterId = C.Id WHERE P.Id = ? ORDER BY C.Name ASC;")?;
 
                 let story_row = match conn.query_row_anyhow(
@@ -178,7 +179,7 @@ impl BackendStory for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let pairing_parts: Vec<PairingPart> = match story_pairings_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
+                let pairing_parts: Vec<PairingRow> = match story_pairings_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
                     items.collect::<Result<_, _>>()
                 }) {
                     Some(items) => items?,

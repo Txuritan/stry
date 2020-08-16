@@ -1,6 +1,7 @@
 use {
-    crate::models::sync::Sites,
+    crate::models::{WorkerSite, WorkerTask},
     chrono::{DateTime, Utc},
+    std::fmt,
 };
 
 #[rustfmt::skip]
@@ -15,22 +16,20 @@ pub struct Worker {
     pub updated: DateTime<Utc>,
 }
 
-#[rustfmt::skip]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct WorkerTask {
-    pub id: String,
+impl WorkerSite {
+    pub fn url(&self) -> &'static str {
+        match self {
+            WorkerSite::ArchiveOfOurOwn => "https://archiveofourown.org/",
+            WorkerSite::FanFictionNet => "https://fanfiction.net/",
+        }
+    }
+}
 
-    pub name: String,
-    pub site: Sites,
-    pub url: String,
-
-    pub chapter: i32,
-    pub chapters: i32,
-    pub next: Option<String>,
-
-    pub completed: bool,
-
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
+impl fmt::Display for WorkerSite {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            WorkerSite::ArchiveOfOurOwn => write!(f, "Archive of Our Own"),
+            WorkerSite::FanFictionNet => write!(f, "FanFiction.net"),
+        }
+    }
 }

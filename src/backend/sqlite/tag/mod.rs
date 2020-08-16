@@ -3,40 +3,14 @@ pub mod test;
 
 use {
     crate::{
-        backend::{
-            sqlite::utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
-            BackendStory, BackendTag, SqliteBackend,
-        },
+        backend::{sqlite::utils::Total, BackendStory, BackendTag, SqliteBackend},
         models::{Entity, List, Story, Tag},
     },
     anyhow::Context,
+    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
     tracing_futures::Instrument,
 };
-
-impl FromRow for Tag {
-    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Tag {
-            id: row
-                .get(0)
-                .context("Attempting to get row index 0 for tag")?,
-
-            name: row
-                .get(1)
-                .context("Attempting to get row index 1 for tag")?,
-
-            created: row
-                .get(2)
-                .context("Attempting to get row index 2 for tag")?,
-            updated: row
-                .get(3)
-                .context("Attempting to get row index 3 for tag")?,
-        })
-    }
-}
 
 #[async_trait::async_trait]
 impl BackendTag for SqliteBackend {

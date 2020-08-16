@@ -46,11 +46,25 @@ table Story? {
 
     Summary text
 
-    Rating text
-    State text
+    Rating Rating
+    State State
 
     Created dateTime [default: now()]
     Updated dateTime [default: now()]
+}
+
+enum Rating? {
+    Explicit
+    Mature
+    Teen
+    General
+}
+
+enum State? {
+    Completed
+    InProgress
+    Hiatus
+    Abandoned
 }
 
 
@@ -197,7 +211,7 @@ table WorkerTask? {
     Id text [primary key]
 
     Name text
-    Site text
+    Site WorkerSite
     Url text
 
     Chapter number
@@ -212,6 +226,11 @@ table WorkerTask? {
 
 enum WorkerState? {
     DummyState
+}
+
+enum WorkerSite {
+    ArchiveOfOurOwn
+    FanFictionNet
 }
 
 

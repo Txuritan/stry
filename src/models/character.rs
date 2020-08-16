@@ -1,20 +1,11 @@
 use {
-    crate::{backend::DataBackend, models::List},
+    crate::{
+        backend::DataBackend,
+        models::{Character, List},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
-
-#[rustfmt::skip]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Character {
-    pub id: String,
-
-    pub name: String,
-
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
-}
 
 #[juniper::graphql_object(Context = DataBackend)]
 impl Character {
@@ -40,7 +31,7 @@ impl fmt::Display for Character {
         write!(
             f,
             "<li><a class=\"label color__purple\" href=\"/characters/{}\">{}</a></li>",
-            self.id, self.name
+            self.id, self.name,
         )
     }
 }

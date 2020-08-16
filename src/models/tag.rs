@@ -1,20 +1,11 @@
 use {
-    crate::{backend::DataBackend, models::List},
+    crate::{
+        backend::DataBackend,
+        models::{List, Tag},
+    },
     chrono::{DateTime, Utc},
     std::fmt,
 };
-
-#[rustfmt::skip]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Tag {
-    pub id: String,
-
-    pub name: String,
-
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
-}
 
 #[juniper::graphql_object(Context = DataBackend)]
 impl Tag {

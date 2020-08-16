@@ -30,7 +30,7 @@ tracing-subscriber = "0.2"
 # Backend
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 rand = { version = "0.7" }
-rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "sqlite" ] }
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "postgres", "sqlite", "serde" ] }
 
 # Backend/PostgreSQL
 bb8 = "0.4"
@@ -47,6 +47,7 @@ rusqlite = { version = "0.23", features = [ "bundled", "chrono" ] }
 warp = { version = "0.2", default-features = false, features = [ "compression" ] }
 
 # Frontend/API
+dataloader = { version = "0.12", default-features = false, features = ["runtime-tokio"]}
 juniper = { git = "https://github.com/graphql-rust/juniper", rev = "f19d498254d3e5d2a008c483943facaf3ddcc4fe", default-features = false, features = [ "chrono" ] }
 serde_json = "1.0"
 

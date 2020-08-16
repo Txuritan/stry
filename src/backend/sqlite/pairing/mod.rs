@@ -1,38 +1,11 @@
 use {
     crate::{
-        backend::{
-            sqlite::utils::{FromRow, SqliteExt, SqliteStmtExt, Total},
-            BackendPairing, SqliteBackend,
-        },
-        models::{pairing::PairingPart, Character, List, Pairing, Story},
+        backend::{sqlite::utils::Total, BackendPairing, SqliteBackend},
+        models::{Character, List, Pairing, PairingRow, Story},
     },
-    anyhow::Context,
+    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
 };
-
-impl FromRow for PairingPart {
-    fn from_row(row: &rusqlite::Row) -> anyhow::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(PairingPart {
-            id: row
-                .get(0)
-                .context("Attempting to get row index 0 for pairing")?,
-
-            platonic: row
-                .get(1)
-                .context("Attempting to get row index 0 for pairing")?,
-
-            created: row
-                .get(2)
-                .context("Attempting to get row index 0 for pairing")?,
-            updated: row
-                .get(3)
-                .context("Attempting to get row index 0 for pairing")?,
-        })
-    }
-}
 
 #[async_trait::async_trait]
 impl BackendPairing for SqliteBackend {
@@ -56,8 +29,8 @@ impl BackendPairing for SqliteBackend {
                     pairing_stmt.type_query_map_anyhow(rusqlite::params![limit, offset * limit])
                 });
 
-                let item_parts: Vec<PairingPart> =
-                    match rows?.map(|items| items.collect::<Result<Vec<PairingPart>, _>>()) {
+                let item_parts: Vec<PairingRow> =
+                    match rows?.map(|items| items.collect::<Result<Vec<PairingRow>, _>>()) {
                         Some(items) => items?,
                         None => return Ok(None),
                     };
@@ -129,11 +102,11 @@ impl BackendPairing for SqliteBackend {
                 let mut character_stmt = tracing::trace_span!("prepare")
                     .in_scope(|| conn.prepare(include_str!("item-characters.sql")))?;
 
-                let row: Option<PairingPart> = tracing::trace_span!("get_part").in_scope(|| {
+                let row: Option<PairingRow> = tracing::trace_span!("get_part").in_scope(|| {
                     conn.type_query_row_anyhow(include_str!("get-item.sql"), rusqlite::params![id])
                 })?;
 
-                let part: PairingPart = match row {
+                let part: PairingRow = match row {
                     Some(part) => part,
                     None => return Ok(None),
                 };

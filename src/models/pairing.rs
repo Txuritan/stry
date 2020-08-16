@@ -83,15 +83,3 @@ impl From<List<Pairing>> for PairingList {
         }
     }
 }
-
-#[rustfmt::skip]
-#[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct PairingPart {
-    pub id: String,
-
-    pub platonic: bool,
-
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
-}

@@ -1,13 +1,23 @@
+#[doc(hidden)]
 mod author;
+#[doc(hidden)]
 mod chapter;
+#[doc(hidden)]
 mod character;
+#[doc(hidden)]
 mod origin;
+#[doc(hidden)]
 mod pairing;
+#[doc(hidden)]
 mod story;
+#[doc(hidden)]
 mod tag;
+#[doc(hidden)]
 mod warning;
+#[doc(hidden)]
 mod worker;
 
+#[doc(hidden)]
 mod utils;
 
 use {

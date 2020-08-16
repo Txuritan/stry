@@ -1,14 +1,23 @@
 // TODO: try to pipeline queries
 
-pub mod author;
-pub mod chapter;
-pub mod character;
-pub mod origin;
-pub mod pairing;
-pub mod story;
-pub mod tag;
-pub mod warning;
-pub mod worker;
+#[doc(hidden)]
+mod author;
+#[doc(hidden)]
+mod chapter;
+#[doc(hidden)]
+mod character;
+#[doc(hidden)]
+mod origin;
+#[doc(hidden)]
+mod pairing;
+#[doc(hidden)]
+mod story;
+#[doc(hidden)]
+mod tag;
+#[doc(hidden)]
+mod warning;
+#[doc(hidden)]
+mod worker;
 
 #[macro_use]
 pub mod utils;

@@ -15,10 +15,11 @@ use {
     warp::{Rejection, Reply},
 };
 
+#[warp_macros::get("/explore/{item}")]
 pub async fn explore(
+    #[data] backend: DataBackend,
     item: Items,
-    paging: Paging,
-    backend: DataBackend,
+    #[query] paging: Paging,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();

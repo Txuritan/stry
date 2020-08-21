@@ -17,11 +17,12 @@ use {
     warp::{Rejection, Reply},
 };
 
+#[warp_macros::get("/{item}/{id}")]
 pub async fn item(
+    #[data] backend: DataBackend,
     item: Items,
     id: String,
-    paging: Paging,
-    backend: DataBackend,
+    #[query] paging: Paging,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();

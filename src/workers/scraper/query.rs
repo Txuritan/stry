@@ -350,11 +350,7 @@ impl Element {
             .borrow()
             .iter()
             .filter(|n| {
-                if let NodeData::Element { .. } = n.data {
-                    true
-                } else {
-                    false
-                }
+                matches!(n.data, NodeData::Element { .. })
             })
             .map(Element::from)
             .collect::<Vec<_>>()

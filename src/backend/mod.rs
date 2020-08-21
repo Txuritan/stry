@@ -41,17 +41,11 @@ pub enum StorageType {
 
 impl StorageType {
     pub fn is_file(&self) -> bool {
-        match self {
-            StorageType::File { .. } => true,
-            _ => false,
-        }
+        matches!(self, StorageType::File { .. })
     }
 
     pub fn is_parts(&self) -> bool {
-        match self {
-            StorageType::Parts { .. } => true,
-            _ => false,
-        }
+        matches!(self, StorageType::Parts { .. })
     }
 }
 

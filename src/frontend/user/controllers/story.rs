@@ -15,14 +15,17 @@ use {
     },
 };
 
-pub async fn index(_story_id: String, _pool: DataBackend) -> Result<impl Reply, Rejection> {
+
+#[warp_macros::get("/{_story_id}")]
+pub async fn index(#[data] _pool: DataBackend, _story_id: String) -> Result<impl Reply, Rejection> {
     Ok(reply::html("story"))
 }
 
+#[warp_macros::get("/{story_id}/{chapter_page}")]
 pub async fn chapter(
+    #[data] backend: DataBackend,
     story_id: String,
     chapter_page: u32,
-    backend: DataBackend,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();

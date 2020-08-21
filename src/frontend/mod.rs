@@ -15,11 +15,15 @@ pub async fn start(
     backend: DataBackend,
     enable_frontend: bool,
 ) {
-    let state = warp::any().map(move || backend.clone()).boxed();
+    let state = warp::any().map({
+        let backend = backend.clone();
+
+        move || backend.clone()
+    }).boxed();
 
     let routes = akibisuto_stylus::route()
         .or(api::route(state.clone()))
-        .or(enable(enable_frontend).and(user::route(state.clone())))
+        .or(enable(enable_frontend).and(user::route(backend.clone())))
         // I want to use brotli, but Firefpx isn't adding new features to HTTP (non HTTPS),
         // as such it only sends `Accept-Encoding: gzip, deflate`.
         // That means I'll either wrap the server in NGINX, or allow for TLS through the config.

@@ -9,10 +9,11 @@ use {
     warp::{Rejection, Reply},
 };
 
+#[warp_macros::get("/search")]
 pub async fn index(
-    paging: Paging,
-    search: Search,
-    pool: DataBackend,
+    #[data] pool: DataBackend,
+    #[query] paging: Paging,
+    #[query] search: Search,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();

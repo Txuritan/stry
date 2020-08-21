@@ -1,6 +1,7 @@
+pub mod assets;
 pub mod dashboard;
-mod explore;
-mod item;
+pub mod explore;
+pub mod item;
 pub mod search;
 pub mod story;
 
@@ -8,16 +9,15 @@ use {
     crate::{
         backend::{BackendStory, DataBackend},
         frontend::user::{pages::StoryList, utils::wrap},
-        models::{Paging, RouteType},
+        models::{Paging},
     },
     askama::Template,
     chrono::Utc,
-    warp::{reject::not_found, Rejection, Reply},
+    warp::{Rejection, Reply},
 };
 
-pub use crate::frontend::user::handlers::{explore::explore, item::item};
-
-pub async fn index(paging: Paging, backend: DataBackend) -> Result<impl Reply, Rejection> {
+#[warp_macros::get("/")]
+pub async fn index(#[data] backend: DataBackend, #[query] paging: Paging) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();
 
@@ -46,16 +46,4 @@ pub async fn index(paging: Paging, backend: DataBackend) -> Result<impl Reply, R
         }
     })
     .await
-}
-
-pub fn parse(typ: &str) -> Result<RouteType, Rejection> {
-    match typ {
-        "authors" => Ok(RouteType::Authors),
-        "characters" => Ok(RouteType::Characters),
-        "origins" => Ok(RouteType::Origins),
-        "pairings" => Ok(RouteType::Pairings),
-        "tags" => Ok(RouteType::Tags),
-        "warnings" => Ok(RouteType::Warnings),
-        _ => Err(not_found()),
-    }
 }

@@ -46,6 +46,7 @@ rusqlite = { version = "0.23", features = [ "bundled", "chrono" ] }
 
 # Frontend
 warp = { version = "0.2", default-features = false, features = [ "compression" ] }
+warp-macros = { git = "https://gitlab.com/Txuritan/warp-macros" }
 
 # Frontend/API
 dataloader = { version = "0.12", default-features = false, features = ["runtime-tokio"]}

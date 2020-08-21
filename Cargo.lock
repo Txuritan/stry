@@ -134,9 +134,9 @@ dependencies = [
 
 [[package]]
 name = "autocfg"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8aac770f1885fd7e387acedd76065302551364496e46b3dd00860b2f8359b9d"
+checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "base64"
@@ -1948,6 +1948,7 @@ dependencies = [
  "tracing-subscriber",
  "uuid",
  "warp",
+ "warp-macros",
 ]
 
 [[package]]
@@ -2363,6 +2364,16 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "urlencoding",
+]
+
+[[package]]
+name = "warp-macros"
+version = "0.1.0"
+source = "git+https://gitlab.com/Txuritan/warp-macros#3eed130c284de9f602b06066fce5f84f1057fc9d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

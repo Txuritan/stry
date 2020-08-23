@@ -911,9 +911,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.18.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e704a02bcaecd4a08b93a23f6be59d0bd79cd161e0963e9499165a0a35df7bd"
+checksum = "e3a245984b1b06c291f46e27ebda9f369a94a1ab8461d0e845e23f9ced01f5db"
 dependencies = [
  "cc",
  "pkg-config",
@@ -1512,16 +1512,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "r2d2_sqlite"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed60ebe88b27ac28c0563bc0fbeaecd302ff53e3a01e5ddc2ec9f4e6c707d929"
-dependencies = [
- "r2d2",
- "rusqlite",
-]
-
-[[package]]
 name = "rand"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1612,7 +1602,7 @@ checksum = "11a7f6703c396037a02da99195e49138c37f3cc5146cb95f2f7d26debc0c5622"
 [[package]]
 name = "rewryte"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#6326134ff5f8c780acf05d4a8fb3634582b896ad"
+source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
 dependencies = [
  "anyhow",
  "rewryte-generator",
@@ -1624,7 +1614,7 @@ dependencies = [
 [[package]]
 name = "rewryte-generator"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#6326134ff5f8c780acf05d4a8fb3634582b896ad"
+source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -1636,7 +1626,7 @@ dependencies = [
 [[package]]
 name = "rewryte-macro"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#6326134ff5f8c780acf05d4a8fb3634582b896ad"
+source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
 dependencies = [
  "codespan-reporting",
  "quote",
@@ -1648,7 +1638,7 @@ dependencies = [
 [[package]]
 name = "rewryte-parser"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#6326134ff5f8c780acf05d4a8fb3634582b896ad"
+source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
 dependencies = [
  "codespan-reporting",
  "pest",
@@ -1669,9 +1659,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.23.1"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45d0fd62e1df63d254714e6cb40d0a0e82e7a1623e7a27f679d851af092ae58b"
+checksum = "4c78c3275d9d6eb684d2db4b2388546b32fdae0586c20a82f3905d21ea78b9ef"
 dependencies = [
  "bitflags",
  "chrono",
@@ -1681,7 +1671,6 @@ dependencies = [
  "lru-cache",
  "memchr",
  "smallvec",
- "time",
 ]
 
 [[package]]
@@ -1927,7 +1916,6 @@ dependencies = [
  "postgres-types",
  "pulldown-cmark",
  "r2d2",
- "r2d2_sqlite",
  "rand",
  "resource",
  "rewryte",

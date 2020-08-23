@@ -41,8 +41,7 @@ tokio-postgres = { version = "0.5", features = [ "with-chrono-0_4" ] }
 
 # Backend/SQLite
 r2d2 = "0.8"
-r2d2_sqlite = "0.16"
-rusqlite = { version = "0.23", features = [ "bundled", "chrono" ] }
+rusqlite = { version = "0.24", features = [ "bundled", "chrono" ] }
 
 # Frontend
 warp = { version = "0.2", default-features = false, features = [ "compression" ] }

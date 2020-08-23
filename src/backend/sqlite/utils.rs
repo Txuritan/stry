@@ -2,9 +2,87 @@ use {
     crate::models::Rating,
     anyhow::Context,
     rewryte::sqlite::FromRow,
-    rusqlite::{Row, ToSql},
-    std::borrow::Cow,
+    rusqlite::{Connection, OpenFlags, Row, ToSql},
+    std::{
+        borrow::Cow,
+        fmt,
+        path::{Path, PathBuf},
+    },
 };
+
+// A slightly modified version of ivanceras' `r2d2-sqlite`
+#[derive(Debug)]
+enum Source {
+    File(PathBuf),
+    Memory,
+}
+
+type InitFn = dyn Fn(&mut Connection) -> Result<(), rusqlite::Error> + Send + Sync + 'static;
+
+pub struct SqliteConnectionManager {
+    source: Source,
+    init: Option<Box<InitFn>>,
+}
+
+impl fmt::Debug for SqliteConnectionManager {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("SqliteConnectionManager")
+            .field("source", &self.source)
+            .field("init", &self.init.as_ref().map(|_| "InitFn"))
+            .finish()
+    }
+}
+
+impl SqliteConnectionManager {
+    pub fn file<P: AsRef<Path>>(path: P) -> Self {
+        Self {
+            source: Source::File(path.as_ref().to_path_buf()),
+            init: None,
+        }
+    }
+
+    pub fn memory() -> Self {
+        Self {
+            source: Source::Memory,
+            init: None,
+        }
+    }
+
+    pub fn with_init<F>(self, init: F) -> Self
+    where
+        F: Fn(&mut Connection) -> Result<(), rusqlite::Error> + Send + Sync + 'static,
+    {
+        Self {
+            init: Some(Box::new(init)),
+            ..self
+        }
+    }
+}
+
+impl r2d2::ManageConnection for SqliteConnectionManager {
+    type Connection = Connection;
+    type Error = rusqlite::Error;
+
+    fn connect(&self) -> Result<Self::Connection, Self::Error> {
+        let conn = match self.source {
+            Source::File(ref path) => Connection::open(path),
+            Source::Memory => Connection::open_in_memory(),
+        };
+
+        conn.map_err(Into::into).and_then(|mut c| match self.init {
+            None => Ok(c),
+            Some(ref init) => init(&mut c).map(|_| c),
+        })
+    }
+
+    fn is_valid(&self, conn: &mut Self::Connection) -> Result<(), Self::Error> {
+        conn.execute_batch("").map_err(Into::into)
+    }
+
+    fn has_broken(&self, _: &mut Self::Connection) -> bool {
+        false
+    }
+}
 
 #[derive(Debug)]
 pub enum Wrapper<'p> {

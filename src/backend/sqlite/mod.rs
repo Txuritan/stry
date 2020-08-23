@@ -22,11 +22,10 @@ mod utils;
 
 use {
     crate::{
-        backend::{Backend, BackendType, StorageType},
+        backend::{sqlite::utils::SqliteConnectionManager, Backend, BackendType, StorageType},
         version::LibVersion,
     },
     r2d2::Pool,
-    r2d2_sqlite::SqliteConnectionManager,
     std::sync::Arc,
 };
 
@@ -66,9 +65,10 @@ impl Backend for SqliteBackend {
 #[cfg(test)]
 pub mod test_utils {
     use {
-        super::{SqliteBackend, SCHEMA, TEST_DATA},
+        crate::backend::sqlite::{
+            utils::SqliteConnectionManager, SqliteBackend, SCHEMA, TEST_DATA,
+        },
         r2d2::Pool,
-        r2d2_sqlite::SqliteConnectionManager,
     };
 
     pub fn setup() -> anyhow::Result<SqliteBackend> {

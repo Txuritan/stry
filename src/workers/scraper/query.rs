@@ -349,9 +349,7 @@ impl Element {
             .children
             .borrow()
             .iter()
-            .filter(|n| {
-                matches!(n.data, NodeData::Element { .. })
-            })
+            .filter(|n| matches!(n.data, NodeData::Element { .. }))
             .map(Element::from)
             .collect::<Vec<_>>()
     }

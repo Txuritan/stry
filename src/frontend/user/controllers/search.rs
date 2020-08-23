@@ -11,7 +11,7 @@ use {
 
 #[warp_macros::get("/search")]
 pub async fn index(
-    #[data] pool: DataBackend,
+    #[data] backend: DataBackend,
     #[query] paging: Paging,
     #[query] search: Search,
 ) -> Result<impl Reply, Rejection> {
@@ -20,7 +20,7 @@ pub async fn index(
 
         let norm = paging.normalize();
 
-        match pool
+        match backend
             .search_stories(search.search.clone().into(), norm.page, norm.page_size)
             .await?
         {

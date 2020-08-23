@@ -15,11 +15,13 @@ pub async fn start(
     backend: DataBackend,
     enable_frontend: bool,
 ) {
-    let state = warp::any().map({
-        let backend = backend.clone();
+    let state = warp::any()
+        .map({
+            let backend = backend.clone();
 
-        move || backend.clone()
-    }).boxed();
+            move || backend.clone()
+        })
+        .boxed();
 
     let routes = akibisuto_stylus::route()
         .or(api::route(state.clone()))

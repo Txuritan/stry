@@ -9,8 +9,7 @@ checksum = "ee2a4ec343196209d6594e19543ae87a39f96d5534d7174822a3ad825dd6ed7e"
 [[package]]
 name = "akibisuto-stylus"
 version = "0.1.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3f5e00314fdb82982c766c56bcfd75861d6be38b3377ef1b330c2c5e7d5f27c"
+source = "git+https://gitlab.com/akibisuto/stylus#b59bc7a4db6119ebeb720f96635acda72993e905"
 dependencies = [
  "warp",
 ]
@@ -452,7 +451,7 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 [[package]]
 name = "fenn"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/fenn.git#68747ef95c5d1c22424ea4f895ae7083805c9a22"
+source = "git+https://gitlab.com/Txuritan/fenn#68747ef95c5d1c22424ea4f895ae7083805c9a22"
 
 [[package]]
 name = "flate2"
@@ -1052,9 +1051,9 @@ dependencies = [
 
 [[package]]
 name = "miniz_oxide"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be0f75932c1f6cfae3c04000e40114adf955636e19040f9c0a2c380702aa1c7f"
+checksum = "4d7559a8a40d0f97e1edea3220f698f78b1c5ab67532e49f68fde3910323b722"
 dependencies = [
  "adler",
 ]
@@ -1659,9 +1658,9 @@ dependencies = [
 
 [[package]]
 name = "ron"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a91260f321dbf3b5a16ff91c451dc9eb644ce72775a6812f9c3dfffe63818f8f"
+checksum = "2a9d94cee22c8a4b5e2a1c7f9a20fdc315668ee8a75835949bb40d7456934634"
 dependencies = [
  "base64",
  "bitflags",
@@ -1959,9 +1958,9 @@ checksum = "502d53007c02d7605a05df1c1a73ee436952781653da5d0bf57ad608f66932c1"
 
 [[package]]
 name = "syn"
-version = "1.0.38"
+version = "1.0.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e69abc24912995b3038597a7a593be5053eb0fb44f3cc5beec0deb421790c1f4"
+checksum = "891d8d6567fe7c7f8835a3a98af4208f3846fba258c1bc3c31d6e506239f11f9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2140,9 +2139,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-core"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db63662723c316b43ca36d833707cc93dff82a02ba3d7e354f342682cc8b3545"
+checksum = "4f0e00789804e99b20f12bc7003ca416309d28a6f495d6af58d1e2c2842461b5"
 dependencies = [
  "lazy_static",
 ]

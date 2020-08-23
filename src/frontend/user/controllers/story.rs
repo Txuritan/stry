@@ -15,9 +15,8 @@ use {
     },
 };
 
-
 #[warp_macros::get("/{_story_id}")]
-pub async fn index(#[data] _pool: DataBackend, _story_id: String) -> Result<impl Reply, Rejection> {
+pub async fn index(#[data] _backend: DataBackend, _story_id: String) -> Result<impl Reply, Rejection> {
     Ok(reply::html("story"))
 }
 

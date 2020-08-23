@@ -8,7 +8,7 @@ description = "A mini self-hosted Archive of Our Own, a story host with tagging.
 license = "MIT"
 
 [dependencies]
-fenn = { git = "https://gitlab.com/Txuritan/fenn.git" }
+fenn = { git = "https://gitlab.com/Txuritan/fenn" }
 
 # Base
 anyhow = "1.0"
@@ -54,7 +54,7 @@ juniper = { git = "https://github.com/graphql-rust/juniper", rev = "f19d498254d3
 serde_json = "1.0"
 
 # Frontend/User
-akibisuto-stylus = "0.1"
+akibisuto-stylus = { git = "https://gitlab.com/akibisuto/stylus" }
 resource = "0.5"
 serde_urlencoded = "0.6"
 

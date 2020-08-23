@@ -9,7 +9,7 @@ use {
     crate::{
         backend::{BackendStory, DataBackend},
         frontend::user::{pages::StoryList, utils::wrap},
-        models::{Paging},
+        models::Paging,
     },
     askama::Template,
     chrono::Utc,
@@ -17,7 +17,10 @@ use {
 };
 
 #[warp_macros::get("/")]
-pub async fn index(#[data] backend: DataBackend, #[query] paging: Paging) -> Result<impl Reply, Rejection> {
+pub async fn index(
+    #[data] backend: DataBackend,
+    #[query] paging: Paging,
+) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();
 

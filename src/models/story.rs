@@ -96,13 +96,17 @@ pub struct StoryRow {
     pub id: String,
 
     pub name: String,
+
+    pub created: DateTime<Utc>,
+    pub updated: DateTime<Utc>,
+
     pub summary: String,
 
     pub rating: Rating,
     pub state: State,
 
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
+    pub chapters: i32,
+    pub words: i32,
 }
 
 impl FromRow for StoryRow {
@@ -121,21 +125,28 @@ impl FromRow for StoryRow {
 
             created: row
                 .get(2)
-                .context("Attempting to get row index 5 for story (row)")?,
+                .context("Attempting to get row index 2 for story (row)")?,
             updated: row
                 .get(3)
-                .context("Attempting to get row index 6 for story (row)")?,
+                .context("Attempting to get row index 3 for story (row)")?,
 
             summary: row
                 .get(4)
-                .context("Attempting to get row index 2 for story (row)")?,
+                .context("Attempting to get row index 4 for story (row)")?,
 
             rating: row
                 .get(5)
-                .context("Attempting to get row index 3 for story (row)")?,
+                .context("Attempting to get row index 5 for story (row)")?,
             state: row
                 .get(6)
-                .context("Attempting to get row index 4 for story (row)")?,
+                .context("Attempting to get row index 6 for story (row)")?,
+
+            chapters: row
+                .get(7)
+                .context("Attempting to get row index 7 for story (row)")?,
+            words: row
+                .get(8)
+                .context("Attempting to get row index 8 for story (row)")?,
         })
     }
 }

@@ -12,10 +12,19 @@ use {
         search::{SearchParser, SearchValue},
     },
     anyhow::Context,
-    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
+    rewryte::sqlite::{FromRow, SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
     tracing_futures::Instrument,
 };
+
+enum Wrap {
+    Story(StoryRow),
+    Author(Author),
+    Origin(Origin),
+    Warning(Warning),
+    Character(Character),
+    Tag(Tag),
+}
 
 #[async_trait::async_trait]
 impl BackendStory for SqliteBackend {
@@ -101,37 +110,10 @@ impl BackendStory for SqliteBackend {
             move || -> anyhow::Result<Option<StoryPart>> {
                 let conn = inner.0.get()?;
 
-                let mut author_stmt = conn.prepare("SELECT A.Id, A.Name, A.Created, A.Updated FROM StoryAuthor SA LEFT JOIN Author A ON SA.AuthorId = A.Id WHERE SA.StoryId = ? ORDER BY A.Name;")?;
-                let mut origin_stmt = conn.prepare("SELECT O.Id, O.Name, O.Created, O.Updated FROM StoryOrigin SO LEFT JOIN Origin O ON SO.OriginId = O.Id WHERE SO.StoryId = ? ORDER BY O.Name;")?;
-
-                let mut tag_stmt = conn.prepare("SELECT T.Id, T.Name, T.Created, T.Updated FROM StoryTag ST LEFT JOIN Tag T ON ST.TagId = T.Id WHERE ST.StoryId = ? ORDER BY T.Name;")?;
-                let mut character_stmt = conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM StoryCharacter SC LEFT JOIN Character C ON SC.CharacterId = C.Id WHERE SC.StoryId = ? ORDER BY C.Name;")?;
-                let mut warning_stmt = conn.prepare("SELECT W.Id, w.Name, w.Created, w.Updated FROM StoryWarning SW LEFT JOIN Warning W ON SW.WarningId = W.Id WHERE SW.StoryId = ? ORDER BY W.Name;")?;
+                let mut stmt = conn.prepare(include_str!("get-item.sql"))?;
 
                 let mut story_pairings_stmt = conn.prepare("SELECT P.Id, P.Hash, P.Platonic, P.Created, P.Updated FROM StoryPairing SP LEFT JOIN Pairing P ON P.Id = SP.PairingId WHERE SP.StoryId = ? ORDER BY (SELECT GROUP_CONCAT(C.Name, '/') FROM PairingCharacter PC LEFT JOIN Character C ON C.Id = PC.CharacterId WHERE PC.PairingId = P.Id);")?;
                 let mut pairing_stmt = conn.prepare("SELECT C.Id, C.Name, C.Created, C.Updated FROM Pairing P LEFT JOIN PairingCharacter PC ON PC.PairingId = P.Id LEFT JOIN Character C ON PC.CharacterId = C.Id WHERE P.Id = ? ORDER BY C.Name ASC;")?;
-
-                let story_row = match conn.query_row_anyhow(
-                    "SELECT Id, Name, Summary, Rating, State, Created, Updated FROM Story WHERE Id = ?;",
-                    rusqlite::params![id],
-                    |row| {
-                        Ok(StoryRow {
-                            id: row.get(0).context("Attempting to get row index 0 for story (row)")?,
-
-                            name: row.get(1).context("Attempting to get row index 1 for story (row)")?,
-                            summary: row.get(2).context("Attempting to get row index 2 for story (row)")?,
-
-                            rating: row.get(3).context("Attempting to get row index 3 for story (row)")?,
-                            state: row.get(4).context("Attempting to get row index 4 for story (row)")?,
-
-                            created: row.get(5).context("Attempting to get row index 5 for story (row)")?,
-                            updated: row.get(6).context("Attempting to get row index 6 for story (row)")?,
-                        })
-                    },
-                )? {
-                    Some(story_row) => story_row,
-                    None => return Ok(None),
-                };
 
                 let chapters: i32 = match conn.query_row_anyhow(
                     "SELECT COUNT(StoryId) as Count FROM StoryChapter WHERE StoryId = ?;",
@@ -151,31 +133,20 @@ impl BackendStory for SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let authors: Vec<Author> = match author_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
+                let parts = match stmt.query_map_anyhow(rusqlite::params![id, id, id, id, id, id, id], |row| {
+                    let typ: String = row.get(7).context("Attempting to get row index 8 for story")?;
 
-                let origins: Vec<Origin> = match origin_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
-
-                let warnings: Vec<Warning> = match warning_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
-
-                let characters: Vec<Character> = match character_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
-                    Some(items) => items?,
+                    match typ.as_str() {
+                        "story" => Ok(Wrap::Story(StoryRow::from_row(row).context("Attempting to get story row for story (row)")?)),
+                        "author" => Ok(Wrap::Author(Author::from_row(row).context("Attempting to get author for story (row)")?)),
+                        "origin" => Ok(Wrap::Origin(Origin::from_row(row).context("Attempting to get origin for story (row)")?)),
+                        "warning" => Ok(Wrap::Warning(Warning::from_row(row).context("Attempting to get warning for story (row)")?)),
+                        "character" => Ok(Wrap::Character(Character::from_row(row).context("Attempting to get character for story (row)")?)),
+                        "tag" => Ok(Wrap::Tag(Tag::from_row(row).context("Attempting to get tag for story (row)")?)),
+                        other => anyhow::bail!("Unknown row group type `{}`", other),
+                    }
+                })? {
+                    Some(parts) => parts,
                     None => return Ok(None),
                 };
 
@@ -208,12 +179,29 @@ impl BackendStory for SqliteBackend {
                     });
                 }
 
-                let tags: Vec<Tag> = match tag_stmt.type_query_map_anyhow(rusqlite::params![id])?.map(|items| {
-                    items.collect::<Result<_, _>>()
-                }) {
-                    Some(items) => items?,
-                    None => return Ok(None),
-                };
+                let mut story_row = None;
+
+                let mut authors = Vec::new();
+                let mut origins = Vec::new();
+
+                let mut warnings = Vec::new();
+                let mut characters = Vec::new();
+                let mut tags = Vec::new();
+
+                for row in parts {
+                    match row? {
+                        Wrap::Story(item) => {
+                            story_row = Some(item);
+                        }
+                        Wrap::Author(item) => authors.push(item),
+                        Wrap::Origin(item) => origins.push(item),
+                        Wrap::Warning(item) => warnings.push(item),
+                        Wrap::Character(item) => characters.push(item),
+                        Wrap::Tag(item) => tags.push(item),
+                    }
+                }
+
+                let story_row = story_row.ok_or_else(|| anyhow::anyhow!("Story get did not return story group type"))?;
 
                 Ok(Some(StoryPart {
                     id: story_row.id,

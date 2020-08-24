@@ -3,7 +3,9 @@ use {
         backend::DataBackend,
         models::{Author, Character, List, Origin, Pairing, Rating, Series, State, Tag, Warning},
     },
+    anyhow::Context,
     chrono::{DateTime, Utc},
+    rewryte::sqlite::FromRow,
     std::fmt,
 };
 
@@ -101,6 +103,41 @@ pub struct StoryRow {
 
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
+}
+
+impl FromRow for StoryRow {
+    fn from_row(row: &rusqlite::Row<'_>) -> anyhow::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(Self {
+            id: row
+                .get(0)
+                .context("Attempting to get row index 0 for story (row)")?,
+
+            name: row
+                .get(1)
+                .context("Attempting to get row index 1 for story (row)")?,
+
+            created: row
+                .get(2)
+                .context("Attempting to get row index 5 for story (row)")?,
+            updated: row
+                .get(3)
+                .context("Attempting to get row index 6 for story (row)")?,
+
+            summary: row
+                .get(4)
+                .context("Attempting to get row index 2 for story (row)")?,
+
+            rating: row
+                .get(5)
+                .context("Attempting to get row index 3 for story (row)")?,
+            state: row
+                .get(6)
+                .context("Attempting to get row index 4 for story (row)")?,
+        })
+    }
 }
 
 pub struct StoryPart {

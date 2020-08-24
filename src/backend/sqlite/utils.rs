@@ -2,7 +2,7 @@ use {
     crate::models::Rating,
     anyhow::Context,
     rewryte::sqlite::FromRow,
-    rusqlite::{Connection, OpenFlags, Row, ToSql},
+    rusqlite::{Connection, Row, ToSql},
     std::{
         borrow::Cow,
         fmt,
@@ -14,6 +14,7 @@ use {
 #[derive(Debug)]
 enum Source {
     File(PathBuf),
+    #[cfg(test)]
     Memory,
 }
 
@@ -41,6 +42,7 @@ impl SqliteConnectionManager {
         }
     }
 
+    #[cfg(test)]
     pub fn memory() -> Self {
         Self {
             source: Source::Memory,
@@ -66,6 +68,7 @@ impl r2d2::ManageConnection for SqliteConnectionManager {
     fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let conn = match self.source {
             Source::File(ref path) => Connection::open(path),
+            #[cfg(test)]
             Source::Memory => Connection::open_in_memory(),
         };
 

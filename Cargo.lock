@@ -423,9 +423,9 @@ checksum = "134951f4028bdadb9b84baf4232681efbf277da25144b9b0ad65df75946c422b"
 
 [[package]]
 name = "encoding_rs"
-version = "0.8.23"
+version = "0.8.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8ac63f94732332f44fe654443c46f6375d1939684c17b0afb6cb56b0456e171"
+checksum = "a51b8cf747471cb9499b6d59e59b0444f4c90eba8968c4e44874e92b5b64ace2"
 dependencies = [
  "cfg-if",
 ]
@@ -1602,7 +1602,7 @@ checksum = "11a7f6703c396037a02da99195e49138c37f3cc5146cb95f2f7d26debc0c5622"
 [[package]]
 name = "rewryte"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
+source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
 dependencies = [
  "anyhow",
  "rewryte-generator",
@@ -1614,7 +1614,7 @@ dependencies = [
 [[package]]
 name = "rewryte-generator"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
+source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -1626,7 +1626,7 @@ dependencies = [
 [[package]]
 name = "rewryte-macro"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
+source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
 dependencies = [
  "codespan-reporting",
  "quote",
@@ -1638,7 +1638,7 @@ dependencies = [
 [[package]]
 name = "rewryte-parser"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#59f95119faa113c7b49436a82784a299842a9f57"
+source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
 dependencies = [
  "codespan-reporting",
  "pest",

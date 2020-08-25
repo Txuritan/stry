@@ -113,7 +113,7 @@ pub fn load_config(matches: ArgMatches<'_>) -> anyhow::Result<Config> {
     over!(s, cfg, cfg_override, executor.max_threads);
 
     over!(cfg, cfg_override, logging.ansi);
-    over!(cfg, cfg_override, logging.directory);
+    over!(s, cfg, cfg_override, logging.directory);
     over!(cfg, cfg_override, logging.level);
     over!(cfg, cfg_override, logging.json);
     over!(cfg, cfg_override, logging.prefix);
@@ -340,7 +340,7 @@ pub struct ExecutorOverride {
 #[serde(default)]
 pub struct Logging {
     pub ansi: bool,
-    pub directory: String,
+    pub directory: Option<String>,
     pub level: LogLevel,
     pub json: bool,
     pub prefix: String,
@@ -352,7 +352,7 @@ impl Default for Logging {
     fn default() -> Self {
         Self {
             ansi: true,
-            directory: String::from("./logs"),
+            directory: Some(String::from("./logs")),
             level: LogLevel::Debug,
             json: false,
             prefix: String::from("log"),

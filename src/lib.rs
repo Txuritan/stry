@@ -16,7 +16,7 @@ use {
     fenn::VecExt,
     std::{future::Future, pin::Pin, sync::Arc},
     tokio::{runtime::Builder, sync::broadcast},
-    tracing::Level,
+    tracing::{Level, Subscriber},
     tracing_subscriber::{
         filter::LevelFilter,
         fmt::{self, format::FmtSpan},
@@ -30,27 +30,58 @@ pub type Boxed = Pin<Box<dyn Future<Output = anyhow::Result<()>>>>;
 pub fn setup(cfg: Config) -> anyhow::Result<()> {
     let cfg = Arc::new(cfg);
 
-    let file_appender =
-        tracing_appender::rolling::daily(&cfg.logging.directory, &cfg.logging.prefix);
-    let (non_blocking, _appender_guard) = tracing_appender::non_blocking(file_appender);
+    let (normal, json) = if cfg.logging.json {
+        let layer = fmt::Layer::default()
+            .with_ansi(cfg.logging.ansi)
+            .with_thread_ids(cfg.logging.thread_ids)
+            .with_thread_names(cfg.logging.thread_names)
+            .with_span_events(FmtSpan::CLOSE)
+            .json();
+
+        (None, Some(layer))
+    } else {
+        let layer = fmt::Layer::default()
+            .with_ansi(cfg.logging.ansi)
+            .with_thread_ids(cfg.logging.thread_ids)
+            .with_thread_names(cfg.logging.thread_names)
+            .with_span_events(FmtSpan::CLOSE);
+
+        (Some(layer), None)
+    };
+
+    let (file_normal, file_json, _appender_guard) =
+        if let Some(directory) = cfg.logging.directory.as_ref() {
+            let file_appender = tracing_appender::rolling::daily(&directory, &cfg.logging.prefix);
+            let (non_blocking, appender_guard) = tracing_appender::non_blocking(file_appender);
+
+            if cfg.logging.json {
+                let layer = fmt::Layer::default()
+                    .with_writer(non_blocking)
+                    .with_ansi(false)
+                    .with_thread_ids(cfg.logging.thread_ids)
+                    .with_thread_names(cfg.logging.thread_names)
+                    .with_span_events(FmtSpan::CLOSE);
+
+                (Some(layer), None, None)
+            } else {
+                let layer = fmt::Layer::default()
+                    .with_writer(non_blocking)
+                    .with_ansi(false)
+                    .with_thread_ids(cfg.logging.thread_ids)
+                    .with_thread_names(cfg.logging.thread_names)
+                    .with_span_events(FmtSpan::CLOSE);
+                (None, Some(layer), None)
+            }
+        } else {
+            (None, None, None)
+        };
 
     // TODO: Get JSON output working
     let reg = Registry::default()
-        .with(
-            fmt::Layer::default()
-                .with_ansi(cfg.logging.ansi)
-                .with_thread_ids(cfg.logging.thread_ids)
-                .with_thread_names(cfg.logging.thread_names)
-                .with_span_events(FmtSpan::CLOSE),
-        )
-        .with(
-            fmt::Layer::default()
-                .with_writer(non_blocking)
-                .with_ansi(false)
-                .with_thread_ids(cfg.logging.thread_ids)
-                .with_thread_names(cfg.logging.thread_names)
-                .with_span_events(FmtSpan::CLOSE),
-        )
+        .with(normal)
+        .with(json)
+        .with(file_normal)
+        .with(file_json)
         .with(LevelFilter::from(match cfg.logging.level {
             LogLevel::Error => Level::ERROR,
             LogLevel::Warn => Level::WARN,

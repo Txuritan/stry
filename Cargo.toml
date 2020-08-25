@@ -7,6 +7,14 @@ description = "A mini self-hosted Archive of Our Own, a story host with tagging.
 
 license = "MIT"
 
+[lib]
+name = "stry"
+path = "src/lib.rs"
+
+[[bin]]
+name = "stry"
+path = "src/main.rs"
+
 [dependencies]
 fenn = { git = "https://gitlab.com/Txuritan/fenn" }
 

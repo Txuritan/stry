@@ -6,7 +6,6 @@ use {
         io::{self, prelude::*},
         path::Path,
         str::FromStr,
-        sync::Arc,
     },
 };
 
@@ -33,7 +32,7 @@ macro_rules! over {
     };
 }
 
-pub fn load_config(matches: &ArgMatches<'_>) -> anyhow::Result<Arc<Config>> {
+pub fn load_config(matches: ArgMatches<'_>) -> anyhow::Result<Config> {
     let path = if let Some(path) = matches.value_of("config").map(String::from) {
         path
     } else {
@@ -55,7 +54,7 @@ pub fn load_config(matches: &ArgMatches<'_>) -> anyhow::Result<Arc<Config>> {
         Config::default()
     };
 
-    let mut cfg_override = get_config_overrides(matches)?;
+    let mut cfg_override = get_config_overrides(&matches)?;
 
     if let Some(host) = cfg_override.host.take() {
         let mut parts = host
@@ -121,7 +120,7 @@ pub fn load_config(matches: &ArgMatches<'_>) -> anyhow::Result<Arc<Config>> {
     over!(cfg, cfg_override, logging.thread_ids);
     over!(cfg, cfg_override, logging.thread_names);
 
-    Ok(Arc::new(cfg))
+    Ok(cfg)
 }
 
 fn get_config_overrides(args: &ArgMatches<'_>) -> anyhow::Result<ConfigOverride> {

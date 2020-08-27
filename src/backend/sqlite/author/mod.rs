@@ -14,7 +14,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendAuthor for SqliteBackend {
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn all_authors(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Author>>> {
         let authors = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -58,7 +58,7 @@ impl BackendAuthor for SqliteBackend {
         Ok(authors)
     }
 
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -77,7 +77,7 @@ impl BackendAuthor for SqliteBackend {
         Ok(res)
     }
 
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn author_stories(
         &self,
         id: Cow<'static, str>,

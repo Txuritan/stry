@@ -14,7 +14,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendTag for SqliteBackend {
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
         let tags = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -54,7 +54,7 @@ impl BackendTag for SqliteBackend {
         Ok(tags)
     }
 
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -74,7 +74,7 @@ impl BackendTag for SqliteBackend {
         Ok(res)
     }
 
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn tag_stories(
         &self,
         id: Cow<'static, str>,

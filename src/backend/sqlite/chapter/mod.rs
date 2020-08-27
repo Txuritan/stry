@@ -10,7 +10,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendChapter for SqliteBackend {
-    #[tracing::instrument(level = "debug", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self))]
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,

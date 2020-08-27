@@ -1,8 +1,10 @@
 [package]
 name = "stry-backend-sqlite"
-version = "0.1.0"
-authors = ["Txuritan <txuritan@protonmail.com>"]
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
 edition = "2018"
+
+license = "MIT"
 
 workspace = ".."
 
@@ -19,3 +21,4 @@ sql-ast = "0.7"
 tokio = { version = "0.2", features = [ "blocking", "sync" ] }
 tracing = "0.1"
 tracing-futures = "0.2"
+ultra-batch = "0.1"

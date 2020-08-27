@@ -341,6 +341,7 @@ pub struct ExecutorOverride {
 pub struct Logging {
     pub ansi: bool,
     pub directory: Option<String>,
+    pub flame: Option<String>,
     pub level: LogLevel,
     pub json: bool,
     pub prefix: String,
@@ -353,6 +354,7 @@ impl Default for Logging {
         Self {
             ansi: true,
             directory: Some(String::from("./logs")),
+            flame: None,
             level: LogLevel::Debug,
             json: false,
             prefix: String::from("log"),

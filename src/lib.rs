@@ -17,6 +17,7 @@ use {
     std::{future::Future, pin::Pin, sync::Arc},
     tokio::{runtime::Builder, sync::broadcast},
     tracing::{Level, Subscriber},
+    tracing_flame::FlameLayer,
     tracing_subscriber::{Layer,
         filter::LevelFilter,
         fmt::{self, format::FmtSpan},
@@ -76,12 +77,21 @@ pub fn setup(cfg: Config) -> anyhow::Result<()> {
             (OptionLayer::None, OptionLayer::None, OptionLayer::None)
         };
 
+    let (flame, _flame_guard) = if let Some(file) = cfg.logging.flame.as_ref() {
+        let (layer, _guard) = FlameLayer::with_file(file)?;
+
+        (OptionLayer::Some(layer), OptionLayer::Some(_guard))
+    } else {
+        (OptionLayer::None, OptionLayer::None)
+    };
+
     // TODO: Get JSON output working
     let reg = Registry::default()
         .with(normal)
         .with(json)
         .with(file_normal)
         .with(file_json)
+        .with(flame)
         .with(LevelFilter::from(match cfg.logging.level {
             LogLevel::Error => Level::ERROR,
             LogLevel::Warn => Level::WARN,

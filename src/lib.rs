@@ -17,7 +17,7 @@ use {
     std::{future::Future, pin::Pin, sync::Arc},
     tokio::{runtime::Builder, sync::broadcast},
     tracing::{Level, Subscriber},
-    tracing_subscriber::{
+    tracing_subscriber::{Layer,
         filter::LevelFilter,
         fmt::{self, format::FmtSpan},
         layer::SubscriberExt,
@@ -38,7 +38,7 @@ pub fn setup(cfg: Config) -> anyhow::Result<()> {
             .with_span_events(FmtSpan::CLOSE)
             .json();
 
-        (None, Some(layer))
+        (OptionLayer::None, OptionLayer::Some(layer))
     } else {
         let layer = fmt::Layer::default()
             .with_ansi(cfg.logging.ansi)
@@ -46,7 +46,7 @@ pub fn setup(cfg: Config) -> anyhow::Result<()> {
             .with_thread_names(cfg.logging.thread_names)
             .with_span_events(FmtSpan::CLOSE);
 
-        (Some(layer), None)
+        (OptionLayer::Some(layer), OptionLayer::None)
     };
 
     let (file_normal, file_json, _appender_guard) =
@@ -62,7 +62,7 @@ pub fn setup(cfg: Config) -> anyhow::Result<()> {
                     .with_thread_names(cfg.logging.thread_names)
                     .with_span_events(FmtSpan::CLOSE);
 
-                (Some(layer), None, None)
+                (OptionLayer::Some(layer), OptionLayer::None, OptionLayer::Some(appender_guard))
             } else {
                 let layer = fmt::Layer::default()
                     .with_writer(non_blocking)
@@ -70,10 +70,10 @@ pub fn setup(cfg: Config) -> anyhow::Result<()> {
                     .with_thread_ids(cfg.logging.thread_ids)
                     .with_thread_names(cfg.logging.thread_names)
                     .with_span_events(FmtSpan::CLOSE);
-                (None, Some(layer), None)
+                (OptionLayer::None, OptionLayer::Some(layer), OptionLayer::Some(appender_guard))
             }
         } else {
-            (None, None, None)
+            (OptionLayer::None, OptionLayer::None, OptionLayer::None)
         };
 
     // TODO: Get JSON output working
@@ -150,4 +150,109 @@ async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
         .context("Unable to join frontend process with main")?;
 
     Ok(())
+}
+
+#[derive(Debug)]
+enum OptionLayer<T> {
+    None,
+    Some(T),
+}
+
+impl<L, S> Layer<S> for OptionLayer<L>
+where
+    L: Layer<S>,
+    S: Subscriber,
+{
+    #[inline]
+    fn new_span(&self, attrs: &tracing::span::Attributes<'_>, id: &tracing::span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.new_span(attrs, id, ctx)
+        }
+    }
+
+    #[inline]
+    fn register_callsite(&self, metadata: &'static tracing::metadata::Metadata<'static>) -> tracing::subscriber::Interest {
+        match self {
+            OptionLayer::Some(ref inner) => inner.register_callsite(metadata),
+            OptionLayer::None => tracing::subscriber::Interest::always(),
+        }
+    }
+
+    #[inline]
+    fn enabled(&self, metadata: &tracing::metadata::Metadata<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) -> bool {
+        match self {
+            OptionLayer::Some(ref inner) => inner.enabled(metadata, ctx),
+            OptionLayer::None => true,
+        }
+    }
+
+    #[inline]
+    fn max_level_hint(&self) -> Option<LevelFilter> {
+        match self {
+            OptionLayer::Some(ref inner) => inner.max_level_hint(),
+            OptionLayer::None => None,
+        }
+    }
+
+    #[inline]
+    fn on_record(&self, span: &tracing::span::Id, values: &tracing::span::Record<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_record(span, values, ctx);
+        }
+    }
+
+    #[inline]
+    fn on_follows_from(&self, span: &tracing::span::Id, follows: &tracing::span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_follows_from(span, follows, ctx);
+        }
+    }
+
+    #[inline]
+    fn on_event(&self, event: &tracing::Event<'_>, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_event(event, ctx);
+        }
+    }
+
+    #[inline]
+    fn on_enter(&self, id: &tracing::span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_enter(id, ctx);
+        }
+    }
+
+    #[inline]
+    fn on_exit(&self, id: &tracing::span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_exit(id, ctx);
+        }
+    }
+
+    #[inline]
+    fn on_close(&self, id: tracing::span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_close(id, ctx);
+        }
+    }
+
+    #[inline]
+    fn on_id_change(&self, old: &tracing::span::Id, new: &tracing::span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+        if let OptionLayer::Some(ref inner) = self {
+            inner.on_id_change(old, new, ctx)
+        }
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    unsafe fn downcast_raw(&self, id: std::any::TypeId) -> Option<*const ()> {
+        if id == std::any::TypeId::of::<Self>() {
+            Some(self as *const _ as *const ())
+        } else {
+            match *self {
+                OptionLayer::Some(ref inner) => inner.downcast_raw(id),
+                OptionLayer::None => None,
+            }
+        }
+    }
 }

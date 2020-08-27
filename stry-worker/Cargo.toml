@@ -1,0 +1,14 @@
+[package]
+name = "stry-worker"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+workspace = ".."
+
+[dependencies]
+stry-backend = { path = "../stry-backend" }
+stry-common = { path = "../stry-common" }
+stry-worker-scraper = { path = "../stry-worker-scraper" }
+
+tokio = { version = "0.2", features = [ "sync" ] }

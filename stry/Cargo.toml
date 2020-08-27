@@ -1,0 +1,37 @@
+[package]
+name = "stry"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+description = "A mini self-hosted Archive of Our Own, a story host with tagging."
+
+license = "MIT"
+
+[lib]
+name = "stry"
+path = "src/lib.rs"
+
+[[bin]]
+name = "stry"
+path = "src/main.rs"
+
+[dependencies]
+stry-backend = { path = "../stry-backend" }
+stry-common = { path = "../stry-common" }
+stry-frontend = { path = "../stry-frontend" }
+stry-worker = { path = "../stry-worker" }
+
+# Base
+anyhow = "1.0"
+clap = "2.33"
+ctrlc = "3.1"
+fenn = { git = "https://gitlab.com/Txuritan/fenn" }
+futures = "0.3"
+mimalloc = { version = "0.1", default-features = false }
+tokio = { version = "0.2", features = [ "blocking", "rt-threaded", "sync" ] }
+tracing = "0.1"
+tracing-appender = "0.1"
+tracing-log = "0.1"
+tracing-flame = "0.1"
+tracing-futures = "0.2"
+tracing-subscriber = "0.2"

@@ -1916,54 +1916,179 @@ checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 name = "stry"
 version = "2.3.0"
 dependencies = [
- "akibisuto-stylus",
  "anyhow",
- "askama",
- "async-trait",
- "bb8",
- "bb8-postgres",
- "bytes",
- "chrono",
  "clap",
  "ctrlc",
- "curl",
- "dataloader",
  "fenn",
  "futures",
- "html5ever",
- "isahc",
- "juniper",
- "lazy_static",
- "markup5ever",
- "markup5ever_arcdom",
  "mimalloc",
- "openssl",
- "pest",
- "pest_derive",
- "pin-project",
- "postgres-types",
- "pulldown-cmark",
- "r2d2",
- "rand",
- "resource",
- "rewryte",
- "ron",
- "rusqlite",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "sql-ast",
+ "stry-backend",
+ "stry-common",
+ "stry-frontend",
+ "stry-worker",
  "tokio",
- "tokio-postgres",
  "tracing",
  "tracing-appender",
  "tracing-flame",
  "tracing-futures",
  "tracing-log",
  "tracing-subscriber",
- "uuid",
+]
+
+[[package]]
+name = "stry-backend"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "fenn",
+ "stry-backend-postgres",
+ "stry-backend-sqlite",
+ "stry-common",
+ "tracing",
+ "tracing-futures",
+]
+
+[[package]]
+name = "stry-backend-postgres"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bb8",
+ "bb8-postgres",
+ "chrono",
+ "futures",
+ "postgres-types",
+ "rewryte",
+ "sql-ast",
+ "stry-common",
+ "tokio-postgres",
+ "tracing",
+ "tracing-futures",
+]
+
+[[package]]
+name = "stry-backend-sqlite"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "r2d2",
+ "rewryte",
+ "rusqlite",
+ "sql-ast",
+ "stry-common",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+]
+
+[[package]]
+name = "stry-common"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "futures",
+ "pest",
+ "pest_derive",
+ "postgres-types",
+ "rand",
+ "rewryte",
+ "ron",
+ "rusqlite",
+ "serde",
+ "tracing",
+ "tracing-futures",
+]
+
+[[package]]
+name = "stry-frontend"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "stry-backend",
+ "stry-common",
+ "stry-frontend-api",
+ "stry-frontend-user",
+ "tokio",
+ "tracing",
+ "warp",
+]
+
+[[package]]
+name = "stry-frontend-api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "dataloader",
+ "futures",
+ "juniper",
+ "serde",
+ "serde_json",
+ "stry-backend",
+ "stry-common",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+ "warp",
+]
+
+[[package]]
+name = "stry-frontend-user"
+version = "0.1.0"
+dependencies = [
+ "akibisuto-stylus",
+ "anyhow",
+ "askama",
+ "chrono",
+ "pulldown-cmark",
+ "resource",
+ "serde",
+ "serde_urlencoded",
+ "stry-backend",
+ "stry-common",
+ "tracing",
+ "tracing-futures",
  "warp",
  "warp-macros",
+]
+
+[[package]]
+name = "stry-worker"
+version = "0.1.0"
+dependencies = [
+ "stry-backend",
+ "stry-common",
+ "stry-worker-scraper",
+ "tokio",
+]
+
+[[package]]
+name = "stry-worker-scraper"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "curl",
+ "fenn",
+ "html5ever",
+ "isahc",
+ "lazy_static",
+ "markup5ever",
+ "markup5ever_arcdom",
+ "openssl",
+ "rand",
+ "serde",
+ "stry-backend",
+ "stry-common",
+ "tokio",
+ "tracing",
+ "tracing-futures",
 ]
 
 [[package]]
@@ -2310,15 +2435,6 @@ name = "utf-8"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05e42f7c18b8f902290b009cde6d651262f956c98bc51bca4cd1d511c9cd85c7"
-
-[[package]]
-name = "uuid"
-version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9fde2f6a4bea1d6e007c4ad38c6839fa71cbb63b6dbf5b595aa38dc9b1093c11"
-dependencies = [
- "rand",
-]
 
 [[package]]
 name = "vcpkg"

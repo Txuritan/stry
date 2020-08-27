@@ -1,0 +1,27 @@
+[package]
+name = "stry-worker-scraper"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+workspace = ".."
+
+[dependencies]
+stry-backend = { path = "../stry-backend" }
+stry-common = { path = "../stry-common" }
+
+anyhow = "1.0"
+chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+curl = { version = "0.4", features = [ "static-curl", "static-ssl" ] }
+fenn = { git = "https://gitlab.com/Txuritan/fenn" }
+html5ever = "0.25"
+isahc = { version = "0.9", features = [ "cookies" ] }
+lazy_static = "1.4"
+markup5ever = "0.10"
+markup5ever_arcdom = "0.1"
+openssl = { version = "0.10", features = [ "vendored" ] }
+rand = { version = "0.7" }
+serde = { version = "1.0", features = [ "derive" ] }
+tokio = { version = "0.2", features = [ "blocking", "sync" ] }
+tracing = "0.1"
+tracing-futures = "0.2"

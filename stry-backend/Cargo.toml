@@ -1,0 +1,20 @@
+[package]
+name = "stry-backend"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+workspace = ".."
+
+[dependencies]
+# Core
+stry-backend-postgres = { path = "../stry-backend-postgres" }
+stry-backend-sqlite = { path = "../stry-backend-sqlite" }
+stry-common = { path = "../stry-common" }
+
+# Crate
+anyhow = "1.0"
+async-trait = "0.1"
+fenn = { git = "https://gitlab.com/Txuritan/fenn" }
+tracing = "0.1"
+tracing-futures = "0.2"

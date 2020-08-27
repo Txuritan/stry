@@ -1,0 +1,27 @@
+[package]
+name = "stry-common"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+workspace = ".."
+
+[features]
+postgres = [ "rewryte/postgres" ]
+sqlite = [ "rewryte/sqlite" ]
+
+[dependencies]
+anyhow = "1.0"
+async-trait = "0.1"
+chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+futures = "0.3"
+pest = "2.1"
+pest_derive = "2.1"
+postgres-types = { version = "0.1", features = [ "derive" ] }
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "serde" ] }
+rand = { version = "0.7" }
+ron = "0.6"
+rusqlite = { version = "0.24", features = [ "bundled", "chrono" ] }
+serde = { version = "1.0", features = [ "derive" ] }
+tracing = "0.1"
+tracing-futures = "0.2"

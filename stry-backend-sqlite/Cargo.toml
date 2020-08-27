@@ -1,0 +1,21 @@
+[package]
+name = "stry-backend-sqlite"
+version = "0.1.0"
+authors = ["Txuritan <txuritan@protonmail.com>"]
+edition = "2018"
+
+workspace = ".."
+
+[dependencies]
+stry-common = { path = "../stry-common", features = [ "sqlite" ] }
+
+anyhow = "1.0"
+async-trait = "0.1"
+chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+r2d2 = "0.8"
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "sqlite", "serde" ] }
+rusqlite = { version = "0.24", features = [ "bundled", "chrono" ] }
+sql-ast = "0.7"
+tokio = { version = "0.2", features = [ "blocking", "sync" ] }
+tracing = "0.1"
+tracing-futures = "0.2"

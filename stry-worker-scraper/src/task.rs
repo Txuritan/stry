@@ -1,8 +1,7 @@
 use {
     crate::{Site, Sites},
     std::sync::atomic::Ordering,
-    stry_backend::DataBackend,
-    stry_common::{backend::BackendWorker, models::WorkerSite, worker::WorkerData},
+    stry_common::{backend::{Backend, BackendWorker}, models::WorkerSite, worker::WorkerData},
 };
 
 macro_rules! stop {
@@ -20,7 +19,7 @@ macro_rules! stop {
 }
 
 #[tracing::instrument(skip(state))]
-pub async fn task(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
+pub async fn task<DataBackend: Backend>(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
     'l: loop {
         stop!('l, state);
 

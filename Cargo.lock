@@ -2084,7 +2084,6 @@ dependencies = [
  "openssl",
  "rand",
  "serde",
- "stry-backend",
  "stry-common",
  "tokio",
  "tracing",

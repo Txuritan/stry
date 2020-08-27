@@ -7,7 +7,6 @@ edition = "2018"
 workspace = ".."
 
 [dependencies]
-stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
 
 anyhow = "1.0"

@@ -8,15 +8,20 @@ license = "MIT"
 
 workspace = ".."
 
+[features]
+bundled = [ "rusqlite/bundled" ]
+
 [dependencies]
+# Core
 stry-common = { path = "../stry-common", features = [ "sqlite" ] }
 
+# Crate
 anyhow = "1.0"
 async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 r2d2 = "0.8"
 rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "sqlite", "serde" ] }
-rusqlite = { version = "0.24", features = [ "bundled", "chrono" ] }
+rusqlite = { version = "0.24", features = [ "chrono" ] }
 sql-ast = "0.7"
 tokio = { version = "0.2", features = [ "blocking", "sync" ] }
 tracing = "0.1"

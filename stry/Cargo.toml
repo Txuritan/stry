@@ -15,6 +15,14 @@ path = "src/lib.rs"
 name = "stry"
 path = "src/main.rs"
 
+[features]
+default = [ "sqlite-bundled", "curl-bundled", "openssl-bundled" ]
+
+sqlite-bundled = [ "stry-backend/sqlite-bundled" ]
+
+curl-bundled = [ "stry-worker/curl-bundled" ]
+openssl-bundled = [ "stry-worker/openssl-bundled" ]
+
 [dependencies]
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }

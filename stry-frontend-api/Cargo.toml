@@ -9,9 +9,11 @@ license = "MIT"
 workspace = ".."
 
 [dependencies]
+# Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
 
+# Crate
 anyhow = "1.0"
 bytes = "0.5"
 dataloader = { version = "0.12", default-features = false, features = ["runtime-tokio"] }

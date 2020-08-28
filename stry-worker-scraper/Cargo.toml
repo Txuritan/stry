@@ -8,20 +8,26 @@ license = "MIT"
 
 workspace = ".."
 
+[features]
+curl-bundled = [ "curl/static-curl", "isahc/static-curl" ]
+openssl-bundled = [ "curl/static-ssl", "openssl/vendored" ]
+
 [dependencies]
+# Core
 stry-common = { path = "../stry-common" }
 
+# Crate
 anyhow = "1.0"
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
-curl = { version = "0.4", features = [ "static-curl", "static-ssl" ] }
+curl = "0.4"
 fenn = { git = "https://gitlab.com/Txuritan/fenn" }
 html5ever = "0.25"
 isahc = { version = "0.9", features = [ "cookies" ] }
 lazy_static = "1.4"
 markup5ever = "0.10"
 markup5ever_arcdom = "0.1"
-openssl = { version = "0.10", features = [ "vendored" ] }
-rand = { version = "0.7" }
+openssl = "0.10"
+rand = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 tokio = { version = "0.2", features = [ "blocking", "sync" ] }
 tracing = "0.1"

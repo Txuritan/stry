@@ -10,8 +10,11 @@ workspace = ".."
 
 [features]
 default = [ "postgres", "sqlite" ]
+
 postgres = [ "stry-backend-postgres" ]
+
 sqlite = [ "stry-backend-sqlite" ]
+sqlite-bundled = [ "stry-backend-sqlite" ]
 
 [dependencies]
 # Core

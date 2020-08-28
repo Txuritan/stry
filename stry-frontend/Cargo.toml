@@ -10,15 +10,18 @@ workspace = ".."
 
 [features]
 default = [ "api", "user" ]
+
 api = [ "stry-frontend-api" ]
 user = [ "stry-frontend-user" ]
 
 [dependencies]
+# Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
 stry-frontend-api = { path = "../stry-frontend-api", optional = true }
 stry-frontend-user = { path = "../stry-frontend-user", optional = true }
 
+# Crate
 anyhow = "1.0"
 tokio = { version = "0.2", features = [ "sync" ] }
 tracing = "0.1"

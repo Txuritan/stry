@@ -9,8 +9,10 @@ license = "MIT"
 workspace = ".."
 
 [dependencies]
+# Core
 stry-common = { path = "../stry-common", features = [ "postgres" ] }
 
+# Crate
 anyhow = "1.0"
 async-trait = "0.1"
 bb8 = "0.4"

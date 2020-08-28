@@ -8,9 +8,15 @@ license = "MIT"
 
 workspace = ".."
 
+[features]
+curl-bundled = [ "stry-worker-scraper/curl-bundled" ]
+openssl-bundled = [ "stry-worker-scraper/openssl-bundled" ]
+
 [dependencies]
+# Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
 stry-worker-scraper = { path = "../stry-worker-scraper" }
 
+# Crate
 tokio = { version = "0.2", features = [ "sync" ] }

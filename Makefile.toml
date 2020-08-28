@@ -4,13 +4,13 @@
 
 [tasks.cargo]
 command = "cargo"
-args = [ "build", "--release" ]
+args = [ "build", "--bin", "stry", "--release", "${@}" ]
 
 [tasks.cross]
 condition = { env_set = [ "BUILD_TARGET" ] }
 install_crate = { crate_name = "cross", binary = "cross", test_arg = "--help" }
 command = "cross"
-args = [ "build", "--release", "--target", "${BUILD_TARGET}" ]
+args = [ "build", "--bin", "stry", "--release", "--target", "${BUILD_TARGET}", "${@}" ]
 
 
 #
@@ -26,15 +26,15 @@ args = [ "bom", ">", "bom.txt" ]
 # Build Tasks
 #
 
-[tasks.build-armv7]
-description = "Build for ARMv7 targets (Raspberry Pi 3 B+)"
-extend = "cross"
-env = { BUILD_TARGET = "armv7-unknown-linux-musleabihf" }
-
 [tasks.build-aarch64]
 description = "Build for AArch64 targets (Samsung S7)"
 extend = "cross"
 env = { BUILD_TARGET = "aarch64-unknown-linux-musl" }
+
+[tasks.build-armv7]
+description = "Build for ARMv7 targets (Raspberry Pi 3 B+)"
+extend = "cross"
+env = { BUILD_TARGET = "armv7-unknown-linux-musleabihf" }
 
 [tasks.build-linux]
 linux_alias = "build-linux-cargo"

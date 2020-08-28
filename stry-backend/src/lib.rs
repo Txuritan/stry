@@ -54,7 +54,12 @@ impl Backend for DataBackend {
         match backend {
             #[cfg(feature = "postgres")]
             BackendType::Postgres => {
-                let back = stry_backend_postgres::PostgresBackend::init(backend, storage, versions.clone()).await?;
+                let back = stry_backend_postgres::PostgresBackend::init(
+                    backend,
+                    storage,
+                    versions.clone(),
+                )
+                .await?;
 
                 Ok(DataBackend {
                     inner: DataBackendInner::Postgres(back),
@@ -63,7 +68,9 @@ impl Backend for DataBackend {
             }
             #[cfg(feature = "sqlite")]
             BackendType::Sqlite => {
-                let back = stry_backend_sqlite::SqliteBackend::init(backend, storage, versions.clone()).await?;
+                let back =
+                    stry_backend_sqlite::SqliteBackend::init(backend, storage, versions.clone())
+                        .await?;
 
                 Ok(DataBackend {
                     inner: DataBackendInner::Sqlite(back),

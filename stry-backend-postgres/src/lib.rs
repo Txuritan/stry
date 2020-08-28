@@ -1,22 +1,13 @@
 // TODO: try to pipeline queries
 
-#[doc(hidden)]
 mod author;
-#[doc(hidden)]
 mod chapter;
-#[doc(hidden)]
 mod character;
-#[doc(hidden)]
 mod origin;
-#[doc(hidden)]
 mod pairing;
-#[doc(hidden)]
 mod story;
-#[doc(hidden)]
 mod tag;
-#[doc(hidden)]
 mod warning;
-#[doc(hidden)]
 mod worker;
 
 #[macro_use]
@@ -32,6 +23,8 @@ use {
     },
     tokio_postgres::NoTls,
 };
+
+pub const SCHEMA: &str = rewryte::schema!("postgresql", "../schema.dal");
 
 #[derive(Clone, Debug)]
 pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);

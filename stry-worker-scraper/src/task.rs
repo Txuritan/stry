@@ -1,7 +1,7 @@
 use {
     crate::{Site, Sites},
     std::sync::atomic::Ordering,
-    stry_common::{backend::{Backend, BackendWorker}, models::WorkerSite, worker::WorkerData},
+    stry_common::{backend::Backend, models::WorkerSite, worker::WorkerData},
 };
 
 macro_rules! stop {
@@ -46,7 +46,7 @@ pub async fn task<DataBackend: Backend>(state: WorkerData<DataBackend>) -> anyho
 
         stop!('l, state);
 
-        let details = init.get_details().await?;
+        let _details = init.get_details().await?;
 
         stop!('l, state);
 

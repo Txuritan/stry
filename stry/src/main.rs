@@ -8,8 +8,8 @@ use {
     stry_common::{
         backend::BackendType,
         config::{
-            self, ConfigOverride, DatabaseOverride, ExecutorOverride, LoggingOverride,
-            StorageTypeOverride,
+            self, ConfigOverride, DatabaseOverride, ExecutorOverride, LoggingOutputOverride,
+            LoggingOverride, StorageTypeOverride,
         },
         version::GIT_VERSION,
     },
@@ -30,7 +30,7 @@ fn main() -> anyhow::Result<()> {
     let cfg =
         config::load_config(path, cfg_override).context("Failure to create config instance")?;
 
-    stry::setup(cfg)?;
+    stry::start(cfg)?;
 
     Ok(())
 }
@@ -60,6 +60,8 @@ fn app<'b>(version: &'b str) -> App<'static, 'b> {
         .arg(value("server-port", "p", "Port used by the server", "PORT"))
         .arg(flag("tracing-ansi", "a", "Enables ANSI coloring of tracing output"))
         .arg(flag("tracing-json", "j", "Output tracing in JSON format"))
+        .arg(flag("tracing-output", "O", "Output tracing in JSON format")
+            .possible_values(&["both", "file", "stdout"]))
         .arg(flag("tracing-thread-ids", "D", "Logging output contains the ID of its source thread"))
         .arg(flag("tracing-thread-names", "n", "Logging output contains the name of its source thread"))
         .version_short("v")
@@ -116,17 +118,34 @@ fn get_config_overrides(args: ArgMatches<'_>) -> anyhow::Result<ConfigOverride> 
             } else {
                 Some(args.is_present("tracing-ansi"))
             },
-            directory: args.value_of("tracing-directory").map(String::from),
             level: args
                 .value_of("tracing-level")
                 .map(FromStr::from_str)
                 .transpose()?,
-            json: if args.occurrences_of("tracing-json") == 0 {
-                None
-            } else {
-                Some(args.is_present("tracing-json"))
-            },
-            prefix: args.value_of("tracing-prefix").map(String::from),
+            out: args.value_of("tracing-output").map(|arg| {
+                let directory = args.value_of("tracing-directory").map(String::from);
+                let json = if args.occurrences_of("tracing-json") == 0 {
+                    None
+                } else {
+                    Some(args.is_present("tracing-json"))
+                };
+                let prefix = args.value_of("tracing-prefix").map(String::from);
+
+                match arg {
+                    "both" => LoggingOutputOverride::Both {
+                        directory,
+                        json,
+                        prefix,
+                    },
+                    "file" => LoggingOutputOverride::File {
+                        directory,
+                        json,
+                        prefix,
+                    },
+                    "stdout" => LoggingOutputOverride::StdOut { json },
+                    _ => unreachable!(),
+                }
+            }),
             thread_ids: if args.occurrences_of("tracing-thread-ids") == 0 {
                 None
             } else {

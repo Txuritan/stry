@@ -1,23 +1,13 @@
-#[doc(hidden)]
 mod author;
-#[doc(hidden)]
 mod chapter;
-#[doc(hidden)]
 mod character;
-#[doc(hidden)]
 mod origin;
-#[doc(hidden)]
 mod pairing;
-#[doc(hidden)]
 mod story;
-#[doc(hidden)]
 mod tag;
-#[doc(hidden)]
 mod warning;
-#[doc(hidden)]
 mod worker;
 
-#[doc(hidden)]
 mod utils;
 
 use {
@@ -54,7 +44,7 @@ impl Backend for SqliteBackend {
 
             let conn = pool.get()?;
 
-            conn.execute_batch(include_str!("schema.sql"))?;
+            conn.execute_batch(SCHEMA)?;
 
             Ok(Self(pool))
         } else {

@@ -104,10 +104,8 @@ pub fn load_config(path: String, mut cfg_override: ConfigOverride) -> anyhow::Re
     over!(s, cfg, cfg_override, executor.max_threads);
 
     over!(cfg, cfg_override, logging.ansi);
-    over!(s, cfg, cfg_override, logging.directory);
     over!(cfg, cfg_override, logging.level);
-    over!(cfg, cfg_override, logging.json);
-    over!(cfg, cfg_override, logging.prefix);
+    // TODO: Override for logging output type
     over!(cfg, cfg_override, logging.thread_ids);
     over!(cfg, cfg_override, logging.thread_names);
 
@@ -297,11 +295,9 @@ pub struct ExecutorOverride {
 #[serde(default)]
 pub struct Logging {
     pub ansi: bool,
-    pub directory: Option<String>,
     pub flame: Option<String>,
     pub level: LogLevel,
-    pub json: bool,
-    pub prefix: String,
+    pub out: LoggingOutput,
     pub thread_ids: bool,
     pub thread_names: bool,
 }
@@ -310,11 +306,9 @@ impl Default for Logging {
     fn default() -> Self {
         Self {
             ansi: true,
-            directory: Some(String::from("./logs")),
             flame: None,
             level: LogLevel::Debug,
-            json: false,
-            prefix: String::from("log"),
+            out: LoggingOutput::StdOut { json: false },
             thread_ids: true,
             thread_names: true,
         }
@@ -323,10 +317,8 @@ impl Default for Logging {
 
 pub struct LoggingOverride {
     pub ansi: Option<bool>,
-    pub directory: Option<String>,
     pub level: Option<LogLevel>,
-    pub json: Option<bool>,
-    pub prefix: Option<String>,
+    pub out: Option<LoggingOutputOverride>,
     pub thread_ids: Option<bool>,
     pub thread_names: Option<bool>,
 }
@@ -358,4 +350,38 @@ impl FromStr for LogLevel {
             ),
         }
     }
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+pub enum LoggingOutput {
+    Both {
+        directory: String,
+        json: bool,
+        prefix: String,
+    },
+    File {
+        directory: String,
+        json: bool,
+        prefix: String,
+    },
+    StdOut {
+        json: bool,
+    },
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+pub enum LoggingOutputOverride {
+    Both {
+        directory: Option<String>,
+        json: Option<bool>,
+        prefix: Option<String>,
+    },
+    File {
+        directory: Option<String>,
+        json: Option<bool>,
+        prefix: Option<String>,
+    },
+    StdOut {
+        json: Option<bool>,
+    },
 }

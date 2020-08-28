@@ -8,10 +8,15 @@ license = "MIT"
 
 workspace = ".."
 
+[features]
+default = [ "postgres", "sqlite" ]
+postgres = [ "stry-backend-postgres" ]
+sqlite = [ "stry-backend-sqlite" ]
+
 [dependencies]
 # Core
-stry-backend-postgres = { path = "../stry-backend-postgres" }
-stry-backend-sqlite = { path = "../stry-backend-sqlite" }
+stry-backend-postgres = { path = "../stry-backend-postgres", optional = true }
+stry-backend-sqlite = { path = "../stry-backend-sqlite", optional = true }
 stry-common = { path = "../stry-common" }
 
 # Crate

@@ -1,0 +1,61 @@
+#
+# Extension tasks
+#
+
+[tasks.cargo]
+command = "cargo"
+args = [ "build", "--release" ]
+
+[tasks.cross]
+condition = { env_set = [ "BUILD_TARGET" ] }
+install_crate = { crate_name = "cross", binary = "cross", test_arg = "--help" }
+command = "cross"
+args = [ "build", "--release", "--target", "${BUILD_TARGET}" ]
+
+
+#
+# Utility Tasks
+#
+
+[tasks.bom]
+command = "cargo"
+args = [ "bom", ">", "bom.txt" ]
+
+
+#
+# Build Tasks
+#
+
+[tasks.build-armv7]
+description = "Build for ARMv7 targets (Raspberry Pi 3 B+)"
+extend = "cross"
+env = { BUILD_TARGET = "armv7-unknown-linux-musleabihf" }
+
+[tasks.build-aarch64]
+description = "Build for AArch64 targets (Samsung S7)"
+extend = "cross"
+env = { BUILD_TARGET = "aarch64-unknown-linux-musl" }
+
+[tasks.build-linux]
+linux_alias = "build-linux-cargo"
+alias = "build-linux-cross"
+
+[tasks.build-linux-cargo]
+condition = { platforms = [ "linux" ] }
+description = "Build for Linux targets with Cargo"
+extend = "cargo"
+
+[tasks.build-linux-cross]
+condition = { platforms = [ "mac", "windows" ] }
+extend = "cross"
+env = { BUILD_TARGET = "x86_64-unknown-linux-musl" }
+
+[tasks.build-macosx]
+condition = { platforms = [ "mac" ] }
+description = "Build for MacOSX targets"
+extend = "cargo"
+
+[tasks.build-windows]
+condition = { platforms = [ "windows" ] }
+description = "Build for Windows targets"
+extend = "cargo"

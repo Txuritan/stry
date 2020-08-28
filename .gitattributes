@@ -1,2 +1,2 @@
 bom.txt    linguist-generated=true
-src/**/*.html   linguist-vendored=true
+stry/worker/scraper/src/**/*.html   linguist-vendored=true

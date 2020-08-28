@@ -470,7 +470,7 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 [[package]]
 name = "fenn"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/fenn#68747ef95c5d1c22424ea4f895ae7083805c9a22"
+source = "git+https://gitlab.com/Txuritan/fenn#c18a5a13c1630cea1ea5f2e5641e33c4ed94a17d"
 
 [[package]]
 name = "flate2"
@@ -1719,7 +1719,7 @@ checksum = "11a7f6703c396037a02da99195e49138c37f3cc5146cb95f2f7d26debc0c5622"
 [[package]]
 name = "rewryte"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
+source = "git+https://gitlab.com/Txuritan/rewryte#413cc902f16996abbef7e2247639587c0014d658"
 dependencies = [
  "anyhow",
  "rewryte-generator",
@@ -1731,7 +1731,7 @@ dependencies = [
 [[package]]
 name = "rewryte-generator"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
+source = "git+https://gitlab.com/Txuritan/rewryte#413cc902f16996abbef7e2247639587c0014d658"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -1743,7 +1743,7 @@ dependencies = [
 [[package]]
 name = "rewryte-macro"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
+source = "git+https://gitlab.com/Txuritan/rewryte#413cc902f16996abbef7e2247639587c0014d658"
 dependencies = [
  "codespan-reporting",
  "quote",
@@ -1755,7 +1755,7 @@ dependencies = [
 [[package]]
 name = "rewryte-parser"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/rewryte#ff505e112dc527fe90c008d1cb2375755e9885bd"
+source = "git+https://gitlab.com/Txuritan/rewryte#413cc902f16996abbef7e2247639587c0014d658"
 dependencies = [
  "codespan-reporting",
  "pest",
@@ -2632,7 +2632,7 @@ dependencies = [
 [[package]]
 name = "warp-macros"
 version = "0.1.0"
-source = "git+https://gitlab.com/Txuritan/warp-macros#3eed130c284de9f602b06066fce5f84f1057fc9d"
+source = "git+https://gitlab.com/Txuritan/warp-macros#d133e9c05f884026444ebc3657f30ff2b341db59"
 dependencies = [
  "proc-macro2",
  "quote",

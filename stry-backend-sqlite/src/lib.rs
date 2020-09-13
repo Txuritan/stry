@@ -37,18 +37,21 @@ impl Backend for SqliteBackend {
         _version: Arc<Vec<LibVersion>>,
     ) -> anyhow::Result<Self> {
         if let StorageType::File { location } = storage {
-            let pool = tokio::task::spawn_blocking(move || -> anyhow::Result<Pool<SqliteConnectionManager>> {
-                let manager = SqliteConnectionManager::file(&location)
-                    .with_init(|c| c.execute_batch("PRAGMA foreign_keys=1;"));
+            let pool = tokio::task::spawn_blocking(
+                move || -> anyhow::Result<Pool<SqliteConnectionManager>> {
+                    let manager = SqliteConnectionManager::file(&location)
+                        .with_init(|c| c.execute_batch("PRAGMA foreign_keys=1;"));
 
-                let pool = Pool::new(manager)?;
+                    let pool = Pool::new(manager)?;
 
-                let conn = pool.get()?;
+                    let conn = pool.get()?;
 
-                conn.execute_batch(SCHEMA)?;
+                    conn.execute_batch(SCHEMA)?;
 
-                Ok(pool)
-            }).await??;
+                    Ok(pool)
+                },
+            )
+            .await??;
 
             Ok(Self(pool))
         } else {

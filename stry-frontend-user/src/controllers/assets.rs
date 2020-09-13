@@ -111,11 +111,26 @@ pub fn fonts() -> BoxedFilter<(impl Reply,)> {
         .and(warp::path::end())
         .and_then(|file: String| async move {
             match file.as_str() {
-                "fontawesome-webfont.eot" => Ok(Font::new(FontType::EOT, resource!("assets/fonts/fontawesome-webfont.eot"))),
-                "fontawesome-webfont.svg" => Ok(Font::new(FontType::SVG, resource!("assets/fonts/fontawesome-webfont.svg"))),
-                "fontawesome-webfont.ttf" => Ok(Font::new(FontType::TTF, resource!("assets/fonts/fontawesome-webfont.ttf"))),
-                "fontawesome-webfont.woff" => Ok(Font::new(FontType::WOFF, resource!("assets/fonts/fontawesome-webfont.woff"))),
-                "fontawesome-webfont.woff2" => Ok(Font::new(FontType::WOFF2, resource!("assets/fonts/fontawesome-webfont.woff2"))),
+                "fontawesome-webfont.eot" => Ok(Font::new(
+                    FontType::EOT,
+                    resource!("assets/fonts/fontawesome-webfont.eot"),
+                )),
+                "fontawesome-webfont.svg" => Ok(Font::new(
+                    FontType::SVG,
+                    resource!("assets/fonts/fontawesome-webfont.svg"),
+                )),
+                "fontawesome-webfont.ttf" => Ok(Font::new(
+                    FontType::TTF,
+                    resource!("assets/fonts/fontawesome-webfont.ttf"),
+                )),
+                "fontawesome-webfont.woff" => Ok(Font::new(
+                    FontType::WOFF,
+                    resource!("assets/fonts/fontawesome-webfont.woff"),
+                )),
+                "fontawesome-webfont.woff2" => Ok(Font::new(
+                    FontType::WOFF2,
+                    resource!("assets/fonts/fontawesome-webfont.woff2"),
+                )),
                 _ => Err(warp::reject::not_found()),
             }
         })

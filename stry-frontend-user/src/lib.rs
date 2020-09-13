@@ -8,7 +8,12 @@ pub mod utils;
 use {
     crate::controllers::{dashboard, edit, explore, item, search, story},
     stry_backend::DataBackend,
-    warp::{filters::BoxedFilter, Filter, Reply, reply::with, http::header::{HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, X_FRAME_OPTIONS}},
+    warp::{
+        filters::BoxedFilter,
+        http::header::{HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, X_FRAME_OPTIONS},
+        reply::with,
+        Filter, Reply,
+    },
 };
 
 // const BOM: &str = include_str!("../bom.txt");
@@ -16,7 +21,10 @@ use {
 pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
     let mut headers = HeaderMap::new();
 
-    headers.insert(CONTENT_SECURITY_POLICY, HeaderValue::from_static("default-src 'self'"));
+    headers.insert(
+        CONTENT_SECURITY_POLICY,
+        HeaderValue::from_static("default-src 'self'"),
+    );
     headers.insert("Feature-Policy", HeaderValue::from_static("accelerometer 'none'; ambient-light-sensor 'self'; battery 'none'; camera 'none'; gyroscope 'none'; geolocation 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; web-share 'none'"));
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
 
@@ -28,10 +36,8 @@ pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
             .or(dashboard::index(backend.clone())),
     );
 
-    let edit = warp::path("edit").and(
-        edit::story(backend.clone())
-            .or(edit::chapter(backend.clone())),
-    );
+    let edit =
+        warp::path("edit").and(edit::story(backend.clone()).or(edit::chapter(backend.clone())));
 
     let story =
         warp::path("story").and(story::chapter(backend.clone()).or(story::index(backend.clone())));

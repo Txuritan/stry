@@ -5,7 +5,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendWorker for SqliteBackend {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
         let task = tokio::task::spawn_blocking({
             let inner = self.clone();

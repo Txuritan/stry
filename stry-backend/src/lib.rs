@@ -45,7 +45,7 @@ enum DataBackendInner {
 
 #[async_trait::async_trait]
 impl Backend for DataBackend {
-    #[tracing::instrument(skip(storage, versions))]
+    #[tracing::instrument(skip(storage, versions), err)]
     async fn init(
         backend: BackendType,
         storage: StorageType,

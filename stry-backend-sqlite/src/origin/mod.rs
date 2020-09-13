@@ -13,7 +13,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendOrigin for SqliteBackend {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn all_origins(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Origin>>> {
         let origins = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -54,7 +54,7 @@ impl BackendOrigin for SqliteBackend {
         Ok(origins)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -77,7 +77,7 @@ impl BackendOrigin for SqliteBackend {
         Ok(res)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn origin_stories(
         &self,
         id: Cow<'static, str>,

@@ -13,7 +13,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendWarning for SqliteBackend {
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn all_warnings(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Warning>>> {
         let warnings = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -54,7 +54,7 @@ impl BackendWarning for SqliteBackend {
         Ok(warnings)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn get_warning(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Warning>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
@@ -74,7 +74,7 @@ impl BackendWarning for SqliteBackend {
         Ok(res)
     }
 
-    #[tracing::instrument(level = "trace", skip(self))]
+    #[tracing::instrument(level = "trace", skip(self), err)]
     async fn warning_stories(
         &self,
         id: Cow<'static, str>,

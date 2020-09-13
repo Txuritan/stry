@@ -9,7 +9,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendCharacter for PostgresBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn all_characters(
         &self,
         offset: i32,
@@ -18,12 +18,12 @@ impl BackendCharacter for PostgresBackend {
         todo!()
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn get_character(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Character>> {
         todo!()
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn character_stories(
         &self,
         id: Cow<'static, str>,

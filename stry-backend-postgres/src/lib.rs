@@ -31,7 +31,7 @@ pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 
 #[async_trait::async_trait]
 impl Backend for PostgresBackend {
-    #[tracing::instrument(skip(_backend, _storage, _version))]
+    #[tracing::instrument(skip(_backend, _storage, _version), err)]
     async fn init(
         _backend: BackendType,
         _storage: StorageType,

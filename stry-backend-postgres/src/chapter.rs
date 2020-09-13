@@ -6,7 +6,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendChapter for PostgresBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,

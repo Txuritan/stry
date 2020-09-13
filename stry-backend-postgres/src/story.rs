@@ -11,7 +11,7 @@ use {
 
 #[async_trait::async_trait]
 impl BackendStory for PostgresBackend {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn all_stories(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
@@ -46,7 +46,7 @@ impl BackendStory for PostgresBackend {
         Ok(Some(list))
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
         let conn = self.0.get().await?;
 
@@ -236,7 +236,7 @@ impl BackendStory for PostgresBackend {
         Ok(Some(story))
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self), err)]
     async fn search_stories(
         &self,
         input: Cow<'static, str>,

@@ -18,7 +18,8 @@ macro_rules! stop {
     };
 }
 
-#[tracing::instrument(skip(state))]
+#[allow(clippy::unit_arg)]
+#[tracing::instrument(skip(state), err)]
 pub async fn task<DataBackend: Backend>(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
     'l: loop {
         stop!('l, state);

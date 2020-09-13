@@ -30,7 +30,7 @@ pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
 #[async_trait::async_trait]
 impl Backend for SqliteBackend {
-    #[tracing::instrument(skip(_backend, storage, _version))]
+    #[tracing::instrument(skip(_backend, storage, _version), err)]
     async fn init(
         _backend: BackendType,
         storage: StorageType,

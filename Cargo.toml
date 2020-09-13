@@ -5,6 +5,7 @@ members = [
     "stry-backend-postgres",
     "stry-backend-sqlite",
     "stry-common",
+    "stry-dataloader",
     "stry-frontend",
     "stry-frontend-api",
     "stry-frontend-user",

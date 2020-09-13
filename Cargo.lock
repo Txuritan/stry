@@ -2009,6 +2009,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "stry-dataloader"
+version = "2.3.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "tokio",
+ "tracing",
+ "tracing-futures",
+]
+
+[[package]]
 name = "stry-frontend"
 version = "2.3.0"
 dependencies = [

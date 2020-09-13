@@ -1,0 +1,16 @@
+[package]
+name = "stry-dataloader"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT"
+
+workspace = ".."
+
+[dependencies]
+anyhow = "1.0"
+async-trait = "0.1"
+tokio = { version = "0.2", default-features = false, features = [ "sync" ] }
+tracing = "0.1"
+tracing-futures = "0.2"

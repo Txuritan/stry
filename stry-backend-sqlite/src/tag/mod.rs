@@ -6,15 +6,13 @@ use {
     anyhow::Context,
     rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
-    stry_common::backend::{BackendStory, BackendTag},
     stry_common::models::{Entity, List, Story, Tag},
     tracing_futures::Instrument,
 };
 
-#[async_trait::async_trait]
-impl BackendTag for SqliteBackend {
+impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
+    pub async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
         let tags = tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -54,7 +52,7 @@ impl BackendTag for SqliteBackend {
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
+    pub async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -74,7 +72,7 @@ impl BackendTag for SqliteBackend {
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn tag_stories(
+    pub async fn tag_stories(
         &self,
         id: Cow<'static, str>,
         offset: i32,

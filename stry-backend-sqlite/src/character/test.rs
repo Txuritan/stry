@@ -1,7 +1,6 @@
 use {
     crate::test_utils::setup,
     stry_common::{
-        backend::BackendCharacter,
         models::{Character, List, Rating, State, Story},
         test_helpers::{character, StoryBuilder},
     },

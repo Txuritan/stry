@@ -14,6 +14,7 @@ bundled = [ "rusqlite/bundled" ]
 [dependencies]
 # Core
 stry-common = { path = "../stry-common", features = [ "sqlite" ] }
+stry-dataloader = { path = "../stry-dataloader" }
 
 # Crate
 anyhow = "1.0"

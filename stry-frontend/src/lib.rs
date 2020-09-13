@@ -3,15 +3,14 @@ use {
     stry_backend::DataBackend,
     stry_common::config::Config,
     tokio::sync::broadcast::Receiver,
-    warp::{Filter, Rejection},
+    warp::{Filter, Rejection, Reply},
 };
 
 pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend) {
     let (enable_api, enable_user) = cfg.frontend.as_bool();
 
-    let routes = enable(enable_api)
-        .and(stry_frontend_api::route(backend.clone()))
-        .or(enable(enable_user).and(stry_frontend_user::route(backend.clone())))
+    let routes = api_routes(enable_api, backend.clone())
+        .or(user_routes(enable_user, backend.clone()))
         // I want to use brotli, but Firefpx isn't adding new features to HTTP (non HTTPS),
         // as such it only sends `Accept-Encoding: gzip, deflate`.
         // That means I'll either wrap the server in NGINX, or allow for TLS through the config.
@@ -27,6 +26,46 @@ pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend)
     tracing::info!("warp drive engaged: listening on http://{}", addr);
 
     server.await;
+}
+
+#[cfg(feature = "api")]
+fn api_routes(
+    enable_api: bool,
+    backend: DataBackend,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    enable(enable_api)
+        .and(stry_frontend_api::route(backend))
+        .boxed()
+}
+
+#[cfg(not(feature = "api"))]
+fn api_routes(
+    _enable_api: bool,
+    _backend: DataBackend,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    warp::any()
+        .and_then(move || async move { Result::<String, _>::Err(warp::reject::not_found()) })
+        .boxed()
+}
+
+#[cfg(feature = "user")]
+fn user_routes(
+    enable_user: bool,
+    backend: DataBackend,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    enable(enable_user)
+        .and(stry_frontend_user::route(backend))
+        .boxed()
+}
+
+#[cfg(not(feature = "user"))]
+fn user_routes(
+    _enable_user: bool,
+    _backend: DataBackend,
+) -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
+    warp::any()
+        .and_then(move || async move { Result::<String, _>::Err(warp::reject::not_found()) })
+        .boxed()
 }
 
 // https://github.com/seanmonstar/warp/issues/131

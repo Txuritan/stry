@@ -1,5 +1,5 @@
 use {
-    crate::{backend::Backend, config::FourCount},
+    crate::config::FourCount,
     futures::FutureExt,
     std::{
         future::Future,
@@ -13,7 +13,7 @@ use {
 
 struct WorkerGroupData<'t, DataBackend, Fun, Task>
 where
-    DataBackend: Backend,
+    DataBackend: Clone,
     Fun: Fn(WorkerData<DataBackend>) -> Task,
     Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
@@ -26,7 +26,7 @@ where
 
 impl<'t, DataBackend, Fun, Task> WorkerGroupData<'t, DataBackend, Fun, Task>
 where
-    DataBackend: Backend,
+    DataBackend: Clone,
     Fun: Fn(WorkerData<DataBackend>) -> Task,
     Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
@@ -43,7 +43,7 @@ where
 
 pub struct WorkerData<DataBackend>
 where
-    DataBackend: Backend,
+    DataBackend: Clone,
 {
     pub id: usize,
     pub backend: DataBackend,
@@ -52,7 +52,7 @@ where
 
 impl<DataBackend> WorkerData<DataBackend>
 where
-    DataBackend: Backend,
+    DataBackend: Clone,
 {
     fn bump(&self) -> Self {
         Self {
@@ -71,7 +71,7 @@ pub async fn worker<'t, Signal, DataBackend, Fun, Task>(
     backend: DataBackend,
 ) where
     Signal: Future<Output = ()> + Send + 't,
-    DataBackend: Backend,
+    DataBackend: Clone,
     Fun: Fn(WorkerData<DataBackend>) -> Task,
     Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {
@@ -114,7 +114,7 @@ async fn worker_group<'t, DataBackend, Fun, Task>(
     group_data: WorkerGroupData<'t, DataBackend, Fun, Task>,
 ) -> futures::future::BoxFuture<'t, ()>
 where
-    DataBackend: Backend,
+    DataBackend: Clone,
     Fun: Fn(WorkerData<DataBackend>) -> Task,
     Task: Future<Output = anyhow::Result<()>> + Send + 't,
 {

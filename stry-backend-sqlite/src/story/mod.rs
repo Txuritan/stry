@@ -1,20 +1,17 @@
 use {
     crate::{
-        utils::{Total, Wrapper},
+        utils::{SqliteConnectionManager, Total, Wrapper},
         SqliteBackend,
     },
     anyhow::Context,
+    r2d2::PooledConnection,
     rewryte::sqlite::{FromRow, SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
     stry_common::models::{
-        story::{StoryPart, StoryRow},
-        Author, Character, Entity, List, Origin, Pairing, PairingRow, Square, Story, Tag, Warning,
+        story::StoryRow, Author, Character, Entity, List, Origin, Pairing, PairingRow, Square,
+        Story, Tag, Warning,
     },
-    stry_common::{
-        backend::BackendStory,
-        search::{SearchParser, SearchValue},
-    },
-    tracing_futures::Instrument,
+    stry_common::search::{SearchParser, SearchValue},
 };
 
 enum Wrap {
@@ -26,14 +23,163 @@ enum Wrap {
     Tag(Tag),
 }
 
-#[async_trait::async_trait]
-impl BackendStory for SqliteBackend {
+#[tracing::instrument(level = "trace", skip(conn), err)]
+pub fn get(
+    conn: &PooledConnection<SqliteConnectionManager>,
+    id: Cow<'static, str>,
+) -> anyhow::Result<Option<Story>> {
+    let (mut stmt, mut story_pairings_stmt, mut pairing_stmt) = tracing::trace_span!("prepare")
+        .in_scope(|| -> anyhow::Result<(_, _, _)> {
+            Ok((
+                conn.prepare(include_str!("get-item.sql"))?,
+                conn.prepare(include_str!("get-story-pairing.sql"))?,
+                conn.prepare(include_str!("get-pairing-character.sql"))?,
+            ))
+        })?;
+
+    let rows = tracing::trace_span!("get_rows").in_scope(|| {
+        stmt.query_map_anyhow(rusqlite::params![id, id, id, id, id, id], |row| {
+            let typ: String = row
+                .get(9)
+                .context("Attempting to get row index 8 for story")?;
+
+            match typ.as_str() {
+                "story" => Ok(Wrap::Story(
+                    StoryRow::from_row(row)
+                        .context("Attempting to get story row for story (row)")?,
+                )),
+                "author" => Ok(Wrap::Author(
+                    Author::from_row(row).context("Attempting to get author for story (row)")?,
+                )),
+                "origin" => Ok(Wrap::Origin(
+                    Origin::from_row(row).context("Attempting to get origin for story (row)")?,
+                )),
+                "warning" => Ok(Wrap::Warning(
+                    Warning::from_row(row).context("Attempting to get warning for story (row)")?,
+                )),
+                "character" => Ok(Wrap::Character(
+                    Character::from_row(row)
+                        .context("Attempting to get character for story (row)")?,
+                )),
+                "tag" => Ok(Wrap::Tag(
+                    Tag::from_row(row).context("Attempting to get tag for story (row)")?,
+                )),
+                other => anyhow::bail!("Unknown row group type `{}`", other),
+            }
+        })
+    })?;
+
+    let parts = match rows {
+        Some(parts) => parts,
+        None => return Ok(None),
+    };
+
+    let pairings =
+        match tracing::trace_span!("get_pairings").in_scope(|| -> anyhow::Result<_> {
+            let pairing_parts: Vec<PairingRow> = match story_pairings_stmt
+                .type_query_map_anyhow(rusqlite::params![id])?
+                .map(|items| items.collect::<Result<_, _>>())
+            {
+                Some(items) => items?,
+                None => return Ok(None),
+            };
+
+            let mut pairings = Vec::with_capacity(pairing_parts.len());
+
+            for part in pairing_parts {
+                let characters = match pairing_stmt
+                    .type_query_map_anyhow(rusqlite::params![part.id])?
+                    .map(|items| items.collect::<Result<_, _>>())
+                {
+                    Some(items) => items?,
+                    None => return Ok(None),
+                };
+
+                pairings.push(Pairing {
+                    id: part.id,
+
+                    characters,
+
+                    platonic: part.platonic,
+
+                    created: part.created,
+                    updated: part.updated,
+                });
+            }
+
+            Ok(Some(pairings))
+        })? {
+            Some(pairings) => pairings,
+            None => return Ok(None),
+        };
+
+    let mut story_row = None;
+
+    let mut authors = Vec::new();
+    let mut origins = Vec::new();
+
+    let mut warnings = Vec::new();
+    let mut characters = Vec::new();
+    let mut tags = Vec::new();
+
+    for row in parts {
+        match row? {
+            Wrap::Story(item) => {
+                story_row = Some(item);
+            }
+            Wrap::Author(item) => authors.push(item),
+            Wrap::Origin(item) => origins.push(item),
+            Wrap::Warning(item) => warnings.push(item),
+            Wrap::Character(item) => characters.push(item),
+            Wrap::Tag(item) => tags.push(item),
+        }
+    }
+
+    let story_row =
+        story_row.ok_or_else(|| anyhow::anyhow!("Story get did not return story group type"))?;
+
+    Ok(Some(Story {
+        id: story_row.id,
+
+        name: story_row.name,
+        summary: story_row.summary,
+
+        square: Square {
+            rating: story_row.rating,
+            warnings: !warnings.is_empty(),
+            state: story_row.state,
+        },
+
+        chapters: story_row.chapters,
+        words: story_row.words,
+
+        authors,
+        origins,
+
+        warnings,
+        characters,
+        pairings,
+        tags,
+
+        // TODO
+        series: None,
+
+        created: story_row.created,
+        updated: story_row.updated,
+    }))
+}
+
+impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn all_stories(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Story>>> {
-        let ids = match tokio::task::spawn_blocking({
+    pub async fn all_stories(
+        &self,
+        offset: i32,
+        limit: i32,
+    ) -> anyhow::Result<Option<List<Story>>> {
+        let list = match tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<Option<List<Entity>>> {
+            move || -> anyhow::Result<Option<List<Story>>> {
                 let conn = inner.0.get()?;
 
                 let mut stmt = tracing::trace_span!("prepare")
@@ -49,12 +195,23 @@ impl BackendStory for SqliteBackend {
                             })
                         })
                     })?
-                    .map(|items| items.collect::<Result<_, _>>());
+                    .map(|items| items.collect::<Result<Vec<Entity>, _>>());
 
-                let items = match rows {
+                let entities = match rows {
                     Some(items) => items?,
                     None => return Ok(None),
                 };
+
+                let mut items = Vec::with_capacity(entities.len());
+
+                for entity in entities {
+                    let story = match get(&conn, entity.id.into())? {
+                        Some(items) => items,
+                        None => return Ok(None),
+                    };
+
+                    items.push(story);
+                }
 
                 let total = match tracing::trace_span!("get_count").in_scope(|| {
                     conn.query_row_anyhow(
@@ -81,172 +238,20 @@ impl BackendStory for SqliteBackend {
             None => return Ok(None),
         };
 
-        let (total, entities) = ids.into_parts();
-
-        let mut items = Vec::with_capacity(limit as usize);
-
-        for Entity { id } in entities {
-            let story = match self
-                .get_story(id.into())
-                .instrument(tracing::trace_span!("get_story"))
-                .await?
-            {
-                Some(story) => story,
-                None => return Ok(None),
-            };
-
-            items.push(story);
-        }
-
-        Ok(Some(List { total, items }))
+        Ok(Some(list))
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
-        let story_part = match tokio::task::spawn_blocking({
+    pub async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
+        let story = match tokio::task::spawn_blocking({
             let inner = self.clone();
 
-            move || -> anyhow::Result<Option<StoryPart>> {
+            move || -> anyhow::Result<Option<Story>> {
                 let conn = inner.0.get()?;
 
-                let (mut stmt, mut story_pairings_stmt, mut pairing_stmt) =
-                    tracing::trace_span!("prepare").in_scope(|| -> anyhow::Result<(_, _, _)> {
-                        Ok((
-                            conn.prepare(include_str!("get-item.sql"))?,
-                            conn.prepare(include_str!("get-story-pairing.sql"))?,
-                            conn.prepare(include_str!("get-pairing-character.sql"))?,
-                        ))
-                    })?;
+                let story = get(&conn, id)?;
 
-                let rows = tracing::trace_span!("get_rows").in_scope(|| {
-                    stmt.query_map_anyhow(rusqlite::params![id, id, id, id, id, id], |row| {
-                        let typ: String = row
-                            .get(9)
-                            .context("Attempting to get row index 8 for story")?;
-
-                        match typ.as_str() {
-                            "story" => Ok(Wrap::Story(
-                                StoryRow::from_row(row)
-                                    .context("Attempting to get story row for story (row)")?,
-                            )),
-                            "author" => Ok(Wrap::Author(
-                                Author::from_row(row)
-                                    .context("Attempting to get author for story (row)")?,
-                            )),
-                            "origin" => Ok(Wrap::Origin(
-                                Origin::from_row(row)
-                                    .context("Attempting to get origin for story (row)")?,
-                            )),
-                            "warning" => Ok(Wrap::Warning(
-                                Warning::from_row(row)
-                                    .context("Attempting to get warning for story (row)")?,
-                            )),
-                            "character" => Ok(Wrap::Character(
-                                Character::from_row(row)
-                                    .context("Attempting to get character for story (row)")?,
-                            )),
-                            "tag" => Ok(Wrap::Tag(
-                                Tag::from_row(row)
-                                    .context("Attempting to get tag for story (row)")?,
-                            )),
-                            other => anyhow::bail!("Unknown row group type `{}`", other),
-                        }
-                    })
-                })?;
-
-                let parts = match rows {
-                    Some(parts) => parts,
-                    None => return Ok(None),
-                };
-
-                let pairings = match tracing::trace_span!("get_pairings").in_scope(
-                    || -> anyhow::Result<_> {
-                        let pairing_parts: Vec<PairingRow> = match story_pairings_stmt
-                            .type_query_map_anyhow(rusqlite::params![id])?
-                            .map(|items| items.collect::<Result<_, _>>())
-                        {
-                            Some(items) => items?,
-                            None => return Ok(None),
-                        };
-
-                        let mut pairings = Vec::with_capacity(pairing_parts.len());
-
-                        for part in pairing_parts {
-                            let characters = match pairing_stmt
-                                .type_query_map_anyhow(rusqlite::params![part.id])?
-                                .map(|items| items.collect::<Result<_, _>>())
-                            {
-                                Some(items) => items?,
-                                None => return Ok(None),
-                            };
-
-                            pairings.push(Pairing {
-                                id: part.id,
-
-                                characters,
-
-                                platonic: part.platonic,
-
-                                created: part.created,
-                                updated: part.updated,
-                            });
-                        }
-
-                        Ok(Some(pairings))
-                    },
-                )? {
-                    Some(pairings) => pairings,
-                    None => return Ok(None),
-                };
-
-                let mut story_row = None;
-
-                let mut authors = Vec::new();
-                let mut origins = Vec::new();
-
-                let mut warnings = Vec::new();
-                let mut characters = Vec::new();
-                let mut tags = Vec::new();
-
-                for row in parts {
-                    match row? {
-                        Wrap::Story(item) => {
-                            story_row = Some(item);
-                        }
-                        Wrap::Author(item) => authors.push(item),
-                        Wrap::Origin(item) => origins.push(item),
-                        Wrap::Warning(item) => warnings.push(item),
-                        Wrap::Character(item) => characters.push(item),
-                        Wrap::Tag(item) => tags.push(item),
-                    }
-                }
-
-                let story_row = story_row
-                    .ok_or_else(|| anyhow::anyhow!("Story get did not return story group type"))?;
-
-                Ok(Some(StoryPart {
-                    id: story_row.id,
-
-                    name: story_row.name,
-                    summary: story_row.summary,
-
-                    rating: story_row.rating,
-                    state: story_row.state,
-
-                    chapters: story_row.chapters,
-                    words: story_row.words,
-
-                    authors,
-                    origins,
-
-                    warnings,
-                    characters,
-                    pairings,
-                    tags,
-
-                    created: story_row.created,
-                    updated: story_row.updated,
-                }))
+                Ok(story)
             }
         })
         .await?
@@ -256,51 +261,21 @@ impl BackendStory for SqliteBackend {
             None => return Ok(None),
         };
 
-        let story = Story {
-            id: story_part.id,
-
-            name: story_part.name,
-            summary: story_part.summary,
-
-            square: Square {
-                rating: story_part.rating,
-                warnings: !story_part.warnings.is_empty(),
-                state: story_part.state,
-            },
-
-            chapters: story_part.chapters,
-            words: story_part.words,
-
-            authors: story_part.authors,
-            origins: story_part.origins,
-
-            warnings: story_part.warnings,
-            pairings: story_part.pairings,
-            characters: story_part.characters,
-            tags: story_part.tags,
-
-            // TODO
-            series: None,
-
-            created: story_part.created,
-            updated: story_part.updated,
-        };
-
         Ok(Some(story))
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn search_stories(
+    pub async fn search_stories(
         &self,
         input: Cow<'static, str>,
         offset: i32,
         limit: i32,
     ) -> anyhow::Result<Option<List<Story>>> {
-        let ids = match tokio::task::spawn_blocking({
+        let list = match tokio::task::spawn_blocking({
             let inner = self.clone();
             let input = input.to_owned();
 
-            move || -> anyhow::Result<Option<List<Entity>>> {
+            move || -> anyhow::Result<Option<List<Story>>> {
                 let search = SearchParser::parse_to_structure(&input)?;
 
                 let (and, not): (Vec<SearchValue<'_>>, Vec<SearchValue<'_>>) =
@@ -334,11 +309,22 @@ impl BackendStory for SqliteBackend {
                     })
                 })?;
 
-                let items: Vec<Entity> =
+                let entities: Vec<Entity> =
                     match rows.map(|items| items.collect::<Result<Vec<Entity>, _>>()) {
                         Some(items) => items?,
                         None => return Ok(None),
                     };
+
+                let mut items = Vec::with_capacity(entities.len());
+
+                for entity in entities {
+                    let story = match get(&conn, entity.id.into())? {
+                        Some(items) => items,
+                        None => return Ok(None),
+                    };
+
+                    items.push(story);
+                }
 
                 Ok(Some(List {
                     total: total.total,
@@ -352,24 +338,7 @@ impl BackendStory for SqliteBackend {
             None => return Ok(None),
         };
 
-        let (total, entities) = ids.into_parts();
-
-        let mut items = Vec::with_capacity(limit as usize);
-
-        for Entity { id } in entities {
-            let story = match self
-                .get_story(id.into())
-                .instrument(tracing::trace_span!("get_story"))
-                .await?
-            {
-                Some(story) => story,
-                None => return Ok(None),
-            };
-
-            items.push(story);
-        }
-
-        Ok(Some(List { total, items }))
+        Ok(Some(list))
     }
 }
 

@@ -1,7 +1,8 @@
 use {
     crate::{Site, Sites},
     std::sync::atomic::Ordering,
-    stry_common::{backend::Backend, models::WorkerSite, worker::WorkerData},
+    stry_backend::DataBackend,
+    stry_common::{models::WorkerSite, worker::WorkerData},
 };
 
 macro_rules! stop {
@@ -20,7 +21,7 @@ macro_rules! stop {
 
 #[allow(clippy::unit_arg)]
 #[tracing::instrument(skip(state), err)]
-pub async fn task<DataBackend: Backend>(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
+pub async fn task(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
     'l: loop {
         stop!('l, state);
 

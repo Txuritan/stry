@@ -6,10 +6,7 @@ use {
     anyhow::Context,
     futures::try_join,
     std::borrow::Cow,
-    stry_common::{
-        backend::{BackendAuthor, BackendStory},
-        models::{Author, Entity, List, Story},
-    },
+    stry_common::models::{Author, Entity, List, Story},
 };
 
 impl FromRow for Author {
@@ -36,10 +33,13 @@ impl FromRow for Author {
     }
 }
 
-#[async_trait::async_trait]
-impl BackendAuthor for PostgresBackend {
+impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
-    async fn all_authors(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Author>>> {
+    pub async fn all_authors(
+        &self,
+        offset: i32,
+        limit: i32,
+    ) -> anyhow::Result<Option<List<Author>>> {
         let conn = self.0.get().await?;
 
         let pair = crate::params![limit, offset];
@@ -59,7 +59,7 @@ impl BackendAuthor for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
+    pub async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         let conn = self.0.get().await?;
 
         let author = conn
@@ -70,7 +70,7 @@ impl BackendAuthor for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn author_stories(
+    pub async fn author_stories(
         &self,
         id: Cow<'static, str>,
         offset: i32,

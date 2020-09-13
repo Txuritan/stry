@@ -3,10 +3,7 @@ use {
     askama::Template,
     chrono::Utc,
     stry_backend::DataBackend,
-    stry_common::{
-        backend::BackendStory,
-        models::{Paging, Search},
-    },
+    stry_common::models::{Paging, Search},
     warp::{Rejection, Reply},
 };
 

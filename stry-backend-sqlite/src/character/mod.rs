@@ -6,15 +6,13 @@ use {
     anyhow::Context,
     rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
-    stry_common::backend::{BackendCharacter, BackendStory},
     stry_common::models::{Character, Entity, List, Story},
     tracing_futures::Instrument,
 };
 
-#[async_trait::async_trait]
-impl BackendCharacter for SqliteBackend {
+impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn all_characters(
+    pub async fn all_characters(
         &self,
         offset: i32,
         limit: i32,
@@ -67,7 +65,7 @@ impl BackendCharacter for SqliteBackend {
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn get_character(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Character>> {
+    pub async fn get_character(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Character>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -90,7 +88,7 @@ impl BackendCharacter for SqliteBackend {
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn character_stories(
+    pub async fn character_stories(
         &self,
         id: Cow<'static, str>,
         offset: i32,

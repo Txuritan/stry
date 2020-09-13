@@ -1,12 +1,11 @@
 use {
     crate::SqliteBackend, anyhow::Context, rewryte::sqlite::SqliteExt, std::borrow::Cow,
-    stry_common::backend::BackendChapter, stry_common::models::Chapter,
+    stry_common::models::Chapter,
 };
 
-#[async_trait::async_trait]
-impl BackendChapter for SqliteBackend {
+impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn get_chapter(
+    pub async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
         chapter_number: i32,

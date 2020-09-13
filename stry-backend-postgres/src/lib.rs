@@ -1,3 +1,5 @@
+#![type_length_limit = "1230124"] // TODO: figure out why I need this and fix it
+
 // TODO: try to pipeline queries
 
 mod author;
@@ -18,7 +20,7 @@ use {
     bb8_postgres::PostgresConnectionManager,
     std::sync::Arc,
     stry_common::{
-        backend::{Backend, BackendType, StorageType},
+        backend::{BackendType, StorageType},
         version::LibVersion,
     },
     tokio_postgres::NoTls,
@@ -29,10 +31,9 @@ pub const SCHEMA: &str = rewryte::schema!("postgresql", "../schema.dal");
 #[derive(Clone, Debug)]
 pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 
-#[async_trait::async_trait]
-impl Backend for PostgresBackend {
+impl PostgresBackend {
     #[tracing::instrument(skip(_backend, _storage, _version), err)]
-    async fn init(
+    pub async fn init(
         _backend: BackendType,
         _storage: StorageType,
         _version: Arc<Vec<LibVersion>>,

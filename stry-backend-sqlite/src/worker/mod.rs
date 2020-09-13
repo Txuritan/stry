@@ -1,12 +1,8 @@
-use {
-    crate::SqliteBackend, rewryte::sqlite::SqliteExt, stry_common::backend::BackendWorker,
-    stry_common::models::WorkerTask,
-};
+use {crate::SqliteBackend, rewryte::sqlite::SqliteExt, stry_common::models::WorkerTask};
 
-#[async_trait::async_trait]
-impl BackendWorker for SqliteBackend {
+impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
+    pub async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
         let task = tokio::task::spawn_blocking({
             let inner = self.clone();
 

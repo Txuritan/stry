@@ -397,16 +397,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dataloader"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25ec5d59df67a801a060312adfb523c52d7b9737e9189f959ffe5b7b24a90f00"
-dependencies = [
- "async-trait",
- "tokio",
-]
-
-[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1966,6 +1956,7 @@ dependencies = [
  "rewryte",
  "sql-ast",
  "stry-common",
+ "stry-dataloader",
  "tokio-postgres",
  "tracing",
  "tracing-futures",
@@ -1983,6 +1974,7 @@ dependencies = [
  "rusqlite",
  "sql-ast",
  "stry-common",
+ "stry-dataloader",
  "tokio",
  "tracing",
  "tracing-futures",
@@ -2039,7 +2031,6 @@ version = "2.3.0"
 dependencies = [
  "anyhow",
  "bytes",
- "dataloader",
  "futures",
  "juniper",
  "serde",
@@ -2098,6 +2089,7 @@ dependencies = [
  "openssl",
  "rand",
  "serde",
+ "stry-backend",
  "stry-common",
  "tokio",
  "tracing",

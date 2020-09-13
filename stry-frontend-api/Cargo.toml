@@ -16,7 +16,6 @@ stry-common = { path = "../stry-common" }
 # Crate
 anyhow = "1.0"
 bytes = "0.5"
-dataloader = { version = "0.12", default-features = false, features = ["runtime-tokio"] }
 futures = "0.3"
 juniper = { git = "https://github.com/graphql-rust/juniper", rev = "f19d498254d3e5d2a008c483943facaf3ddcc4fe", default-features = false, features = [ "chrono" ] }
 serde = { version = "1.0", features = [ "derive" ] }

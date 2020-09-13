@@ -16,17 +16,21 @@ name = "stry"
 path = "src/main.rs"
 
 [features]
-# default = [ "sqlite-bundled", "curl-bundled", "openssl-bundled" ]
+# default = [ "bundled-sqlite", "bundled-curl", "bundled-openssl", "frontend-api", "frontend-user" ]
+default = [ "frontend-api", "frontend-user" ]
 
-sqlite-bundled = [ "stry-backend/sqlite-bundled" ]
+bundled-sqlite = [ "stry-backend/sqlite-bundled" ]
 
-curl-bundled = [ "stry-worker/curl-bundled" ]
-openssl-bundled = [ "stry-worker/openssl-bundled" ]
+bundled-curl = [ "stry-worker/curl-bundled" ]
+bundled-openssl = [ "stry-worker/openssl-bundled" ]
+
+frontend-api = [ "stry-frontend/api" ]
+frontend-user = [ "stry-frontend/user" ]
 
 [dependencies]
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
-stry-frontend = { path = "../stry-frontend" }
+stry-frontend = { path = "../stry-frontend", default-features = false }
 stry-worker = { path = "../stry-worker" }
 
 # Base

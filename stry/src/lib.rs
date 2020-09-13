@@ -1,3 +1,5 @@
+#![type_length_limit = "1970639"] // TODO: figure out why I need this and fix it
+
 mod layer;
 mod setup;
 
@@ -6,7 +8,7 @@ use {
     fenn::VecExt,
     std::sync::Arc,
     stry_backend::DataBackend,
-    stry_common::{backend::Backend, config::Config},
+    stry_common::config::Config,
     tokio::{runtime::Builder, sync::broadcast},
 };
 
@@ -39,7 +41,7 @@ pub fn start(cfg: Config) -> anyhow::Result<()> {
 
     rt.block_on(run(cfg))?;
 
-    tracing::info!("Thank you. I'll say goodbye soon.. Though its the end of the would. Don't blame yourself now.. I'll be okay");
+    tracing::info!("Thank you. I'll say goodbye soon.. Though its the end of the would. Don't blame yourself.. now. I'll be okay");
 
     Ok(())
 }

@@ -15,7 +15,7 @@ use {
     r2d2::Pool,
     std::sync::Arc,
     stry_common::{
-        backend::{Backend, BackendType, StorageType},
+        backend::{BackendType, StorageType},
         version::LibVersion,
     },
 };
@@ -28,10 +28,9 @@ pub const TEST_DATA: &str = include_str!("test-data.sql");
 #[derive(Clone, Debug)]
 pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
-#[async_trait::async_trait]
-impl Backend for SqliteBackend {
+impl SqliteBackend {
     #[tracing::instrument(skip(_backend, storage, _version), err)]
-    async fn init(
+    pub async fn init(
         _backend: BackendType,
         storage: StorageType,
         _version: Arc<Vec<LibVersion>>,

@@ -1,7 +1,6 @@
 use {
     crate::test_utils::setup,
     stry_common::{
-        backend::BackendWarning,
         models::{List, Rating, State, Story, Warning},
         test_helpers::{warning, StoryBuilder},
     },

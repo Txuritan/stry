@@ -1,16 +1,16 @@
 use {
     crate::PostgresBackend,
     std::borrow::Cow,
-    stry_common::{
-        backend::{BackendOrigin, BackendStory},
-        models::{List, Origin, Story},
-    },
+    stry_common::models::{List, Origin, Story},
 };
 
-#[async_trait::async_trait]
-impl BackendOrigin for PostgresBackend {
+impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
-    async fn all_origins(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Origin>>> {
+    pub async fn all_origins(
+        &self,
+        offset: i32,
+        limit: i32,
+    ) -> anyhow::Result<Option<List<Origin>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -45,7 +45,7 @@ impl BackendOrigin for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
+    pub async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -68,7 +68,7 @@ impl BackendOrigin for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn origin_stories(
+    pub async fn origin_stories(
         &self,
         id: Cow<'static, str>,
         offset: i32,

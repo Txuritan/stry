@@ -1,13 +1,8 @@
-use {
-    crate::PostgresBackend,
-    std::borrow::Cow,
-    stry_common::{backend::BackendChapter, models::Chapter},
-};
+use {crate::PostgresBackend, std::borrow::Cow, stry_common::models::Chapter};
 
-#[async_trait::async_trait]
-impl BackendChapter for PostgresBackend {
+impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
-    async fn get_chapter(
+    pub async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
         chapter_number: i32,

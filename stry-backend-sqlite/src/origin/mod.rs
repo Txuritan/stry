@@ -6,15 +6,17 @@ use {
     anyhow::Context,
     rewryte::sqlite::{SqliteExt, SqliteStmtExt},
     std::borrow::Cow,
-    stry_common::backend::{BackendOrigin, BackendStory},
     stry_common::models::{Entity, List, Origin, Story},
     tracing_futures::Instrument,
 };
 
-#[async_trait::async_trait]
-impl BackendOrigin for SqliteBackend {
+impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn all_origins(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Origin>>> {
+    pub async fn all_origins(
+        &self,
+        offset: i32,
+        limit: i32,
+    ) -> anyhow::Result<Option<List<Origin>>> {
         let origins = tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -55,7 +57,7 @@ impl BackendOrigin for SqliteBackend {
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
+    pub async fn get_origin(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Origin>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
 
@@ -78,7 +80,7 @@ impl BackendOrigin for SqliteBackend {
     }
 
     #[tracing::instrument(level = "trace", skip(self), err)]
-    async fn origin_stories(
+    pub async fn origin_stories(
         &self,
         id: Cow<'static, str>,
         offset: i32,

@@ -1,16 +1,12 @@
 use {
     crate::PostgresBackend,
     std::borrow::Cow,
-    stry_common::{
-        backend::{BackendStory, BackendTag},
-        models::{List, Story, Tag},
-    },
+    stry_common::models::{List, Story, Tag},
 };
 
-#[async_trait::async_trait]
-impl BackendTag for PostgresBackend {
+impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
-    async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
+    pub async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -45,7 +41,7 @@ impl BackendTag for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
+    pub async fn get_tag(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Tag>> {
         let conn = self.0.get().await?;
 
         let row = conn
@@ -68,7 +64,7 @@ impl BackendTag for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn tag_stories(
+    pub async fn tag_stories(
         &self,
         id: Cow<'static, str>,
         offset: i32,

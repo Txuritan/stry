@@ -12,10 +12,3 @@ members = [
     "stry-worker",
     "stry-worker-scraper",
 ]
-
-[profile.release]
-codegen-units = 1
-incremental = false
-lto = true
-opt-level = "z"
-panic = "abort"

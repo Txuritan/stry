@@ -3,16 +3,18 @@ use {
     futures::try_join,
     std::borrow::Cow,
     stry_common::{
-        backend::BackendStory,
         models::{Author, Character, List, Origin, Pairing, Square, Story, Tag, Warning},
         search::SearchParser,
     },
 };
 
-#[async_trait::async_trait]
-impl BackendStory for PostgresBackend {
+impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
-    async fn all_stories(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Story>>> {
+    pub async fn all_stories(
+        &self,
+        offset: i32,
+        limit: i32,
+    ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
         let stmt = conn
@@ -47,7 +49,7 @@ impl BackendStory for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
+    pub async fn get_story(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Story>> {
         let conn = self.0.get().await?;
 
         let id_params = &[&id as &(dyn tokio_postgres::types::ToSql + Sync)]
@@ -237,7 +239,7 @@ impl BackendStory for PostgresBackend {
     }
 
     #[tracing::instrument(skip(self), err)]
-    async fn search_stories(
+    pub async fn search_stories(
         &self,
         input: Cow<'static, str>,
         offset: i32,

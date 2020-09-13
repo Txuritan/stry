@@ -1,0 +1,80 @@
+.selected {
+    outline: 0.1rem solid var(--color-blue-300);
+    outline-offset: 0.5rem;
+}
+
+.editor-toolbar {
+    background: var(--color-gray-300);
+    border: none;
+}
+
+.editor-toolbar.fullscreen {
+    background: var(--color-gray-300);
+}
+
+.editor-toolbar.fullscreen::before, .editor-toolbar.fullscreen::after {
+    background: none;
+}
+
+.editor-toolbar button {
+    background: var(--color-gray-500);
+    border: none;
+    border-radius: 0.2rem;
+    color: var(--color-white-500);
+    cursor: pointer;
+    display: inline-block;
+    font-size: 1.2rem;
+    margin: 0 0.5rem 0 0;
+    outline: 0;
+    padding: 0.5rem 1rem;
+}
+
+.editor-toolbar button:hover {
+    background: var(--color-gray-400);
+}
+
+.editor-toolbar button.active {
+    background: var(--color-gray-400);
+    color: var(--color-white-300);
+}
+
+.editor-toolbar button.active:hover {
+    background: var(--color-gray-400);
+    color: var(--color-white-500);
+}
+
+.editor-toolbar i.separator {
+    border-left-color: var(--color-gray-500);
+    border-right-color: var(--color-gray-500);
+    margin-right: 1rem;
+}
+
+.editor-preview {
+    background: var(--color-gray-400);
+    border: none;
+    color: var(--color-white-500);
+}
+
+.editor-preview p {
+    font-size: 1.4rem;
+    line-height: 1.6rem;
+}
+
+.CodeMirror {
+    background: var(--color-gray-400);
+    border: none;
+    color: var(--color-white-500);
+    line-height: 1.6rem;
+}
+
+.CodeMirror-cursor {
+    border-left-color: var(--color-white-500);
+}
+
+.CodeMirror-scroll {
+    max-height: 500px;
+}
+
+.CodeMirror-fullscreen .CodeMirror-scroll {
+    max-height: unset;
+}

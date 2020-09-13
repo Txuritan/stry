@@ -6,14 +6,20 @@ pub mod readable;
 pub mod utils;
 
 use {
-    crate::controllers::{dashboard, explore, item, search, story},
+    crate::controllers::{dashboard, edit, explore, item, search, story},
     stry_backend::DataBackend,
-    warp::{filters::BoxedFilter, Filter, Reply},
+    warp::{filters::BoxedFilter, Filter, Reply, reply::with, http::header::{HeaderMap, HeaderValue, CONTENT_SECURITY_POLICY, X_FRAME_OPTIONS}},
 };
 
 // const BOM: &str = include_str!("../bom.txt");
 
 pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
+    let mut headers = HeaderMap::new();
+
+    headers.insert(CONTENT_SECURITY_POLICY, HeaderValue::from_static("default-src 'self'"));
+    headers.insert("Feature-Policy", HeaderValue::from_static("accelerometer 'none'; ambient-light-sensor 'self'; battery 'none'; camera 'none'; gyroscope 'none'; geolocation 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; web-share 'none'"));
+    headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
+
     let dashboard = warp::path("dashboard").and(
         dashboard::about(backend.clone())
             .or(dashboard::downloads(backend.clone()))
@@ -22,10 +28,16 @@ pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
             .or(dashboard::index(backend.clone())),
     );
 
+    let edit = warp::path("edit").and(
+        edit::story(backend.clone())
+            .or(edit::chapter(backend.clone())),
+    );
+
     let story =
         warp::path("story").and(story::chapter(backend.clone()).or(story::index(backend.clone())));
 
     dashboard
+        .or(edit)
         .or(story)
         .or(explore::explore(backend.clone()))
         .or(search::index(backend.clone()))
@@ -33,5 +45,6 @@ pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
         .or(controllers::assets::assets())
         .or(akibisuto_stylus::route())
         .or(controllers::index(backend))
+        .with(with::headers(headers))
         .boxed()
 }

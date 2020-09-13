@@ -16,7 +16,7 @@ name = "stry"
 path = "src/main.rs"
 
 [features]
-default = [ "sqlite-bundled", "curl-bundled", "openssl-bundled" ]
+# default = [ "sqlite-bundled", "curl-bundled", "openssl-bundled" ]
 
 sqlite-bundled = [ "stry-backend/sqlite-bundled" ]
 

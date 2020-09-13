@@ -25,4 +25,3 @@ sql-ast = "0.7"
 tokio-postgres = { version = "0.5", features = [ "with-chrono-0_4" ] }
 tracing = "0.1"
 tracing-futures = "0.2"
-ultra-batch = "0.1"

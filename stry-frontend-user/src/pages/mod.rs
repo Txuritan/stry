@@ -1,4 +1,5 @@
 pub mod dashboard;
+pub mod edit;
 // pub mod explore;
 pub mod story;
 

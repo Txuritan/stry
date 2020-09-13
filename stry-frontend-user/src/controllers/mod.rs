@@ -1,5 +1,6 @@
 pub mod assets;
 pub mod dashboard;
+pub mod edit;
 pub mod explore;
 pub mod item;
 pub mod search;

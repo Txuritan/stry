@@ -18,13 +18,19 @@
     <link rel="preload" as="style" href="/css/stry.css">
     <link rel="preload" as="script" href="/js/stry.js">
     <link rel="preload" as="script" href="/js/mousetrap.js">
-    <link rel="preload" as="style" href="/css/easymde.css">
-    <link rel="preload" as="script" href="/js/easymde.js">
-    <link rel="preload" as="style" href="/css/tagify.css">
-    <link rel="preload" as="script" href="/js/tagify.js">
+    <link rel="prefetch" as="style" href="/css/font-awesome.css">
+    <link rel="prefetch" as="font" href="/fonts/fontawesome-webfont.ttf" type="font/ttf">
+    <link rel="prefetch" as="font" href="/fonts/fontawesome-webfont.eot" type="application/vnd.ms-fontobject">
+    <link rel="prefetch" as="font" href="/fonts/fontawesome-webfont.woff" type="font/woff">
+    <link rel="prefetch" as="font" href="/fonts/fontawesome-webfont.woff2" type="font/woff2">
+    <link rel="prefetch" as="style" href="/css/easymde.css">
+    <link rel="prefetch" as="script" href="/js/easymde.js">
+    <link rel="prefetch" as="script" href="/js/stry.easymde.js">
+    <link rel="prefetch" as="style" href="/css/tagify.css">
+    <link rel="prefetch" as="script" href="/js/tagify.js">
     <link rel="stylesheet" media="all" href="/assets/stylus.css">
     <link rel="stylesheet" media="all" href="/css/stry.css">
-    {% block style %}{% endblock %}
+    {% block head %}{% endblock %}
 </head>
 
 <body class="theme--dark">
@@ -57,7 +63,8 @@
 
     <script defer src="/js/mousetrap.js"></script>
     <script defer src="/js/stry.js"></script>
-    {% block script %}{% endblock %}
+    {% block foot %}{% endblock %}
+
 </body>
 
 </html>

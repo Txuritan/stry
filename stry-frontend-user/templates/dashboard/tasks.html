@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block style %}table{display:flex;flex-flow:column wrap;width:100%}table tbody,table thead{display:flex;flex:1 1;flex-wrap:wrap}table tbody{flex-direction:column}@media all and (max-width:1024px){table tbody.break,table thead.break{display:block}}table tbody tr,table thead tr{display:flex;flex:1 1}@media all and (max-width:1024px){table tbody tr.break,table thead tr.break{display:block}}table tbody tr td,table tbody tr th,table thead tr td,table thead tr th{display:flex;width:var(--column-width)}table tbody tr td.flex-grow,table tbody tr th.flex-grow,table thead tr td.flex-grow,table thead tr th.flex-grow{flex-grow:1}@media all and (max-width:1024px){table tbody tr td.break,table tbody tr th.break,table thead tr td.break,table thead tr th.break{display:block;width:100%}}table tbody tr td span,table tbody tr th span,table thead tr td span,table thead tr th span{line-height:2.2rem}@media all and (max-width:1024px){table thead.break-hide{display:none}}table thead tr th{text-align:left}table tbody tr td{padding:0 .5rem}{% endblock %}
+{% block head %}<style>table{display:flex;flex-flow:column wrap;width:100%}table tbody,table thead{display:flex;flex:1 1;flex-wrap:wrap}table tbody{flex-direction:column}@media all and (max-width:1024px){table tbody.break,table thead.break{display:block}}table tbody tr,table thead tr{display:flex;flex:1 1}@media all and (max-width:1024px){table tbody tr.break,table thead tr.break{display:block}}table tbody tr td,table tbody tr th,table thead tr td,table thead tr th{display:flex;width:var(--column-width)}table tbody tr td.flex-grow,table tbody tr th.flex-grow,table thead tr td.flex-grow,table thead tr th.flex-grow{flex-grow:1}@media all and (max-width:1024px){table tbody tr td.break,table tbody tr th.break,table thead tr td.break,table thead tr th.break{display:block;width:100%}}table tbody tr td span,table tbody tr th span,table thead tr td span,table thead tr th span{line-height:2.2rem}@media all and (max-width:1024px){table thead.break-hide{display:none}}table thead tr th{text-align:left}table tbody tr td{padding:0 .5rem}</style>{% endblock %}
 
 {% block content %}
 <p><b>Working:</b></p>
@@ -56,6 +56,6 @@
 </table>
 {% endblock %}
 
-{% block script %}
+{% block foot %}
 <script src="/js/stry-dashboard.js"></script>
 {% endblock %}

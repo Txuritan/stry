@@ -82,6 +82,7 @@ pub fn assets() -> BoxedFilter<(impl Reply,)> {
                 .or(embed!(svg => "safari-pinned-tab"))
                 .or(embed!(webmanifest => "site"))
                 .or(css())
+                .or(fonts())
                 .or(js()),
         )
         .boxed()
@@ -94,8 +95,27 @@ pub fn css() -> BoxedFilter<(impl Reply,)> {
         .and_then(|file: String| async move {
             match file.as_str() {
                 "easymde.css" => Ok(Css::new(resource!("assets/css/easymde.css"))),
+                "font-awesome.css" => Ok(Css::new(resource!("assets/css/font-awesome.css"))),
                 "stry.css" => Ok(Css::new(resource!("assets/css/stry.css"))),
+                "stry.easymde.css" => Ok(Css::new(resource!("assets/css/stry.easymde.css"))),
                 "tagify.css" => Ok(Css::new(resource!("assets/css/tagify.css"))),
+                _ => Err(warp::reject::not_found()),
+            }
+        })
+        .boxed()
+}
+
+pub fn fonts() -> BoxedFilter<(impl Reply,)> {
+    warp::path("fonts")
+        .and(warp::path::param::<String>())
+        .and(warp::path::end())
+        .and_then(|file: String| async move {
+            match file.as_str() {
+                "fontawesome-webfont.eot" => Ok(Font::new(FontType::EOT, resource!("assets/fonts/fontawesome-webfont.eot"))),
+                "fontawesome-webfont.svg" => Ok(Font::new(FontType::SVG, resource!("assets/fonts/fontawesome-webfont.svg"))),
+                "fontawesome-webfont.ttf" => Ok(Font::new(FontType::TTF, resource!("assets/fonts/fontawesome-webfont.ttf"))),
+                "fontawesome-webfont.woff" => Ok(Font::new(FontType::WOFF, resource!("assets/fonts/fontawesome-webfont.woff"))),
+                "fontawesome-webfont.woff2" => Ok(Font::new(FontType::WOFF2, resource!("assets/fonts/fontawesome-webfont.woff2"))),
                 _ => Err(warp::reject::not_found()),
             }
         })
@@ -150,7 +170,7 @@ struct Css {
 }
 
 impl Css {
-    fn new(inner: Resource<[u8]>) -> Self {
+    const fn new(inner: Resource<[u8]>) -> Self {
         Self { inner }
     }
 }
@@ -173,12 +193,61 @@ impl Reply for Css {
     }
 }
 
+enum FontType {
+    EOT,
+    SVG,
+    TTF,
+    WOFF,
+    WOFF2,
+}
+
+impl FontType {
+    const fn mime(self) -> &'static str {
+        match self {
+            FontType::EOT => "application/vnd.ms-fontobject",
+            FontType::SVG => "image/svg+xml",
+            FontType::TTF => "font/ttf",
+            FontType::WOFF => "font/woff",
+            FontType::WOFF2 => "font/woff2",
+        }
+    }
+}
+
+struct Font {
+    mime: FontType,
+    inner: Resource<[u8]>,
+}
+
+impl Font {
+    const fn new(mime: FontType, inner: Resource<[u8]>) -> Self {
+        Font { mime, inner }
+    }
+}
+
+impl Reply for Font {
+    #[inline]
+    fn into_response(self) -> Response {
+        let borrow: Cow<'static, [u8]> = self.inner.into();
+        let mut res = Response::new(borrow.into());
+
+        res.headers_mut().insert(
+            CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=37260"),
+        );
+
+        res.headers_mut()
+            .insert(CONTENT_TYPE, HeaderValue::from_static(self.mime.mime()));
+
+        res
+    }
+}
+
 struct Js {
     inner: Resource<[u8]>,
 }
 
 impl Js {
-    fn new(inner: Resource<[u8]>) -> Self {
+    const fn new(inner: Resource<[u8]>) -> Self {
         Self { inner }
     }
 }

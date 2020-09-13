@@ -1,0 +1,47 @@
+{% extends "../base-standard.html" %}
+
+{% import "../macros.html" as scope %}
+
+{% block head %}
+<link rel="stylesheet" href="/css/font-awesome.css">
+<link rel="stylesheet" href="/css/easymde.css">
+<link rel="stylesheet" href="/css/stry.easymde.css">
+{% endblock %}
+
+{% block content %}
+{% call scope::story(story) %}
+<hr />
+<textarea id="js__raw-chapter--pre">{{ chapter.pre }}</textarea>
+<br />
+<textarea id="js__raw-chapter--main">{{ chapter.main }}</textarea>
+<br />
+<textarea id="js__raw-chapter--post">{{ chapter.post }}</textarea>
+<br />
+<button class="button">Update</button>
+<br />
+<br />
+{% endblock %}
+
+{% block foot %}
+<script src="/js/easymde.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function emde(element) {
+            return new EasyMDE({
+                autoDownloadFontAwesome: false,
+                element: document.getElementById(element),
+                minHeight: "100px",
+                maxHeight: "500px",
+                spellChecker: false,
+                status: [ "lines", "words" ],
+            });
+        }
+
+        var pre = emde("js__raw-chapter--pre");
+
+        var main = emde("js__raw-chapter--main");
+
+        var post = emde("js__raw-chapter--post");
+    });
+</script>
+{% endblock %}

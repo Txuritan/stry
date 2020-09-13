@@ -1,7 +1,7 @@
 {% import "macros.html" as scope %}
 {% extends "base-standard.html" %}
 
-{% block style %}{% endblock %}
+{% block head %}{% endblock %}
 
 {% block content %}
 {% for s in stories %}
@@ -11,4 +11,4 @@
 {{ pagination|safe }}
 {% endblock %}
 
-{% block script %}{% endblock %}
+{% block foot %}{% endblock %}

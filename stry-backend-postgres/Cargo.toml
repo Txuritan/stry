@@ -12,6 +12,7 @@ workspace = ".."
 # Core
 stry-common = { path = "../stry-common", features = [ "postgres" ] }
 stry-dataloader = { path = "../stry-dataloader" }
+stry-macros = { path = "../stry-macros" }
 
 # Crate
 anyhow = "1.0"

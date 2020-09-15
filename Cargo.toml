@@ -9,6 +9,10 @@ members = [
     "stry-frontend",
     "stry-frontend-api",
     "stry-frontend-user",
+    "stry-macros",
     "stry-worker",
     "stry-worker-scraper",
 ]
+
+[patch.crates-io]
+tracing-attributes = { git = 'https://github.com/Txuritan/tracing', branch = "ta11p" }

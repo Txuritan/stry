@@ -15,10 +15,10 @@ bundled = [ "rusqlite/bundled" ]
 # Core
 stry-common = { path = "../stry-common", features = [ "sqlite" ] }
 stry-dataloader = { path = "../stry-dataloader" }
+stry-macros = { path = "../stry-macros" }
 
 # Crate
 anyhow = "1.0"
-async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 r2d2 = "0.8"
 rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "sqlite", "serde" ] }

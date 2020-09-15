@@ -21,6 +21,7 @@ sqlite-bundled = [ "stry-backend-sqlite" ]
 stry-backend-postgres = { path = "../stry-backend-postgres", optional = true }
 stry-backend-sqlite = { path = "../stry-backend-sqlite", optional = true }
 stry-common = { path = "../stry-common" }
+stry-macros = { path = "../stry-macros" }
 
 # Crate
 anyhow = "1.0"

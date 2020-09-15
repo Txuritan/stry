@@ -28,29 +28,53 @@ pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
     headers.insert("Feature-Policy", HeaderValue::from_static("accelerometer 'none'; ambient-light-sensor 'self'; battery 'none'; camera 'none'; gyroscope 'none'; geolocation 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; web-share 'none'"));
     headers.insert(X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
 
-    let dashboard = warp::path("dashboard").and(
-        dashboard::about(backend.clone())
-            .or(dashboard::downloads(backend.clone()))
-            .or(dashboard::queue(backend.clone()))
-            .or(dashboard::updates(backend.clone()))
-            .or(dashboard::index(backend.clone())),
-    );
+    let dashboard: BoxedFilter<(_,)> = warp::path("dashboard")
+        .and(
+            dashboard::about(backend.clone())
+                .or(dashboard::downloads(backend.clone()))
+                .boxed()
+                .or(dashboard::queue(backend.clone()))
+                .boxed()
+                .or(dashboard::updates(backend.clone()))
+                .boxed()
+                .or(dashboard::index(backend.clone()))
+                .boxed(),
+        )
+        .boxed();
 
-    let edit =
-        warp::path("edit").and(edit::story(backend.clone()).or(edit::chapter(backend.clone())));
+    let edit: BoxedFilter<(_,)> = warp::path("edit")
+        .and(
+            edit::story(backend.clone())
+                .or(edit::chapter(backend.clone()))
+                .boxed(),
+        )
+        .boxed();
 
-    let story =
-        warp::path("story").and(story::chapter(backend.clone()).or(story::index(backend.clone())));
+    let story: BoxedFilter<(_,)> = warp::path("story")
+        .and(
+            story::chapter(backend.clone())
+                .or(story::index(backend.clone()))
+                .boxed(),
+        )
+        .boxed();
 
     dashboard
         .or(edit)
+        .boxed()
         .or(story)
+        .boxed()
         .or(explore::explore(backend.clone()))
+        .boxed()
         .or(search::index(backend.clone()))
+        .boxed()
         .or(item::item(backend.clone()))
+        .boxed()
         .or(controllers::assets::assets())
+        .boxed()
         .or(akibisuto_stylus::route())
+        .boxed()
         .or(controllers::index(backend))
+        .boxed()
         .with(with::headers(headers))
         .boxed()
 }

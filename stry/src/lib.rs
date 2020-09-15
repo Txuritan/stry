@@ -1,4 +1,4 @@
-#![type_length_limit = "1970639"] // TODO: figure out why I need this and fix it
+#![type_length_limit="2165503"]
 
 mod layer;
 mod setup;

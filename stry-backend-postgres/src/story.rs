@@ -8,6 +8,7 @@ use {
     },
 };
 
+#[stry_macros::box_async]
 impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
     pub async fn all_stories(

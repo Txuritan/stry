@@ -10,6 +10,7 @@ use {
     tracing_futures::Instrument,
 };
 
+#[stry_macros::box_async]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {

@@ -1,5 +1,6 @@
 use {crate::SqliteBackend, rewryte::sqlite::SqliteExt, stry_common::models::WorkerTask};
 
+#[stry_macros::box_async]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {

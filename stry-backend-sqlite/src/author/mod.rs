@@ -10,6 +10,7 @@ use {
     tracing_futures::Instrument,
 };
 
+#[stry_macros::box_async]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn all_authors(
@@ -63,6 +64,7 @@ impl SqliteBackend {
     pub async fn get_author(&self, id: Cow<'static, str>) -> anyhow::Result<Option<Author>> {
         let res = tokio::task::spawn_blocking({
             let inner = self.clone();
+
             move || -> anyhow::Result<Option<Author>> {
                 let conn = inner.0.get()?;
 

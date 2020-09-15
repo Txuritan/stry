@@ -4,6 +4,7 @@ use {
     stry_common::models::{List, Origin, Story},
 };
 
+#[stry_macros::box_async]
 impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
     pub async fn all_origins(

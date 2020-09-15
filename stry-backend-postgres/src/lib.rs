@@ -1,4 +1,4 @@
-#![type_length_limit = "1230124"] // TODO: figure out why I need this and fix it
+#![type_length_limit="1230124"]
 
 // TODO: try to pipeline queries
 
@@ -31,6 +31,7 @@ pub const SCHEMA: &str = rewryte::schema!("postgresql", "../schema.dal");
 #[derive(Clone, Debug)]
 pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 
+#[stry_macros::box_async]
 impl PostgresBackend {
     #[tracing::instrument(skip(_backend, _storage, _version), err)]
     pub async fn init(

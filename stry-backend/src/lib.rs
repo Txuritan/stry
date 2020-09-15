@@ -39,13 +39,14 @@ enum DataBackendInner {
     Sqlite(stry_backend_sqlite::SqliteBackend),
 }
 
+#[stry_macros::box_async]
 impl DataBackend {
     #[tracing::instrument(skip(storage, versions), err)]
     pub async fn init(
         backend: BackendType,
         storage: StorageType,
         versions: Arc<Vec<LibVersion>>,
-    ) -> anyhow::Result<Self> {
+    ) -> anyhow::Result<DataBackend> {
         match backend {
             #[cfg(feature = "postgres")]
             BackendType::Postgres => {

@@ -3,6 +3,7 @@ use {
     stry_common::models::Chapter,
 };
 
+#[stry_macros::box_async]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn get_chapter(

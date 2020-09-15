@@ -1,5 +1,6 @@
 use {crate::PostgresBackend, std::borrow::Cow, stry_common::models::Chapter};
 
+#[stry_macros::box_async]
 impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
     pub async fn get_chapter(

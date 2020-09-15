@@ -169,6 +169,7 @@ pub fn get(
     }))
 }
 
+#[stry_macros::box_async]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn all_stories(

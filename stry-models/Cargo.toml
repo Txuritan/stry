@@ -1,0 +1,26 @@
+[package]
+name = "stry-models"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT"
+
+workspace = ".."
+
+[features]
+postgres = [ "rewryte/postgres" ]
+sqlite = [ "rewryte/sqlite" ]
+
+rewryte-juniper = [ "juniper" ]
+
+[dependencies]
+# Crate
+anyhow = "1.0"
+chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+juniper = { git = "https://github.com/graphql-rust/juniper", rev = "b1a03661122c0fa5c8a4fc41418dee7f9ede6308", default-features = false, features = [ "chrono" ], optional = true }
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", default-features = false, features = [ "feature-gate-juniper" ] }
+serde = { version = "1.0", features = [ "derive" ] }
+
+[build-dependencies]
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", default-features = false, features = [ "build-script", "feature-gate-juniper" ] }

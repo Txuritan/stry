@@ -1,37 +1,11 @@
 use {
-    crate::{
-        utils::{ClientExt, FromRow},
-        PostgresBackend,
-    },
+    crate::PostgresBackend,
     anyhow::Context,
     futures::try_join,
+    rewryte::postgres::{ClientExt, FromRow},
     std::borrow::Cow,
-    stry_common::models::{Author, Entity, List, Story},
+    stry_models::{Author, Entity, List, Story},
 };
-
-impl FromRow for Author {
-    fn from_row(row: &tokio_postgres::Row) -> anyhow::Result<Self>
-    where
-        Self: Sized,
-    {
-        Ok(Author {
-            id: row
-                .try_get(0)
-                .context("Attempting to get row index 0 for author")?,
-
-            name: row
-                .try_get(1)
-                .context("Attempting to get row index 1 for author")?,
-
-            created: row
-                .try_get(2)
-                .context("Attempting to get row index 2 for author")?,
-            updated: row
-                .try_get(3)
-                .context("Attempting to get row index 3 for author")?,
-        })
-    }
-}
 
 #[stry_macros::box_async]
 impl PostgresBackend {
@@ -47,8 +21,8 @@ impl PostgresBackend {
         let empty = crate::params![];
 
         let (items, total): (Option<Vec<Author>>, Option<i32>) = try_join!(
-            conn.type_query_map_anyhow(include_str!("all-items.sql"), pair),
-            conn.type_query_row_anyhow(include_str!("all-count.sql"), empty),
+            conn.type_query_opt(include_str!("all-items.sql"), pair),
+            conn.type_query_one_opt(include_str!("all-count.sql"), empty),
         )?;
 
         let list = List {
@@ -64,7 +38,7 @@ impl PostgresBackend {
         let conn = self.0.get().await?;
 
         let author = conn
-            .type_query_row_anyhow(include_str!("get-item.sql"), crate::params![id])
+            .type_query_one_opt(include_str!("get-item.sql"), crate::params![id])
             .await?;
 
         Ok(author)
@@ -82,16 +56,16 @@ impl PostgresBackend {
         let pair = crate::params![limit, offset];
         let one = crate::params![id];
 
-        let (entity_rows, total): (Option<Vec<Entity>>, Option<i32>) = try_join!(
-            conn.type_query_map_anyhow(include_str!("stories-items.sql"), pair),
-            conn.type_query_row_anyhow(include_str!("stories-count.sql"), one),
+        let (story_ids, total): (Option<Vec<String>>, Option<i32>) = try_join!(
+            conn.type_query_opt(include_str!("stories-items.sql"), pair),
+            conn.type_query_one_opt(include_str!("stories-count.sql"), one),
         )?;
 
-        let entity_rows = crate::opt_try!(entity_rows);
+        let story_ids = crate::opt_try!(story_ids);
 
-        let mut items = Vec::with_capacity(entity_rows.len());
+        let mut items = Vec::with_capacity(story_ids.len());
 
-        for Entity { id } in entity_rows {
+        for id in story_ids {
             let story = match self.get_story(id.into()).await? {
                 Some(story) => story,
                 None => return Ok(None),

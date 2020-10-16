@@ -1,5 +1,4 @@
 use {
-    crate::layer::OptionLayer,
     std::{fs::File, io::BufWriter, sync::Arc},
     stry_common::config::{Config, LogLevel, LoggingOutput},
     tracing::Level,
@@ -22,8 +21,8 @@ pub fn logger(
     Option<FlushGuard<BufWriter<File>>>,
     impl tracing::Subscriber + Send + Sync + 'static,
 )> {
-    let mut stdout = (OptionLayer::None, OptionLayer::None);
-    let mut file = (OptionLayer::None, OptionLayer::None, None);
+    let mut stdout = (None, None);
+    let mut file = (None, None, None);
 
     let mut setup_stdout = |json: bool| {
         if json {
@@ -34,7 +33,7 @@ pub fn logger(
                 .with_span_events(FmtSpan::CLOSE)
                 .json();
 
-            stdout.0 = OptionLayer::Some(layer);
+            stdout.0 = Some(layer);
         } else {
             let layer = fmt::Layer::default()
                 .with_ansi(cfg.logging.ansi)
@@ -42,7 +41,7 @@ pub fn logger(
                 .with_thread_names(cfg.logging.thread_names)
                 .with_span_events(FmtSpan::CLOSE);
 
-            stdout.1 = OptionLayer::Some(layer);
+            stdout.1 = Some(layer);
         }
     };
 
@@ -58,7 +57,7 @@ pub fn logger(
                 .with_thread_names(cfg.logging.thread_names)
                 .with_span_events(FmtSpan::CLOSE);
 
-            file.0 = OptionLayer::Some(layer);
+            file.0 = Some(layer);
         } else {
             let layer = fmt::Layer::default()
                 .with_writer(non_blocking)
@@ -67,7 +66,7 @@ pub fn logger(
                 .with_thread_names(cfg.logging.thread_names)
                 .with_span_events(FmtSpan::CLOSE);
 
-            file.1 = OptionLayer::Some(layer);
+            file.1 = Some(layer);
         }
 
         file.2 = Some(appender_guard);
@@ -99,9 +98,9 @@ pub fn logger(
     let flame = if let Some(file) = cfg.logging.flame.as_ref() {
         let (layer, _guard) = FlameLayer::with_file(file)?;
 
-        (OptionLayer::Some(layer), Some(_guard))
+        (Some(layer), Some(_guard))
     } else {
-        (OptionLayer::None, None)
+        (None, None)
     };
 
     let reg = Registry::default()
@@ -110,6 +109,7 @@ pub fn logger(
         .with(file.0)
         .with(file.1)
         .with(flame.0)
+        // .with(tracing_tracy::TracyLayer::new())
         .with(LevelFilter::from(match cfg.logging.level {
             LogLevel::Error => Level::ERROR,
             LogLevel::Warn => Level::WARN,

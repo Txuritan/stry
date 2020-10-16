@@ -3,10 +3,9 @@ use {
         pages::{ErrorPage, ResourceList},
         utils::{wrap, Items, Resource},
     },
-    askama::Template,
     chrono::Utc,
     stry_backend::DataBackend,
-    stry_common::models::Paging,
+    stry_models::Paging,
     warp::{Rejection, Reply},
 };
 
@@ -110,14 +109,14 @@ pub async fn explore(
                     (count + (norm.page_size - 1)) / norm.page_size,
                     resources,
                 )
-                .render()?;
+                .into_string()?;
 
                 Ok(rendered)
             }
             None => {
                 let rendered =
                     ErrorPage::not_found(format!("404 not found | {} | explore", item), time)
-                        .render()?;
+                        .into_string()?;
 
                 Ok(rendered)
             }

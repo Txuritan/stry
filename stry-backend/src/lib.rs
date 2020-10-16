@@ -2,22 +2,22 @@ use {
     std::{borrow::Cow, sync::Arc},
     stry_common::{
         backend::{BackendType, StorageType},
-        models::{
-            Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask,
-        },
-        version::LibVersion,
+        LibraryDetails,
+    },
+    stry_models::{
+        Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask,
     },
 };
 
-pub fn version() -> Vec<LibVersion> {
+pub fn library_details() -> Vec<LibraryDetails> {
     let mut version = if cfg!(feature = "postgres") {
-        stry_backend_postgres::version()
+        stry_backend_postgres::library_details()
     } else {
         vec![]
     };
 
     if cfg!(feature = "sqlite") {
-        version.append(&mut stry_backend_sqlite::version());
+        version.append(&mut stry_backend_sqlite::library_details());
     }
 
     version
@@ -26,7 +26,7 @@ pub fn version() -> Vec<LibVersion> {
 #[derive(Clone)]
 pub struct DataBackend {
     inner: DataBackendInner,
-    pub versions: Arc<Vec<LibVersion>>,
+    pub details: Arc<Vec<LibraryDetails>>,
 }
 
 // impl juniper::Context for DataBackend {}
@@ -41,36 +41,33 @@ enum DataBackendInner {
 
 #[stry_macros::box_async]
 impl DataBackend {
-    #[tracing::instrument(skip(storage, versions), err)]
+    #[tracing::instrument(skip(storage, details), err)]
     pub async fn init(
         backend: BackendType,
         storage: StorageType,
-        versions: Arc<Vec<LibVersion>>,
+        details: Arc<Vec<LibraryDetails>>,
     ) -> anyhow::Result<DataBackend> {
         match backend {
             #[cfg(feature = "postgres")]
             BackendType::Postgres => {
-                let back = stry_backend_postgres::PostgresBackend::init(
-                    backend,
-                    storage,
-                    versions.clone(),
-                )
-                .await?;
+                let back =
+                    stry_backend_postgres::PostgresBackend::init(backend, storage, details.clone())
+                        .await?;
 
                 Ok(DataBackend {
                     inner: DataBackendInner::Postgres(back),
-                    versions,
+                    details,
                 })
             }
             #[cfg(feature = "sqlite")]
             BackendType::Sqlite => {
                 let back =
-                    stry_backend_sqlite::SqliteBackend::init(backend, storage, versions.clone())
+                    stry_backend_sqlite::SqliteBackend::init(backend, storage, details.clone())
                         .await?;
 
                 Ok(DataBackend {
                     inner: DataBackendInner::Sqlite(back),
-                    versions,
+                    details,
                 })
             }
         }
@@ -125,6 +122,30 @@ impl DataBackend {
             #[cfg(feature = "sqlite")]
             DataBackendInner::Sqlite(backend) => {
                 backend.get_chapter(story_id, chapter_number).await
+            }
+        }
+    }
+
+    pub async fn update_chapter(
+        &self,
+        story_id: Cow<'static, str>,
+        chapter_number: i32,
+        pre: Cow<'static, str>,
+        main: Cow<'static, str>,
+        post: Cow<'static, str>,
+    ) -> anyhow::Result<()> {
+        match &self.inner {
+            #[cfg(feature = "postgres")]
+            DataBackendInner::Postgres(backend) => {
+                backend
+                    .update_chapter(story_id, chapter_number, pre, main, post)
+                    .await
+            }
+            #[cfg(feature = "sqlite")]
+            DataBackendInner::Sqlite(backend) => {
+                backend
+                    .update_chapter(story_id, chapter_number, pre, main, post)
+                    .await
             }
         }
     }

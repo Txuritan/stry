@@ -1,11 +1,24 @@
 use {
-    crate::models::{List, Warning},
-    chrono::{DateTime, Utc},
+    crate::{List, Tag},
+    chrono::{TimeZone as _, Utc},
     std::fmt,
 };
 
+impl Tag {
+    pub fn new_test(id: impl Into<String>, name: impl Into<String>) -> Tag {
+        Tag {
+            id: id.into(),
+
+            name: name.into(),
+
+            created: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+            updated: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+        }
+    }
+}
+
 // #[juniper::graphql_object(Context = DataBackend)]
-// impl Warning {
+// impl Tag {
 //     pub fn id(&self) -> &str {
 //         &self.id
 //     }
@@ -23,35 +36,35 @@ use {
 //     }
 // }
 
-impl fmt::Display for Warning {
+impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "<li><a class=\"label color__red\" href=\"/warnings/{}\">{}</a></li>",
+            "<li><a class=\"label color__silver\" href=\"/tags/{}\">{}</a></li>",
             self.id, self.name
         )
     }
 }
 
-pub struct WarningList {
+pub struct TagList {
     pub total: i32,
-    pub items: Vec<Warning>,
+    pub items: Vec<Tag>,
 }
 
 // #[juniper::graphql_object(Context = DataBackend)]
-// impl WarningList {
+// impl TagList {
 //     pub fn total(&self) -> i32 {
 //         self.total
 //     }
 
-//     pub fn items(&self) -> &[Warning] {
+//     pub fn items(&self) -> &[Tag] {
 //         &self.items
 //     }
 // }
 
-impl From<List<Warning>> for WarningList {
-    fn from(list: List<Warning>) -> Self {
-        WarningList {
+impl From<List<Tag>> for TagList {
+    fn from(list: List<Tag>) -> Self {
+        TagList {
             total: list.total,
             items: list.items,
         }

@@ -1,7 +1,7 @@
 use {
-    crate::models::Rating,
     pest::{iterators::Pair, Parser},
     std::borrow::Cow,
+    stry_models::Rating,
 };
 
 macro_rules! simple {

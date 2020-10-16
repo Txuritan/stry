@@ -8,115 +8,15 @@ use {
     },
 };
 
-macro_rules! over {
-    (s, $cfg:ident, $over:ident) => {
-        if let Some(v) = $over.take() {
-            *$cfg = Some(v);
-        }
-    };
-    (s, $cfg:ident, $over:ident, $( $pp:tt )*) => {
-        if let Some(v) = $over.$( $pp )*.take() {
-            $cfg.$( $pp )* = Some(v);
-        }
-    };
-    ($cfg:ident, $over:ident, $( $pp:tt )*) => {
-        if let Some(v) = $over.$( $pp )*.take() {
-            $cfg.$( $pp )* = v;
-        }
-    };
-    ($cfg:ident, $over:ident) => {
-        if let Some(v) = $over.take() {
-            *$cfg = v;
-        }
-    };
-}
-
-pub fn load_config(path: String, mut cfg_override: ConfigOverride) -> anyhow::Result<Config> {
-    let cfg_path = Path::new(&path);
-
-    let mut cfg = if cfg_path.exists() {
-        let file = fs::OpenOptions::new().read(true).open(cfg_path)?;
-        let mut reader = io::BufReader::new(file);
-
-        let mut contents = String::new();
-
-        reader.read_to_string(&mut contents)?;
-
-        ron::de::from_str(&contents)?
-    } else {
-        Config::default()
-    };
-
-    if let Some(host) = cfg_override.host.take() {
-        let mut parts = host
-            .split('.')
-            .map(str::parse)
-            .collect::<Vec<Result<u8, _>>>();
-
-        let four = parts.pop().expect("Missing part of the host address")?;
-        let three = parts.pop().expect("Missing part of the host address")?;
-        let two = parts.pop().expect("Missing part of the host address")?;
-        let one = parts.pop().expect("Missing part of the host address")?;
-
-        cfg.ip = [one, two, three, four];
-    }
-
-    if let Some(port) = cfg_override.port.take() {
-        cfg.port = port.parse()?;
-    }
-
-    over!(cfg, cfg_override, workers);
-    over!(cfg, cfg_override, database.typ);
-
-    if let Some(mut storage) = cfg_override.database.storage.take() {
-        match (&mut cfg.database.storage, &mut storage) {
-            (StorageType::File { location: old }, StorageTypeOverride::File { location: new }) => {
-                over!(old, new);
-            }
-            (
-                StorageType::Parts {
-                    username: username_old,
-                    password: password_old,
-                    host: host_old,
-                    port: port_old,
-                    database: database_old,
-                    ..
-                },
-                StorageTypeOverride::Parts {
-                    username: username_new,
-                    password: password_new,
-                    host: host_new,
-                    port: port_new,
-                    database: database_new,
-                },
-            ) => {
-                over!(s, username_old, username_new);
-                over!(s, password_old, password_new);
-                over!(host_old, host_new);
-                over!(s, port_old, port_new);
-                over!(s, database_old, database_new);
-            }
-            _ => {}
-        }
-    }
-
-    over!(s, cfg, cfg_override, executor.core_threads);
-    over!(s, cfg, cfg_override, executor.max_threads);
-
-    over!(cfg, cfg_override, logging.ansi);
-    over!(cfg, cfg_override, logging.level);
-    // TODO: Override for logging output type
-    over!(cfg, cfg_override, logging.thread_ids);
-    over!(cfg, cfg_override, logging.thread_names);
-
-    Ok(cfg)
-}
+#[cfg(feature = "sources")]
+use std::env;
 
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub ip: [u8; 4],
     pub port: u16,
+    pub tls: Tls,
     pub frontend: Frontend,
     pub workers: FourCount,
     pub database: Database,
@@ -124,11 +24,115 @@ pub struct Config {
     pub logging: Logging,
 }
 
+impl Config {
+    #[cfg(feature = "sources")]
+    pub fn new_from_sources<P>(path: P, args: clap::ArgMatches<'_>) -> anyhow::Result<Self>
+    where
+        P: AsRef<Path>,
+    {
+        let cfg_path = path.as_ref();
+
+        let Config {
+            ip,
+            port,
+            tls,
+            frontend,
+            workers,
+            database,
+            executor,
+            logging,
+        } = if cfg_path.exists() {
+            let file = fs::OpenOptions::new().read(true).open(cfg_path)?;
+            let mut reader = io::BufReader::new(file);
+
+            let mut contents = String::new();
+
+            reader.read_to_string(&mut contents)?;
+
+            ron::de::from_str(&contents)?
+        } else {
+            Config::default()
+        };
+
+        Ok(Self {
+            ip: env::var("STRY_SERVER_IP")
+                .or_else(|_| {
+                    args.value_of("server-ip").map(String::from).ok_or_else(|| {
+                        anyhow::anyhow!("No argument named 'server-ip' found in provided args")
+                    })
+                })
+                .and_then(|value| {
+                    let mut parts = value
+                        .split('.')
+                        .map(str::parse)
+                        .collect::<Vec<Result<u8, _>>>();
+
+                    let four = parts.pop().expect("Missing part of the host address")?;
+                    let three = parts.pop().expect("Missing part of the host address")?;
+                    let two = parts.pop().expect("Missing part of the host address")?;
+                    let one = parts.pop().expect("Missing part of the host address")?;
+
+                    Ok([one, two, three, four])
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(ip))?,
+            port: env::var("STRY_SERVER_PORT")
+                .or_else(|_| {
+                    args.value_of("server-port")
+                        .map(String::from)
+                        .ok_or_else(|| {
+                            anyhow::anyhow!(
+                                "No argument named 'server-port' found in provided args"
+                            )
+                        })
+                })
+                .and_then(|value| {
+                    let port = value.parse()?;
+
+                    Ok(port)
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(port))?,
+            tls: env::var("STRY_TLS")
+                .map_err(anyhow::Error::from)
+                .and_then(|value| {
+                    let cert = env::var("STRY_TLS_CERT")?;
+                    let key = env::var("STRY_TLS_KEY")?;
+
+                    match &*value.to_lowercase() {
+                        "file" => Ok(Tls::File { cert, key }),
+                        "text" => Ok(Tls::Text { cert, key }),
+                        _ => Err(anyhow::anyhow!("'{}' is not a valid TLS type")),
+                    }
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(tls))?,
+            frontend: env::var("STRY_FRONTEND")
+                .map_err(anyhow::Error::from)
+                .and_then(|value| {
+                    let frontend = Frontend::from_str(&value)?;
+
+                    Ok(frontend)
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(frontend))?,
+            workers: env::var("STRY_WORKERS")
+                .map_err(anyhow::Error::from)
+                .and_then(|value| {
+                    let workers = FourCount::from_str(&value)?;
+
+                    Ok(workers)
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(workers))?,
+            database: Database::new_from_sources(database, args.clone())?,
+            executor: Executor::new_from_sources(executor, args.clone())?,
+            logging: Logging::new_from_sources(logging, args.clone())?,
+        })
+    }
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
             ip: [0, 0, 0, 0],
             port: 8901,
+            tls: Tls::None,
             frontend: Frontend::Both,
             workers: FourCount::Four,
             database: Database::default(),
@@ -138,13 +142,17 @@ impl Default for Config {
     }
 }
 
-pub struct ConfigOverride {
-    pub host: Option<String>,
-    pub port: Option<String>,
-    pub workers: Option<FourCount>,
-    pub database: DatabaseOverride,
-    pub executor: ExecutorOverride,
-    pub logging: LoggingOverride,
+#[derive(Clone, Debug, serde::Deserialize)]
+pub enum Tls {
+    File { cert: String, key: String },
+    Text { cert: String, key: String },
+    None,
+}
+
+impl Default for Tls {
+    fn default() -> Self {
+        Tls::None
+    }
 }
 
 #[rustfmt::skip]
@@ -241,6 +249,92 @@ pub struct Database {
     pub storage: StorageType,
 }
 
+impl Database {
+    #[cfg(feature = "sources")]
+    pub fn new_from_sources(
+        database: Database,
+        args: clap::ArgMatches<'_>,
+    ) -> anyhow::Result<Self> {
+        let Database { typ, storage } = database;
+
+        let typ = env::var("STRY_BACKEND_TYPE")
+            .or_else(|_| {
+                args.value_of("backend-type")
+                    .map(String::from)
+                    .ok_or_else(|| {
+                        anyhow::anyhow!("No argument named 'backend-type' found in provided args")
+                    })
+            })
+            .and_then(|value| match &*value.to_lowercase() {
+                "postgres" => Ok(BackendType::Postgres),
+                "sqlite" => Ok(BackendType::Sqlite),
+                _ => Err(anyhow::anyhow!("'{}' is not a valid database type")),
+            })
+            .or_else::<anyhow::Error, _>(|_| Ok(typ))?;
+
+        Ok(Self {
+            storage: match typ {
+                BackendType::Postgres => {
+                    env::var("STRY_BACKEND_HOST")
+                        .map(|host| {
+                            let port = env::var("STRY_BACKEND_PORT");
+                            let database = env::var("STRY_BACKEND_DATABASE");
+                            let username = env::var("STRY_BACKEND_USERNAME");
+                            let password = env::var("STRY_BACKEND_PASSWORD");
+
+                            (username.ok(), password.ok(), host, port.ok(), database.ok())
+                        })
+                        .or_else(|_| {
+                            args.value_of("backend-host")
+                                .map(String::from)
+                                .ok_or_else(|| {
+                                    anyhow::anyhow!(
+                                        "No argument named 'backend-host' found in provided args"
+                                    )
+                                })
+                                .map(|host| {
+                                    let port = args.value_of("backend-port").map(String::from);
+                                    let database =
+                                        args.value_of("backend-database").map(String::from);
+                                    let username =
+                                        args.value_of("backend-username").map(String::from);
+                                    let password =
+                                        args.value_of("backend-password").map(String::from);
+
+                                    (username, password, host, port, database)
+                                })
+                        })
+                        .map(|(username, password, host, port, database)| {
+                            StorageType::Parts {
+                                username,
+                                password,
+                                host,
+                                port,
+                                database,
+                                // TODO: maybe serde will help with this
+                                params: None,
+                            }
+                        })
+                        .or_else::<anyhow::Error, _>(|_| Ok(storage))?
+                }
+                BackendType::Sqlite => env::var("STRY_BACKEND_FILE")
+                    .or_else(|_| {
+                        args.value_of("backend-file")
+                            .map(String::from)
+                            .ok_or_else(|| {
+                                anyhow::anyhow!(
+                                    "No argument named 'backend-file' found in provided args"
+                                )
+                            })
+                    })
+                    .map(|location| StorageType::File { location })
+                    .or_else::<anyhow::Error, _>(|_| Ok(storage))?,
+            },
+            typ,
+        })
+    }
+}
+
 impl Default for Database {
     fn default() -> Self {
         Self {
@@ -252,29 +346,35 @@ impl Default for Database {
     }
 }
 
-pub struct DatabaseOverride {
-    pub typ: Option<BackendType>,
-    pub storage: Option<StorageTypeOverride>,
-}
-
-pub enum StorageTypeOverride {
-    File {
-        location: Option<String>,
-    },
-    Parts {
-        username: Option<String>,
-        password: Option<String>,
-        host: Option<String>,
-        port: Option<String>,
-        database: Option<String>,
-    },
-}
-
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(default)]
 pub struct Executor {
     pub core_threads: Option<usize>,
     pub max_threads: Option<usize>,
+}
+
+impl Executor {
+    #[cfg(feature = "sources")]
+    pub fn new_from_sources(
+        executor: Executor,
+        _args: clap::ArgMatches<'_>,
+    ) -> anyhow::Result<Self> {
+        let Executor {
+            core_threads,
+            max_threads,
+        } = executor;
+
+        Ok(Self {
+            core_threads: env::var("STRY_EXECUTOR_CORE_THREADS")
+                .ok()
+                .and_then(|value| value.parse().ok())
+                .or_else(|| core_threads),
+            max_threads: env::var("STRY_EXECUTOR_MAX_THREADS")
+                .ok()
+                .and_then(|value| value.parse().ok())
+                .or_else(|| max_threads),
+        })
+    }
 }
 
 impl Default for Executor {
@@ -284,11 +384,6 @@ impl Default for Executor {
             max_threads: None,
         }
     }
-}
-
-pub struct ExecutorOverride {
-    pub core_threads: Option<usize>,
-    pub max_threads: Option<usize>,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -302,6 +397,116 @@ pub struct Logging {
     pub thread_names: bool,
 }
 
+impl Logging {
+    #[cfg(feature = "sources")]
+    pub fn new_from_sources(logging: Logging, args: clap::ArgMatches<'_>) -> anyhow::Result<Self> {
+        let Logging {
+            ansi,
+            flame,
+            level,
+            out,
+            thread_ids,
+            thread_names,
+        } = logging;
+        let (out_dir, out_json, out_prefix) = out.into_parts();
+
+        Ok(Self {
+            ansi: env::var("STRY_LOGGING_ANSI")
+                .map(|value| match &*value {
+                    "0" => false,
+                    _ => true,
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(ansi))?,
+            flame: env::var("STRY_LOGGING_FLAME")
+                .or_else(|_| {
+                    args.value_of("tracing-flame")
+                        .map(String::from)
+                        .ok_or_else(|| {
+                            anyhow::anyhow!(
+                                "No argument named 'tracing-flame' found in provided args"
+                            )
+                        })
+                })
+                .ok()
+                .or_else(|| flame),
+            level: env::var("STRY_LOGGING_LEVEL")
+                .or_else(|_| {
+                    args.value_of("tracing-level")
+                        .map(String::from)
+                        .ok_or_else(|| {
+                            anyhow::anyhow!(
+                                "No argument named 'tracing-level' found in provided args"
+                            )
+                        })
+                })
+                .and_then(|value| LogLevel::from_str(&value))
+                .or_else::<anyhow::Error, _>(|_| Ok(level))?,
+            out: env::var("STRY_LOGGING_OUTPUT")
+                .map(|output| {
+                    let json = env::var("STRY_LOGGING_JSON")
+                        .map(|value| match &*value {
+                            "0" => false,
+                            _ => true,
+                        })
+                        .unwrap_or_else(|_| out_json);
+
+                    let directory = env::var("STRY_LOGGING_DIRECTORY").ok();
+                    let prefix = env::var("STRY_LOGGING_PREFIX").ok();
+
+                    (output, directory, json, prefix)
+                })
+                .map(|(output, mut directory, json, mut prefix)| {
+                    if directory.is_none() && args.is_present("tracing-directory") {
+                        directory = args.value_of("tracing-directory").map(String::from);
+                    }
+
+                    if prefix.is_none() && args.is_present("tracing-prefix") {
+                        prefix = args.value_of("tracing-prefix").map(String::from);
+                    }
+
+                    (output, directory, json, prefix)
+                })
+                .map_err(anyhow::Error::from)
+                .and_then(
+                    |(output, directory, json, prefix)| match &*output.to_lowercase() {
+                        "both" => Ok(LoggingOutput::Both {
+                            directory: directory
+                                .or_else(|| out_dir)
+                                .expect("BUG: directory should exists from file"),
+                            json,
+                            prefix: prefix
+                                .or_else(|| out_prefix)
+                                .expect("BUG: prefix should exists from file"),
+                        }),
+                        "file" => Ok(LoggingOutput::File {
+                            directory: directory
+                                .or_else(|| out_dir)
+                                .expect("BUG: directory should exists from file"),
+                            json,
+                            prefix: prefix
+                                .or_else(|| out_prefix)
+                                .expect("BUG: prefix should exists from file"),
+                        }),
+                        "stdout" => Ok(LoggingOutput::StdOut { json }),
+                        _ => anyhow::bail!("`{}` is not a valid logging output type", output),
+                    },
+                )?,
+            thread_ids: env::var("STRY_LOGGING_THREAD_IDS")
+                .map(|value| match &*value {
+                    "0" => false,
+                    _ => true,
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(thread_ids))?,
+            thread_names: env::var("STRY_LOGGING_THREAD_NAMES")
+                .map(|value| match &*value {
+                    "0" => false,
+                    _ => true,
+                })
+                .or_else::<anyhow::Error, _>(|_| Ok(thread_names))?,
+        })
+    }
+}
+
 impl Default for Logging {
     fn default() -> Self {
         Self {
@@ -313,14 +518,6 @@ impl Default for Logging {
             thread_names: true,
         }
     }
-}
-
-pub struct LoggingOverride {
-    pub ansi: Option<bool>,
-    pub level: Option<LogLevel>,
-    pub out: Option<LoggingOutputOverride>,
-    pub thread_ids: Option<bool>,
-    pub thread_names: Option<bool>,
 }
 
 #[derive(Clone, Copy, Debug, serde::Deserialize)]
@@ -369,19 +566,20 @@ pub enum LoggingOutput {
     },
 }
 
-#[derive(Clone, Debug, serde::Deserialize)]
-pub enum LoggingOutputOverride {
-    Both {
-        directory: Option<String>,
-        json: Option<bool>,
-        prefix: Option<String>,
-    },
-    File {
-        directory: Option<String>,
-        json: Option<bool>,
-        prefix: Option<String>,
-    },
-    StdOut {
-        json: Option<bool>,
-    },
+impl LoggingOutput {
+    fn into_parts(self) -> (Option<String>, bool, Option<String>) {
+        match self {
+            LoggingOutput::Both {
+                directory,
+                json,
+                prefix,
+            } => (Some(directory), json, Some(prefix)),
+            LoggingOutput::File {
+                directory,
+                json,
+                prefix,
+            } => (Some(directory), json, Some(prefix)),
+            LoggingOutput::StdOut { json } => (None, json, None),
+        }
+    }
 }

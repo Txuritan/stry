@@ -2,7 +2,8 @@ use {
     crate::{Site, Sites},
     std::sync::atomic::Ordering,
     stry_backend::DataBackend,
-    stry_common::{models::WorkerSite, worker::WorkerData},
+    stry_common::worker::WorkerData,
+    stry_models::WorkerSite,
 };
 
 macro_rules! stop {

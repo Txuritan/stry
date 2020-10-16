@@ -1,7 +1,7 @@
 use {
-    crate::{pages, utils::wrap},
-    askama::Template,
+    crate::{models::ChapterForm, pages, utils::wrap},
     chrono::Utc,
+    std::borrow::Cow,
     stry_backend::DataBackend,
     warp::{
         http::{
@@ -13,16 +13,16 @@ use {
     },
 };
 
-#[warp_macros::get("/story/{story_id}")]
+#[warp_macros::get("/story/{_story_id}")]
 pub async fn story(
     #[data] _backend: DataBackend,
-    story_id: String,
+    _story_id: String,
 ) -> Result<impl Reply, Rejection> {
     Ok(reply::html("story"))
 }
 
 #[warp_macros::get("/story/{story_id}/{chapter_page}")]
-pub async fn chapter(
+pub async fn chapter_get(
     #[data] backend: DataBackend,
     story_id: String,
     chapter_page: u32,
@@ -53,7 +53,7 @@ pub async fn chapter(
                                 story,
                                 chapter,
                             )
-                            .render()?;
+                            .into_string()?;
 
                             Ok(rendered.into_response())
                         }
@@ -62,7 +62,7 @@ pub async fn chapter(
                                 format!("503 server error | {}", story.name),
                                 time,
                             )
-                            .render()?;
+                            .into_string()?;
 
                             Ok(rendered.into_response())
                         }
@@ -81,11 +81,46 @@ pub async fn chapter(
                 }
             }
             None => {
-                let rendered = pages::ErrorPage::server_error("404 not found", time).render()?;
+                let rendered =
+                    pages::ErrorPage::server_error("404 not found", time).into_string()?;
 
                 Ok(rendered.into_response())
             }
         }
+    })
+    .await
+}
+
+#[warp_macros::post("/story/{story_id}/{chapter_page}")]
+pub async fn chapter_post(
+    #[data] backend: DataBackend,
+    story_id: String,
+    chapter_page: u32,
+    #[form] body: ChapterForm,
+) -> Result<impl Reply, Rejection> {
+    wrap(move || async move {
+        let story_id: Cow<'static, str> = story_id.into();
+
+        backend
+            .update_chapter(
+                story_id.clone(),
+                chapter_page as i32,
+                body.pre.into(),
+                body.main.into(),
+                body.post.into(),
+            )
+            .await?;
+
+        let mut res = Response::new(Body::empty());
+
+        res.headers_mut().insert(
+            LOCATION,
+            HeaderValue::from_str(&format!("/edit/story/{}", story_id)).unwrap(),
+        );
+
+        *res.status_mut() = StatusCode::MOVED_PERMANENTLY;
+
+        Ok(res)
     })
     .await
 }

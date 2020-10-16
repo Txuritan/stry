@@ -2,10 +2,7 @@ use {
     crate::{pagination::Pagination, readable::Readable, utils::filters},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    stry_common::{
-        models,
-        version::{GIT_VERSION, VERSION},
-    },
+    stry_generated_version::{GIT_VERSION, VERSION},
 };
 
 #[derive(Template)]
@@ -21,8 +18,8 @@ pub struct Chapter {
     pagination: String,
     page: i32,
 
-    story: models::Story,
-    chapter: models::Chapter,
+    story: stry_models::Story,
+    chapter: stry_models::Chapter,
 }
 
 impl Chapter {
@@ -30,8 +27,8 @@ impl Chapter {
         title: impl Into<String>,
         time: DateTime<Utc>,
         page: i32,
-        story: models::Story,
-        chapter: models::Chapter,
+        story: stry_models::Story,
+        chapter: stry_models::Chapter,
     ) -> Self {
         Self {
             version: VERSION,
@@ -52,6 +49,11 @@ impl Chapter {
             chapter,
         }
     }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
 }
 
 // TODO: list of chapter tiles
@@ -65,5 +67,5 @@ pub struct Index {
     search: Option<String>,
     duration: Duration,
 
-    story: models::Story,
+    story: stry_models::Story,
 }

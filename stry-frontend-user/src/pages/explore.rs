@@ -37,4 +37,9 @@ impl AuthorList {
             authors,
         }
     }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
 }

@@ -1,6 +1,5 @@
 use {
     crate::{pages, utils::wrap},
-    askama::Template,
     chrono::Utc,
     stry_backend::DataBackend,
     warp::{
@@ -54,7 +53,7 @@ pub async fn chapter(
                                 story,
                                 chapter,
                             )
-                            .render()?;
+                            .into_string()?;
 
                             Ok(rendered.into_response())
                         }
@@ -63,7 +62,7 @@ pub async fn chapter(
                                 format!("503 server error | {}", story.name),
                                 time,
                             )
-                            .render()?;
+                            .into_string()?;
 
                             Ok(rendered.into_response())
                         }
@@ -82,7 +81,8 @@ pub async fn chapter(
                 }
             }
             None => {
-                let rendered = pages::ErrorPage::server_error("404 not found", time).render()?;
+                let rendered =
+                    pages::ErrorPage::server_error("404 not found", time).into_string()?;
 
                 Ok(rendered.into_response())
             }

@@ -1,4 +1,4 @@
-use {crate::PostgresBackend, std::borrow::Cow, stry_common::models::Chapter};
+use {crate::PostgresBackend, std::borrow::Cow, stry_models::Chapter};
 
 #[stry_macros::box_async]
 impl PostgresBackend {
@@ -33,5 +33,18 @@ impl PostgresBackend {
         };
 
         Ok(Some(chapter))
+    }
+
+    #[allow(clippy::unnecessary_operation, clippy::unit_arg)]
+    #[tracing::instrument(level = "trace", skip(self, pre, main, post), err)]
+    pub async fn update_chapter(
+        &self,
+        story_id: Cow<'static, str>,
+        chapter_number: i32,
+        pre: Cow<'static, str>,
+        main: Cow<'static, str>,
+        post: Cow<'static, str>,
+    ) -> anyhow::Result<()> {
+        todo!()
     }
 }

@@ -12,15 +12,15 @@ pub mod utils;
 
 pub use {isahc::http::uri::Uri, sites::*};
 
-use stry_common::version::LibVersion;
+use stry_common::LibraryDetails;
 
-pub fn version() -> Vec<LibVersion> {
+pub fn library_details() -> Vec<LibraryDetails> {
     vec![
-        LibVersion::Curl {
+        LibraryDetails::Curl {
             number: curl::Version::num(),
             version: curl::Version::get().version().to_string(),
         },
-        LibVersion::OpenSSL {
+        LibraryDetails::OpenSSL {
             version: openssl::version::version(),
         },
     ]

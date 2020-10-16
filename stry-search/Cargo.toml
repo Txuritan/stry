@@ -1,0 +1,17 @@
+[package]
+name = "stry-search"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT"
+
+workspace = ".."
+
+[dependencies]
+stry-models = { path = "../stry-models" }
+
+# Crate
+anyhow = "1.0"
+pest = "2.1"
+pest_derive = "2.1"

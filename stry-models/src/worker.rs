@@ -1,5 +1,5 @@
 use {
-    crate::models::{WorkerSite, WorkerTask},
+    crate::{WorkerSite, WorkerTask},
     chrono::{DateTime, Utc},
     std::fmt,
 };

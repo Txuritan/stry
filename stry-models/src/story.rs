@@ -1,9 +1,10 @@
 use {
-    crate::models::{
-        Author, Character, List, Origin, Pairing, Rating, Series, State, Tag, Warning,
+    crate::{
+        pairing::PairingBuilder, Author, Character, List, Origin, Pairing, Rating, Series, State,
+        Tag, Warning,
     },
     anyhow::Context,
-    chrono::{DateTime, Utc},
+    chrono::{DateTime, TimeZone as _, Utc},
     rewryte::sqlite::FromRow,
     std::fmt,
 };
@@ -109,7 +110,7 @@ pub struct StoryRow {
 }
 
 impl FromRow for StoryRow {
-    fn from_row(row: &rusqlite::Row<'_>) -> anyhow::Result<Self>
+    fn from_row(row: &rewryte::sqlite::Row<'_>) -> anyhow::Result<Self>
     where
         Self: Sized,
     {
@@ -306,4 +307,151 @@ pub struct Square {
     pub rating: Rating,
     pub warnings: bool,
     pub state: State,
+}
+
+pub struct StoryBuilder {
+    pub id: String,
+
+    pub name: String,
+    pub summary: String,
+
+    pub rating: Rating,
+    pub state: State,
+
+    pub chapters: i32,
+    pub words: i32,
+
+    pub authors: Vec<Author>,
+    pub origins: Vec<Origin>,
+
+    pub warnings: Vec<Warning>,
+    pub pairings: Vec<Pairing>,
+    pub characters: Vec<Character>,
+    pub tags: Vec<Tag>,
+}
+
+impl StoryBuilder {
+    pub fn new(
+        id: impl Into<String>,
+        name: impl Into<String>,
+        summary: impl Into<String>,
+        rating: Rating,
+        state: State,
+        chapters: i32,
+        words: i32,
+    ) -> Self {
+        Self {
+            id: id.into(),
+
+            name: name.into(),
+            summary: summary.into(),
+
+            rating,
+            state,
+
+            chapters,
+            words,
+
+            authors: vec![],
+            origins: vec![],
+
+            warnings: vec![],
+            pairings: vec![],
+            characters: vec![],
+            tags: vec![],
+        }
+    }
+
+    pub fn finish(self) -> Story {
+        Story {
+            id: self.id,
+
+            name: self.name,
+            summary: self.summary,
+
+            square: Square {
+                rating: self.rating,
+                state: self.state,
+                warnings: !self.warnings.is_empty(),
+            },
+
+            chapters: self.chapters,
+            words: self.words,
+
+            authors: self.authors,
+            origins: self.origins,
+
+            warnings: self.warnings,
+            pairings: self.pairings,
+            characters: self.characters,
+            tags: self.tags,
+
+            series: None,
+
+            created: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+            updated: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+        }
+    }
+
+    pub fn with_author(mut self, id: impl Into<String>, name: impl Into<String>) -> Self {
+        self.authors.push(Author::new_test(id, name));
+
+        self
+    }
+
+    pub fn with_origin(mut self, id: impl Into<String>, name: impl Into<String>) -> Self {
+        self.origins.push(Origin::new_test(id, name));
+
+        self
+    }
+
+    pub fn with_warning(mut self, id: impl Into<String>, name: impl Into<String>) -> Self {
+        self.warnings.push(Warning::new_test(id, name));
+
+        self
+    }
+
+    pub fn with_pairing(
+        mut self,
+        id: impl Into<String>,
+        platonic: bool,
+        build: impl FnOnce(PairingBuilder) -> PairingBuilder,
+    ) -> Self {
+        let PairingBuilder {
+            id,
+            platonic,
+            characters,
+        } = build(PairingBuilder {
+            id: id.into(),
+
+            platonic,
+
+            characters: vec![],
+        });
+
+        self.pairings.push(Pairing {
+            id,
+
+            platonic,
+
+            characters,
+
+            created: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+            updated: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+        });
+
+        self
+    }
+
+    pub fn with_character(mut self, id: impl Into<String>, name: impl Into<String>) -> Self {
+        self.characters.push(Character::new_test(id, name));
+
+        self
+    }
+
+    pub fn with_tag(mut self, id: impl Into<String>, name: impl Into<String>) -> Self {
+        self.tags.push(Tag::new_test(id, name));
+
+        self
+    }
 }

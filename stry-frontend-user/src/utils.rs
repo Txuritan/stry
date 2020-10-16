@@ -2,7 +2,7 @@ use {
     askama::Template,
     chrono::Utc,
     std::{fmt, future::Future, str::FromStr},
-    stry_common::models::{Author, Character, Origin, Pairing, Tag, Warning},
+    stry_models::{Author, Character, Origin, Pairing, Tag, Warning},
     warp::{
         http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
         hyper::Body,

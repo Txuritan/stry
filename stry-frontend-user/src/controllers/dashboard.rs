@@ -1,6 +1,5 @@
 use {
     crate::{pages::dashboard, utils::wrap},
-    askama::Template,
     chrono::Utc,
     stry_backend::DataBackend,
     warp::{reply, Rejection, Reply},
@@ -11,7 +10,7 @@ pub async fn about(#[data] backend: DataBackend) -> Result<impl Reply, Rejection
     wrap(move || async move {
         let time = Utc::now();
 
-        let rendered: String = dashboard::About::new(time, &backend.versions).render()?;
+        let rendered: String = dashboard::About::new(time, &backend.details).into_string()?;
 
         Ok(rendered)
     })

@@ -1,0 +1,11 @@
+[package]
+name = "stry-generated-version"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT"
+
+workspace = ".."
+
+[dependencies]

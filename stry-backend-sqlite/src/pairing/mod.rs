@@ -1,8 +1,8 @@
 use {
     crate::{utils::Total, SqliteBackend},
-    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
+    rewryte::sqlite::{ConnectionExt, StatementExt},
     std::borrow::Cow,
-    stry_common::models::{Character, List, Pairing, PairingRow, Story},
+    stry_models::{Character, List, Pairing, PairingRow, Story},
 };
 
 #[stry_macros::box_async]
@@ -28,7 +28,7 @@ impl SqliteBackend {
                     })?;
 
                 let rows = tracing::trace_span!("get_parts").in_scope(|| {
-                    pairing_stmt.type_query_map_anyhow(rusqlite::params![limit, offset * limit])
+                    pairing_stmt.type_query_opt(rusqlite::params![limit, offset * limit])
                 });
 
                 let item_parts: Vec<PairingRow> =
@@ -43,7 +43,7 @@ impl SqliteBackend {
 
                         for part in item_parts {
                             let rows = tracing::trace_span!("get_characters").in_scope(|| {
-                                character_stmt.type_query_map_anyhow(rusqlite::params![part.id])
+                                character_stmt.type_query_opt(rusqlite::params![part.id])
                             })?;
 
                             let characters: Vec<Character> = match rows
@@ -74,7 +74,7 @@ impl SqliteBackend {
                 };
 
                 let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
-                    conn.type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])
+                    conn.type_query_one_opt(include_str!("all-count.sql"), rusqlite::params![])
                 })?;
 
                 let total: Total = match row {
@@ -105,7 +105,7 @@ impl SqliteBackend {
                     .in_scope(|| conn.prepare(include_str!("item-characters.sql")))?;
 
                 let row: Option<PairingRow> = tracing::trace_span!("get_part").in_scope(|| {
-                    conn.type_query_row_anyhow(include_str!("get-item.sql"), rusqlite::params![id])
+                    conn.type_query_one_opt(include_str!("get-item.sql"), rusqlite::params![id])
                 })?;
 
                 let part: PairingRow = match row {
@@ -113,9 +113,8 @@ impl SqliteBackend {
                     None => return Ok(None),
                 };
 
-                let rows = tracing::trace_span!("get_characters").in_scope(|| {
-                    character_stmt.type_query_map_anyhow(rusqlite::params![part.id])
-                })?;
+                let rows = tracing::trace_span!("get_characters")
+                    .in_scope(|| character_stmt.type_query_opt(rusqlite::params![part.id]))?;
 
                 let characters: Vec<Character> =
                     match rows.map(|items| items.collect::<Result<Vec<Character>, _>>()) {

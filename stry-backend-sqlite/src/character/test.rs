@@ -1,9 +1,6 @@
 use {
     crate::test_utils::setup,
-    stry_common::{
-        models::{Character, List, Rating, State, Story},
-        test_helpers::{character, StoryBuilder},
-    },
+    stry_models::{story::StoryBuilder, Character, List, Rating, State, Story},
     tokio::runtime::Runtime,
 };
 
@@ -20,7 +17,7 @@ pub fn get() -> anyhow::Result<()> {
     }
 
     assert_eq!(
-        Some(character("2crUDM", "character 1")),
+        Some(Character::new_test("2crUDM", "character 1")),
         rt.block_on(run())?
     );
 
@@ -43,10 +40,10 @@ pub fn get_all() -> anyhow::Result<()> {
         Some(List {
             total: 4,
             items: vec![
-                character("2crUDM", "character 1"),
-                character("9Tb66w", "character 2"),
-                character("iV5yY4", "character 3"),
-                character("SqWCU9", "character 4"),
+                Character::new_test("2crUDM", "character 1"),
+                Character::new_test("9Tb66w", "character 2"),
+                Character::new_test("iV5yY4", "character 3"),
+                Character::new_test("SqWCU9", "character 4"),
             ]
         }),
         rt.block_on(run())?,

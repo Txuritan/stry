@@ -1,0 +1,13 @@
+[package]
+name = "stry-query-builder"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT"
+
+workspace = ".."
+
+[dependencies]
+# Crate
+fnv = "1.0"

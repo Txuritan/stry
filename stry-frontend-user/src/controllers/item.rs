@@ -4,11 +4,10 @@ use {
         utils::{wrap, Items},
     },
     anyhow::Context,
-    askama::Template,
     chrono::Utc,
     std::borrow::Cow,
     stry_backend::DataBackend,
-    stry_common::models::Paging,
+    stry_models::Paging,
     warp::{Rejection, Reply},
 };
 
@@ -187,13 +186,13 @@ pub async fn item(
                     (total + (norm.page_size - 1)) / norm.page_size,
                     items,
                 )
-                .render()
+                .into_string()
                 .context("Unable to render item page")?;
 
                 Ok(rendered)
             }
             None => {
-                let rendered = ErrorPage::not_found("404 not found", time).render()?;
+                let rendered = ErrorPage::not_found("404 not found", time).into_string()?;
 
                 Ok(rendered)
             }

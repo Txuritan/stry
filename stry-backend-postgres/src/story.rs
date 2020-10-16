@@ -2,10 +2,8 @@ use {
     crate::PostgresBackend,
     futures::try_join,
     std::borrow::Cow,
-    stry_common::{
-        models::{Author, Character, List, Origin, Pairing, Square, Story, Tag, Warning},
-        search::SearchParser,
-    },
+    stry_models::{Author, Character, List, Origin, Pairing, Square, Story, Tag, Warning},
+    stry_search::SearchParser,
 };
 
 #[stry_macros::box_async]
@@ -102,6 +100,9 @@ impl PostgresBackend {
             // tag_rows
             conn.query(&tag_stmt, id_params),
         )?;
+
+        let trace_span = tracing::trace_span!("Map rows");
+        let trace_guard = trace_span.enter();
 
         let authors = author_rows
             .into_iter()
@@ -205,6 +206,8 @@ impl PostgresBackend {
                 })
             })
             .collect::<Result<_, _>>()?;
+
+        std::mem::drop(trace_guard);
 
         let story = Story {
             id: story_row.try_get(0)?,

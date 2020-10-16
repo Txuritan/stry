@@ -11,8 +11,8 @@ use {
 };
 
 macro_rules! embed {
-    (@internal_bytes => $mime:expr, $t:tt, $file:tt) => {
-        warp::path(concat!($file, ".", $t)).and(warp::path::end()).map(|| Mime {
+    (@internal => $mime:expr, $t:tt, $file:tt) => {
+        Ok(Mime {
             body: {
                 static CONTENTS: &'static [u8] =  include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/", $file, ".", $t));
 
@@ -21,106 +21,83 @@ macro_rules! embed {
             mime: $mime,
         })
     };
-    (@internal_str => $mime:expr, $t:tt, $file:tt) => {
-        warp::path(concat!($file, ".", $t)).and(warp::path::end()).map(|| Mime {
-            body: {
-                static CONTENTS: &'static str =  include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/", $file, ".", $t));
-
-                CONTENTS
-            },
-            mime: $mime,
-        })
-    };
     (ico => $file:tt) => {{
-        embed!(@internal_bytes => "image/x-icon", "ico", $file)
+        embed!(@internal => "image/x-icon", "ico", $file)
     }};
     (png => $file:tt) => {{
-        embed!(@internal_bytes => "image/png", "png", $file)
+        embed!(@internal => "image/png", "png", $file)
     }};
     (svg => $file:tt) => {{
-        embed!(@internal_str => "image/svg+xml", "svg", $file)
+        embed!(@internal => "image/svg+xml", "svg", $file)
     }};
     (webmanifest => $file:tt) => {{
-        embed!(@internal_str => "application/manifest+json", "webmanifest", $file)
+        embed!(@internal => "application/manifest+json", "webmanifest", $file)
     }};
     (xml => $file:tt) => {{
-        embed!(@internal_str => "application/xml", "xml", $file)
+        embed!(@internal => "application/xml", "xml", $file)
+    }};
+    (match $param:expr => { $( [ $token:tt ] => $file:tt , )+ $rest:ident => $body:block, }) => {{
+        match $param {
+            $(
+                concat!($file, ".", stringify!($token)) => embed!($token => $file),
+            )+
+            _ => $body,
+        }
     }};
 }
 
+#[inline]
 pub fn assets() -> BoxedFilter<(impl Reply,)> {
     warp::get()
-        .and(
-            embed!(png => "android-chrome-192x192")
-                .boxed()
-                .or(embed!(png => "android-chrome-256x256"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-114x114-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-114x114"))
-                .boxed()
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-120x120-precomposed"))
-                .or(embed!(png => "apple-touch-icon-120x120"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-144x144-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-144x144"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-152x152-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-152x152"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-180x180-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-180x180"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-57x57-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-57x57"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-60x60-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-60x60"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-72x72-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-72x72"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-76x76-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-76x76"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon-precomposed"))
-                .boxed()
-                .or(embed!(png => "apple-touch-icon"))
-                .boxed()
-                .or(embed!(xml => "browserconfig"))
-                .boxed()
-                .or(embed!(png => "favicon-16x16"))
-                .boxed()
-                .or(embed!(png => "favicon-32x32"))
-                .boxed()
-                .or(embed!(ico => "favicon"))
-                .boxed()
-                .or(embed!(png => "mstile-144x144"))
-                .boxed()
-                .or(embed!(png => "mstile-150x150"))
-                .boxed()
-                .or(embed!(svg => "safari-pinned-tab"))
-                .boxed()
-                .or(embed!(webmanifest => "site"))
-                .boxed()
-                .or(css())
-                .boxed()
-                .or(fonts())
-                .boxed()
-                .or(js())
-                .boxed(),
+        .and(css())
+        .boxed()
+        .or(fonts())
+        .boxed()
+        .or(js())
+        .boxed()
+        .or(
+            warp::filters::path::param::<String>().and_then(|param: String| async move {
+                embed!(match param.as_str() => {
+                    [ png ] => "android-chrome-192x192",
+                    [ png ] => "android-chrome-256x256",
+                    [ png ] => "apple-touch-icon-114x114-precomposed",
+                    [ png ] => "apple-touch-icon-114x114",
+                    [ png ] => "apple-touch-icon-120x120-precomposed",
+                    [ png ] => "apple-touch-icon-120x120",
+                    [ png ] => "apple-touch-icon-144x144-precomposed",
+                    [ png ] => "apple-touch-icon-144x144",
+                    [ png ] => "apple-touch-icon-152x152-precomposed",
+                    [ png ] => "apple-touch-icon-152x152",
+                    [ png ] => "apple-touch-icon-180x180-precomposed",
+                    [ png ] => "apple-touch-icon-180x180",
+                    [ png ] => "apple-touch-icon-57x57-precomposed",
+                    [ png ] => "apple-touch-icon-57x57",
+                    [ png ] => "apple-touch-icon-60x60-precomposed",
+                    [ png ] => "apple-touch-icon-60x60",
+                    [ png ] => "apple-touch-icon-72x72-precomposed",
+                    [ png ] => "apple-touch-icon-72x72",
+                    [ png ] => "apple-touch-icon-76x76-precomposed",
+                    [ png ] => "apple-touch-icon-76x76",
+                    [ png ] => "apple-touch-icon-precomposed",
+                    [ png ] => "apple-touch-icon",
+                    [ xml ] => "browserconfig",
+                    [ png ] => "favicon-16x16",
+                    [ png ] => "favicon-32x32",
+                    [ ico ] => "favicon",
+                    [ png ] => "mstile-144x144",
+                    [ png ] => "mstile-150x150",
+                    [ svg ] => "safari-pinned-tab",
+                    [ webmanifest ] => "site",
+                    _rest => {
+                        Err(warp::reject::not_found())
+                    },
+                })
+            }),
         )
         .boxed()
 }
 
+#[inline]
 pub fn css() -> BoxedFilter<(impl Reply,)> {
     warp::path("css")
         .and(warp::path::param::<String>())
@@ -138,6 +115,7 @@ pub fn css() -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
+#[inline]
 pub fn fonts() -> BoxedFilter<(impl Reply,)> {
     warp::path("fonts")
         .and(warp::path::param::<String>())
@@ -146,23 +124,38 @@ pub fn fonts() -> BoxedFilter<(impl Reply,)> {
             match file.as_str() {
                 "fontawesome-webfont.eot" => Ok(Font::new(
                     FontType::EOT,
-                    resource!("assets/fonts/fontawesome-webfont.eot"),
+                    include_bytes!(concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/assets/fonts/fontawesome-webfont.eot"
+                    )),
                 )),
                 "fontawesome-webfont.svg" => Ok(Font::new(
                     FontType::SVG,
-                    resource!("assets/fonts/fontawesome-webfont.svg"),
+                    include_bytes!(concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/assets/fonts/fontawesome-webfont.svg"
+                    )),
                 )),
                 "fontawesome-webfont.ttf" => Ok(Font::new(
                     FontType::TTF,
-                    resource!("assets/fonts/fontawesome-webfont.ttf"),
+                    include_bytes!(concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/assets/fonts/fontawesome-webfont.ttf"
+                    )),
                 )),
                 "fontawesome-webfont.woff" => Ok(Font::new(
                     FontType::WOFF,
-                    resource!("assets/fonts/fontawesome-webfont.woff"),
+                    include_bytes!(concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/assets/fonts/fontawesome-webfont.woff"
+                    )),
                 )),
                 "fontawesome-webfont.woff2" => Ok(Font::new(
                     FontType::WOFF2,
-                    resource!("assets/fonts/fontawesome-webfont.woff2"),
+                    include_bytes!(concat!(
+                        env!("CARGO_MANIFEST_DIR"),
+                        "/assets/fonts/fontawesome-webfont.woff2"
+                    )),
                 )),
                 _ => Err(warp::reject::not_found()),
             }
@@ -170,6 +163,7 @@ pub fn fonts() -> BoxedFilter<(impl Reply,)> {
         .boxed()
 }
 
+#[inline]
 pub fn js() -> BoxedFilter<(impl Reply,)> {
     warp::path("js")
         .and(warp::path::param::<String>())
@@ -250,7 +244,8 @@ enum FontType {
 }
 
 impl FontType {
-    const fn mime(self) -> &'static str {
+    #[inline]
+    fn mime(self) -> &'static str {
         match self {
             FontType::EOT => "application/vnd.ms-fontobject",
             FontType::SVG => "image/svg+xml",
@@ -263,11 +258,11 @@ impl FontType {
 
 struct Font {
     mime: FontType,
-    inner: Resource<[u8]>,
+    inner: &'static [u8],
 }
 
 impl Font {
-    const fn new(mime: FontType, inner: Resource<[u8]>) -> Self {
+    const fn new(mime: FontType, inner: &'static [u8]) -> Self {
         Font { mime, inner }
     }
 }
@@ -275,8 +270,7 @@ impl Font {
 impl Reply for Font {
     #[inline]
     fn into_response(self) -> Response {
-        let borrow: Cow<'static, [u8]> = self.inner.into();
-        let mut res = Response::new(borrow.into());
+        let mut res = Response::new(self.inner.into());
 
         res.headers_mut().insert(
             CACHE_CONTROL,

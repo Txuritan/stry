@@ -1,4 +1,8 @@
-use {crate::SqliteBackend, rewryte::sqlite::SqliteExt, stry_common::models::WorkerTask};
+use {
+    crate::SqliteBackend,
+    rewryte::sqlite::{ConnectionExt, StatementExt},
+    stry_models::WorkerTask,
+};
 
 #[stry_macros::box_async]
 impl SqliteBackend {
@@ -10,7 +14,7 @@ impl SqliteBackend {
             move || -> anyhow::Result<Option<WorkerTask>> {
                 let conn = inner.0.get()?;
 
-                let task: WorkerTask = match conn.type_query_row_anyhow(
+                let task: WorkerTask = match conn.type_query_one_opt(
                     "SELECT WT.Id, WT.Name, WT.Site, WT.Url, WT.Chapter, WT.Chapters, WT.Next, WT.Completed, WT.Created, WT.Updated FROM WorkerTask WT WHERE WT.Complete = TRUE AND WT.Id IS NOT IN (SELECT Task FROM Worker) LIMIT 1",
                     rusqlite::params![],
                 )? {

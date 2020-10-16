@@ -17,7 +17,7 @@ stry-common = { path = "../stry-common" }
 anyhow = "1.0"
 bytes = "0.5"
 futures = "0.3"
-juniper = { git = "https://github.com/graphql-rust/juniper", rev = "f19d498254d3e5d2a008c483943facaf3ddcc4fe", default-features = false, features = [ "chrono" ] }
+juniper = { git = "https://github.com/graphql-rust/juniper", rev = "b1a03661122c0fa5c8a4fc41418dee7f9ede6308", default-features = false, features = [ "chrono" ] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 tokio = { version = "0.2", features = [ "blocking", "sync" ] }

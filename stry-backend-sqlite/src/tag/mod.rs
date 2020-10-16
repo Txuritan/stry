@@ -4,9 +4,9 @@ pub mod test;
 use {
     crate::{utils::Total, SqliteBackend},
     anyhow::Context,
-    rewryte::sqlite::{SqliteExt, SqliteStmtExt},
+    rewryte::sqlite::{ConnectionExt, StatementExt},
     std::borrow::Cow,
-    stry_common::models::{Entity, List, Story, Tag},
+    stry_models::{Entity, List, Story, Tag},
     tracing_futures::Instrument,
 };
 
@@ -23,9 +23,8 @@ impl SqliteBackend {
                 let mut stmt = tracing::trace_span!("prepare")
                     .in_scope(|| conn.prepare(include_str!("all-items.sql")))?;
 
-                let row = tracing::trace_span!("get_rows").in_scope(|| {
-                    stmt.type_query_map_anyhow(rusqlite::params![limit, offset * limit])
-                })?;
+                let row = tracing::trace_span!("get_rows")
+                    .in_scope(|| stmt.type_query_opt(rusqlite::params![limit, offset * limit]))?;
 
                 let items: Vec<Tag> = match row.map(|tags| tags.collect::<Result<Vec<Tag>, _>>()) {
                     Some(items) => items?,
@@ -33,7 +32,7 @@ impl SqliteBackend {
                 };
 
                 let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
-                    conn.type_query_row_anyhow(include_str!("all-count.sql"), rusqlite::params![])
+                    conn.type_query_one_opt(include_str!("all-count.sql"), rusqlite::params![])
                 })?;
 
                 let total: Total = match row {
@@ -61,7 +60,7 @@ impl SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let row: Option<Tag> = tracing::trace_span!("get").in_scope(|| {
-                    conn.type_query_row_anyhow(include_str!("get-item.sql"), rusqlite::params![id])
+                    conn.type_query_one_opt(include_str!("get-item.sql"), rusqlite::params![id])
                 })?;
 
                 Ok(row)
@@ -89,7 +88,7 @@ impl SqliteBackend {
                     .in_scope(|| conn.prepare(include_str!("stories-items.sql")))?;
 
                 let rows = tracing::trace_span!("get_ids").in_scope(|| {
-                    stmt.query_map_anyhow(rusqlite::params![id, limit, offset], |row| {
+                    stmt.query_opt(rusqlite::params![id, limit, offset], |row| {
                         Ok(Entity {
                             id: row
                                 .get(0)
@@ -105,7 +104,7 @@ impl SqliteBackend {
                     };
 
                 let row: Option<Total> = tracing::trace_span!("get_count").in_scope(|| {
-                    conn.type_query_row_anyhow(
+                    conn.type_query_one_opt(
                         include_str!("stories-count.sql"),
                         rusqlite::params![id],
                     )

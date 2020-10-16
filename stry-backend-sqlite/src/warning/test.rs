@@ -1,9 +1,6 @@
 use {
     crate::test_utils::setup,
-    stry_common::{
-        models::{List, Rating, State, Story, Warning},
-        test_helpers::{warning, StoryBuilder},
-    },
+    stry_models::{story::StoryBuilder, List, Rating, State, Story, Warning},
     tokio::runtime::Runtime,
 };
 
@@ -19,7 +16,10 @@ pub fn get() -> anyhow::Result<()> {
         Ok(warning)
     }
 
-    assert_eq!(Some(warning("brVRkN", "warning 1")), rt.block_on(run())?);
+    assert_eq!(
+        Some(Warning::new_test("brVRkN", "warning 1")),
+        rt.block_on(run())?
+    );
 
     Ok(())
 }
@@ -40,9 +40,9 @@ pub fn get_all() -> anyhow::Result<()> {
         Some(List {
             total: 3,
             items: vec![
-                warning("brVRkN", "warning 1"),
-                warning("3d72n5", "warning 2"),
-                warning("C7bcyL", "warning 3"),
+                Warning::new_test("brVRkN", "warning 1"),
+                Warning::new_test("3d72n5", "warning 2"),
+                Warning::new_test("C7bcyL", "warning 3"),
             ]
         }),
         rt.block_on(run())?,

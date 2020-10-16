@@ -1,4 +1,4 @@
-use {crate::PostgresBackend, stry_common::models::WorkerTask};
+use {crate::PostgresBackend, stry_models::WorkerTask};
 
 #[stry_macros::box_async]
 impl PostgresBackend {

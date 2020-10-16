@@ -16,6 +16,7 @@ openssl-bundled = [ "curl/static-ssl", "openssl/vendored" ]
 # Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
+stry-models = { path = "../stry-models" }
 
 # Crate
 anyhow = "1.0"

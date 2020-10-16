@@ -13,17 +13,19 @@ bundled = [ "rusqlite/bundled" ]
 
 [dependencies]
 # Core
-stry-common = { path = "../stry-common", features = [ "sqlite" ] }
+stry-common = { path = "../stry-common" }
 stry-dataloader = { path = "../stry-dataloader" }
 stry-macros = { path = "../stry-macros" }
+stry-models = { path = "../stry-models", features = [ "sqlite" ] }
+stry-search = { path = "../stry-search" }
 
 # Crate
 anyhow = "1.0"
+brotli = "3.3"
 chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
 r2d2 = "0.8"
-rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "sqlite", "serde" ] }
-rusqlite = { version = "0.24", features = [ "chrono" ] }
-sql-ast = "0.7"
+rewryte = { git = "https://gitlab.com/Txuritan/rewryte", default-features = false, features = [ "sqlite" ] }
+rusqlite = { version = "0.24", features = [ "chrono", "functions" ] }
 tokio = { version = "0.2", features = [ "blocking", "sync" ] }
 tracing = "0.1"
 tracing-futures = "0.2"

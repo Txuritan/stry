@@ -1,4 +1,5 @@
 pub mod controllers;
+pub mod models;
 pub mod pages;
 
 pub mod pagination;
@@ -45,7 +46,8 @@ pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
     let edit: BoxedFilter<(_,)> = warp::path("edit")
         .and(
             edit::story(backend.clone())
-                .or(edit::chapter(backend.clone()))
+                .or(edit::chapter_get(backend.clone()))
+                .or(edit::chapter_post(backend.clone()))
                 .boxed(),
         )
         .boxed();

@@ -5,13 +5,13 @@ use {
     },
     anyhow::Context,
     r2d2::PooledConnection,
-    rewryte::sqlite::{FromRow, SqliteExt, SqliteStmtExt},
+    rewryte::sqlite::{ConnectionExt, FromRow, StatementExt},
     std::borrow::Cow,
-    stry_common::models::{
+    stry_models::{
         story::StoryRow, Author, Character, Entity, List, Origin, Pairing, PairingRow, Square,
         Story, Tag, Warning,
     },
-    stry_common::search::{SearchParser, SearchValue},
+    stry_search::{SearchParser, SearchValue},
 };
 
 enum Wrap {
@@ -38,7 +38,7 @@ pub fn get(
         })?;
 
     let rows = tracing::trace_span!("get_rows").in_scope(|| {
-        stmt.query_map_anyhow(rusqlite::params![id, id, id, id, id, id], |row| {
+        stmt.query_opt(rusqlite::params![id, id, id, id, id, id], |row| {
             let typ: String = row
                 .get(9)
                 .context("Attempting to get row index 8 for story")?;
@@ -77,7 +77,7 @@ pub fn get(
     let pairings =
         match tracing::trace_span!("get_pairings").in_scope(|| -> anyhow::Result<_> {
             let pairing_parts: Vec<PairingRow> = match story_pairings_stmt
-                .type_query_map_anyhow(rusqlite::params![id])?
+                .type_query_opt(rusqlite::params![id])?
                 .map(|items| items.collect::<Result<_, _>>())
             {
                 Some(items) => items?,
@@ -88,7 +88,7 @@ pub fn get(
 
             for part in pairing_parts {
                 let characters = match pairing_stmt
-                    .type_query_map_anyhow(rusqlite::params![part.id])?
+                    .type_query_opt(rusqlite::params![part.id])?
                     .map(|items| items.collect::<Result<_, _>>())
                 {
                     Some(items) => items?,
@@ -188,7 +188,7 @@ impl SqliteBackend {
 
                 let rows = tracing::trace_span!("get_rows")
                     .in_scope(|| {
-                        stmt.query_map_anyhow(rusqlite::params![limit, offset * limit], |row| {
+                        stmt.query_opt(rusqlite::params![limit, offset * limit], |row| {
                             Ok(Entity {
                                 id: row
                                     .get(0)
@@ -215,15 +215,11 @@ impl SqliteBackend {
                 }
 
                 let total = match tracing::trace_span!("get_count").in_scope(|| {
-                    conn.query_row_anyhow(
-                        include_str!("all-count.sql"),
-                        rusqlite::params![],
-                        |row| {
-                            Ok(row
-                                .get(0)
-                                .context("Attempting to get row index 0 for story count")?)
-                        },
-                    )
+                    conn.query_one_opt(include_str!("all-count.sql"), rusqlite::params![], |row| {
+                        Ok(row
+                            .get(0)
+                            .context("Attempting to get row index 0 for story count")?)
+                    })
                 })? {
                     Some(total) => total,
                     None => return Ok(None),
@@ -286,7 +282,7 @@ impl SqliteBackend {
                 let conn = inner.0.get()?;
 
                 let row: Option<Total> = tracing::trace_span!("get_count")
-                    .in_scope(|| conn.type_query_row_anyhow(&query, &params))?;
+                    .in_scope(|| conn.type_query_one_opt(&query, &params))?;
 
                 let total: Total = match row {
                     Some(total) => total,
@@ -301,7 +297,7 @@ impl SqliteBackend {
                 params.push(Wrapper::Num(offset));
 
                 let rows = tracing::trace_span!("get_ids").in_scope(|| {
-                    stmt.query_map_anyhow(&params, |row| {
+                    stmt.query_opt(&params, |row| {
                         Ok(Entity {
                             id: row
                                 .get(0)

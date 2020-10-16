@@ -1,7 +1,7 @@
 use {
     std::sync::Arc,
     stry_backend::DataBackend,
-    stry_common::config::Config,
+    stry_common::config::{Config, Tls},
     tokio::sync::broadcast::Receiver,
     warp::{Filter, Rejection, Reply},
 };
@@ -11,21 +11,46 @@ pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend)
 
     let routes = api_routes(enable_api, backend.clone())
         .or(user_routes(enable_user, backend.clone()))
+        .with(warp::trace::request());
+
+    if let Tls::None = cfg.tls {
         // I want to use brotli, but Firefpx isn't adding new features to HTTP (non HTTPS),
         // as such it only sends `Accept-Encoding: gzip, deflate`.
         // That means I'll either wrap the server in NGINX, or allow for TLS through the config.
         // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1218924
-        .with(warp::compression::gzip())
-        .with(warp::trace::request());
+        let routes = routes.with(warp::compression::gzip());
 
-    let (addr, server) = warp::serve(routes)
-        .bind_with_graceful_shutdown((cfg.ip, cfg.port), async move {
+        let (addr, server) = warp::serve(routes)
+            .bind_with_graceful_shutdown((cfg.ip, cfg.port), async move {
+                rx.recv().await.expect("Failed to listen for event")
+            });
+
+        tracing::info!("warp drive engaged: listening on http://{}", addr);
+
+        server.await;
+    } else {
+        let routes = routes.with(warp::compression::brotli());
+
+        let mut serve = warp::serve(routes).tls();
+
+        match &cfg.tls {
+            Tls::File { cert, key } => {
+                serve = serve.cert_path(cert).key_path(key);
+            }
+            Tls::Text { cert, key } => {
+                serve = serve.cert(cert).key(key);
+            }
+            Tls::None => unreachable!(),
+        }
+
+        let (addr, server) = serve.bind_with_graceful_shutdown((cfg.ip, cfg.port), async move {
             rx.recv().await.expect("Failed to listen for event")
         });
 
-    tracing::info!("warp drive engaged: listening on http://{}", addr);
+        tracing::info!("warp drive engaged: listening on https://{}", addr);
 
-    server.await;
+        server.await;
+    }
 }
 
 #[cfg(feature = "api")]

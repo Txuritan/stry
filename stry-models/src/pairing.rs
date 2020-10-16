@@ -1,6 +1,6 @@
 use {
-    crate::models::{Character, List},
-    chrono::{DateTime, Utc},
+    crate::{Character, List},
+    chrono::{DateTime, TimeZone as _, Utc},
     std::fmt,
 };
 
@@ -78,5 +78,28 @@ impl From<List<Pairing>> for PairingList {
             total: list.total,
             items: list.items,
         }
+    }
+}
+
+pub struct PairingBuilder {
+    pub id: String,
+
+    pub characters: Vec<Character>,
+
+    pub platonic: bool,
+}
+
+impl PairingBuilder {
+    pub fn with_character(mut self, id: impl Into<String>, name: impl Into<String>) -> Self {
+        self.characters.push(Character {
+            id: id.into(),
+
+            name: name.into(),
+
+            created: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+            updated: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+        });
+
+        self
     }
 }

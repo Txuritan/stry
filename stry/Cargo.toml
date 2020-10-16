@@ -29,8 +29,9 @@ frontend-user = [ "stry-frontend/user" ]
 
 [dependencies]
 stry-backend = { path = "../stry-backend" }
-stry-common = { path = "../stry-common" }
+stry-common = { path = "../stry-common", features = [ "sources" ] }
 stry-frontend = { path = "../stry-frontend", default-features = false }
+stry-generated-version = { path = "../stry-generated-version" }
 stry-worker = { path = "../stry-worker" }
 
 # Base
@@ -47,3 +48,4 @@ tracing-log = "0.1"
 tracing-flame = "0.1"
 tracing-futures = "0.2"
 tracing-subscriber = "0.2"
+# tracing-tracy = "0.2"

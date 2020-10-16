@@ -1,1 +1,0 @@
-rewryte::models!("../schema.dal");

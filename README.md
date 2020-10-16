@@ -2,12 +2,7 @@
   <p align="center">
     <img align="center" src="./assets/icon.png" alt="stry's home" />
     <h3 align="center">stry</h3>
-    <div align="center">
-      <strong>A mini self-hosted Archive of Our Own, or a story host with tagging.</strong>
-    </div>
     <p align="center">
-      <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">View Demo</a>
-      ·
       <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Report Bug</a>
       ·
       <a href="https://github.com/teammycelium/myriad/blob/master/LICENSE">Request Feature</a>
@@ -26,6 +21,13 @@
   </p>
 </div>
 
+`stry` is a self hosted web server that is an interface for reading ePubs and other text content, specifically fanfiction.
+It allows you to have Archive of Our Own style tagging, along with its powerful search system all the while being enchanted by [booru](https://en.wikipedia.org/wiki/Imageboard#Danbooru-style_boards) inspired tag search.
+
+<div align="center">
+  <img src="./assets/screenshots/stry-home.png" alt="stry's home" />
+</div>
+
 ## Table of Contents
 
   - [Features](#features)
@@ -42,8 +44,6 @@
   - [License](#license)
   - [Acknowledgements](#acknowledgements)
 
-<img src="./assets/screenshots/stry-home.png" alt="stry's home" />
-
 ## Features
 
   - Tagging system
@@ -56,6 +56,7 @@
 ## Requirements
 
   - Rust
+    - Specifically `stable-1.45.2`
   - [`cargo-make`](https://github.com/sagiegurari/cargo-make)
   - C/C++ compiler
   - Optionally:

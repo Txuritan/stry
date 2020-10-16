@@ -12,6 +12,8 @@ workspace = ".."
 # Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
+stry-generated-version = { path = "../stry-generated-version" }
+stry-models = { path = "../stry-models" }
 
 # Crate
 akibisuto-stylus = { git = "https://gitlab.com/akibisuto/stylus" }

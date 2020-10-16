@@ -1,10 +1,9 @@
 use {
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    stry_common::{
-        models::{Worker, WorkerTask},
-        version::{LibVersion, BOM, GIT_VERSION, VERSION},
-    },
+    stry_common::LibraryDetails,
+    stry_generated_version::{BOM, GIT_VERSION, VERSION},
+    stry_models::{Worker, WorkerTask},
 };
 
 #[derive(Template)]
@@ -17,19 +16,24 @@ pub struct About<'l> {
     duration: Duration,
 
     licenses: &'static str,
-    versions: &'l [LibVersion],
+    details: &'l [LibraryDetails],
 }
 
 impl<'l> About<'l> {
-    pub fn new(time: DateTime<Utc>, versions: &'l [LibVersion]) -> Self {
+    pub fn new(time: DateTime<Utc>, details: &'l [LibraryDetails]) -> Self {
         Self {
             version: VERSION,
             git: GIT_VERSION,
             title: "about | dashboard",
             duration: Utc::now().signed_duration_since(time),
             licenses: BOM,
-            versions,
+            details,
         }
+    }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
     }
 }
 
@@ -43,6 +47,13 @@ pub struct Database {
     duration: Duration,
 }
 
+impl Database {
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
+}
+
 #[derive(Template)]
 #[template(path = "dashboard/settings.html")]
 pub struct Settings {
@@ -53,6 +64,13 @@ pub struct Settings {
     duration: Duration,
 }
 
+impl Settings {
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
+}
+
 #[derive(Template)]
 #[template(path = "dashboard/stats.html")]
 pub struct Stats {
@@ -61,6 +79,13 @@ pub struct Stats {
 
     title: String,
     duration: Duration,
+}
+
+impl Stats {
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
 }
 
 #[derive(Template)]
@@ -86,5 +111,10 @@ impl<'w> Tasks<'w> {
             workers,
             tasks,
         }
+    }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
     }
 }

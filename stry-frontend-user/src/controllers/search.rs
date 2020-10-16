@@ -1,9 +1,8 @@
 use {
     crate::{pages, utils::wrap},
-    askama::Template,
     chrono::Utc,
     stry_backend::DataBackend,
-    stry_common::models::{Paging, Search},
+    stry_models::{Paging, Search},
     warp::{Rejection, Reply},
 };
 
@@ -34,7 +33,7 @@ pub async fn index(
                     items,
                 )?;
 
-                let rendered: String = page.render()?;
+                let rendered: String = page.into_string()?;
 
                 Ok(rendered)
             }

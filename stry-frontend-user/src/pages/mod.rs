@@ -11,10 +11,7 @@ use {
     },
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    stry_common::{
-        models,
-        version::{GIT_VERSION, VERSION},
-    },
+    stry_generated_version::{GIT_VERSION, VERSION},
 };
 
 #[derive(Template)]
@@ -77,6 +74,11 @@ where
             "Check the log for more information",
         )
     }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
 }
 
 #[derive(Template)]
@@ -113,6 +115,11 @@ impl ResourceList {
             resources,
         }
     }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
+    }
 }
 
 #[derive(Template)]
@@ -127,7 +134,7 @@ pub struct StoryList {
 
     pagination: String,
 
-    stories: Vec<models::Story>,
+    stories: Vec<stry_models::Story>,
 }
 
 impl StoryList {
@@ -137,7 +144,7 @@ impl StoryList {
         url: impl Into<String>,
         page: i32,
         pages: i32,
-        stories: Vec<models::Story>,
+        stories: Vec<stry_models::Story>,
     ) -> Self {
         Self {
             version: VERSION,
@@ -148,6 +155,11 @@ impl StoryList {
             pagination: Pagination::new(url, None, None, pages as u32, page as u32).to_string(),
             stories,
         }
+    }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
     }
 }
 
@@ -163,7 +175,7 @@ pub struct Search {
 
     pagination: String,
 
-    stories: Vec<models::Story>,
+    stories: Vec<stry_models::Story>,
 }
 
 impl Search {
@@ -173,7 +185,7 @@ impl Search {
         time: DateTime<Utc>,
         page: i32,
         pages: i32,
-        stories: Vec<models::Story>,
+        stories: Vec<stry_models::Story>,
     ) -> anyhow::Result<Self> {
         #[derive(serde::Serialize)]
         struct SearchUrl<'s> {
@@ -199,5 +211,10 @@ impl Search {
             search: Some(search),
             stories,
         })
+    }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
     }
 }

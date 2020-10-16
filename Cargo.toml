@@ -5,13 +5,19 @@ members = [
     "stry-backend-postgres",
     "stry-backend-sqlite",
     "stry-common",
+    "stry-database-tools",
     "stry-dataloader",
     "stry-frontend",
     "stry-frontend-api",
     "stry-frontend-user",
+    "stry-generated-version",
     "stry-macros",
+    "stry-models",
+    "stry-query-builder",
+    "stry-search",
     "stry-worker",
     "stry-worker-scraper",
+    "xtask",
 ]
 
 [patch.crates-io]

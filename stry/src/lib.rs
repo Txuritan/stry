@@ -1,6 +1,3 @@
-#![type_length_limit="2165503"]
-
-mod layer;
 mod setup;
 
 use {
@@ -57,8 +54,8 @@ async fn run(cfg: Arc<Config>) -> anyhow::Result<()> {
     })?;
 
     let version_info = Arc::new(
-        stry_backend::version()
-            .appended(&mut stry_worker::version())
+        stry_backend::library_details()
+            .appended(&mut stry_worker::library_details())
             .sorted(),
     );
 

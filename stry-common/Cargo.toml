@@ -9,21 +9,15 @@ license = "MIT"
 workspace = ".."
 
 [features]
-postgres = [ "rewryte/postgres" ]
-sqlite = [ "rewryte/sqlite" ]
+sources = [ "clap" ]
 
 [dependencies]
 # Crate
 anyhow = "1.0"
-chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+clap = { version = "2.33", default-features = false, optional = true }
 futures = "0.3"
-pest = "2.1"
-pest_derive = "2.1"
-postgres-types = { version = "0.1", features = [ "derive" ] }
-rewryte = { git = "https://gitlab.com/Txuritan/rewryte", features = [ "serde" ] }
 rand = { version = "0.7" }
 ron = "0.6"
-rusqlite = { version = "0.24", features = [ "bundled", "chrono" ] }
 serde = { version = "1.0", features = [ "derive" ] }
 tracing = "0.1"
 tracing-futures = "0.2"

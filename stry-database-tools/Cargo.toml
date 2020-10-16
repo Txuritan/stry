@@ -1,0 +1,17 @@
+[package]
+name = "stry-database-tools"
+version = "2.3.0"
+authors = [ "Txuritan <txuritan@protonmail.com>" ]
+edition = "2018"
+
+license = "MIT"
+
+workspace = ".."
+
+[dependencies]
+anyhow = "1.0"
+chrono = { version = "0.4", default-features = false, features = [ "serde" ] }
+lzma-rs = "0.1"
+rusqlite = { version = "0.24", features = [ "bundled", "chrono", "functions" ] }
+brotli = "3.3.0"
+

@@ -1,7 +1,7 @@
 use {
     crate::PostgresBackend,
     std::borrow::Cow,
-    stry_common::models::{List, Story, Warning},
+    stry_models::{List, Story, Warning},
 };
 
 #[stry_macros::box_async]

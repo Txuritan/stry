@@ -16,7 +16,7 @@ use {
     std::sync::Arc,
     stry_common::{
         backend::{BackendType, StorageType},
-        version::LibVersion,
+        LibraryDetails,
     },
 };
 
@@ -29,17 +29,22 @@ pub const TEST_DATA: &str = include_str!("test-data.sql");
 pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
 impl SqliteBackend {
-    #[tracing::instrument(skip(_backend, storage, _version), err)]
+    #[tracing::instrument(skip(_backend, storage, _details), err)]
     pub async fn init(
         _backend: BackendType,
         storage: StorageType,
-        _version: Arc<Vec<LibVersion>>,
+        _details: Arc<Vec<LibraryDetails>>,
     ) -> anyhow::Result<Self> {
         if let StorageType::File { location } = storage {
             let pool = tokio::task::spawn_blocking(
                 move || -> anyhow::Result<Pool<SqliteConnectionManager>> {
-                    let manager = SqliteConnectionManager::file(&location)
-                        .with_init(|c| c.execute_batch("PRAGMA foreign_keys=1;"));
+                    let manager = SqliteConnectionManager::file(&location).with_init(|conn| {
+                        conn.execute_batch("PRAGMA foreign_keys=1;")?;
+
+                        utils::add_compression_functions(conn)?;
+
+                        Ok(())
+                    });
 
                     let pool = Pool::new(manager)?;
 
@@ -62,15 +67,22 @@ impl SqliteBackend {
 #[cfg(test)]
 pub mod test_utils {
     use {
-        crate::{utils::SqliteConnectionManager, SqliteBackend, SCHEMA, TEST_DATA},
+        crate::{
+            utils::{self, SqliteConnectionManager},
+            SqliteBackend, SCHEMA, TEST_DATA,
+        },
         r2d2::Pool,
     };
 
     pub fn setup() -> anyhow::Result<SqliteBackend> {
-        let manager = SqliteConnectionManager::memory().with_init(|c| {
-            c.execute_batch("PRAGMA foreign_keys=1;")?;
-            c.execute_batch(SCHEMA)?;
-            c.execute_batch(TEST_DATA)?;
+        let manager = SqliteConnectionManager::memory().with_init(|conn| {
+            conn.execute_batch("PRAGMA foreign_keys=1;")?;
+
+            conn.execute_batch(SCHEMA)?;
+            conn.execute_batch(TEST_DATA)?;
+
+            utils::add_compression_functions(conn)?;
+
             Ok(())
         });
 
@@ -80,8 +92,8 @@ pub mod test_utils {
     }
 }
 
-pub fn version() -> Vec<LibVersion> {
-    vec![LibVersion::SQLite {
+pub fn library_details() -> Vec<LibraryDetails> {
+    vec![LibraryDetails::SQLite {
         version: rusqlite::version(),
     }]
 }

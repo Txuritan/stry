@@ -8,10 +8,9 @@ pub mod story;
 
 use {
     crate::{pages::StoryList, utils::wrap},
-    askama::Template,
     chrono::Utc,
     stry_backend::DataBackend,
-    stry_common::models::Paging,
+    stry_models::Paging,
     warp::{Rejection, Reply},
 };
 
@@ -37,7 +36,7 @@ pub async fn index(
                     (total + (paging.page_size - 1)) / paging.page_size,
                     items,
                 )
-                .render()?;
+                .into_string()?;
 
                 Ok(rendered)
             }

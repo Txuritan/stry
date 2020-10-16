@@ -22,6 +22,7 @@ stry-backend-postgres = { path = "../stry-backend-postgres", optional = true }
 stry-backend-sqlite = { path = "../stry-backend-sqlite", optional = true }
 stry-common = { path = "../stry-common" }
 stry-macros = { path = "../stry-macros" }
+stry-models = { path = "../stry-models" }
 
 # Crate
 anyhow = "1.0"

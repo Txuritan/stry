@@ -1,5 +1,3 @@
-#![type_length_limit="1230124"]
-
 // TODO: try to pipeline queries
 
 mod author;
@@ -21,7 +19,7 @@ use {
     std::sync::Arc,
     stry_common::{
         backend::{BackendType, StorageType},
-        version::LibVersion,
+        LibraryDetails,
     },
     tokio_postgres::NoTls,
 };
@@ -33,16 +31,16 @@ pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 
 #[stry_macros::box_async]
 impl PostgresBackend {
-    #[tracing::instrument(skip(_backend, _storage, _version), err)]
+    #[tracing::instrument(skip(_backend, _storage, _details), err)]
     pub async fn init(
         _backend: BackendType,
         _storage: StorageType,
-        _version: Arc<Vec<LibVersion>>,
+        _details: Arc<Vec<LibraryDetails>>,
     ) -> anyhow::Result<Self> {
         todo!()
     }
 }
 
-pub fn version() -> Vec<LibVersion> {
+pub fn library_details() -> Vec<LibraryDetails> {
     vec![]
 }

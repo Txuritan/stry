@@ -1,5 +1,6 @@
 /logs
 /target
+/testing
 /.idea
 **/*.rs.bk
 *.json

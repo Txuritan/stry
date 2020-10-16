@@ -2,10 +2,7 @@ use {
     crate::{readable::Readable, utils::filters},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    stry_common::{
-        models,
-        version::{GIT_VERSION, VERSION},
-    },
+    stry_generated_version::{GIT_VERSION, VERSION},
 };
 
 #[derive(Template)]
@@ -18,16 +15,16 @@ pub struct Chapter {
     search: Option<String>,
     duration: Duration,
 
-    story: models::Story,
-    chapter: models::Chapter,
+    story: stry_models::Story,
+    chapter: stry_models::Chapter,
 }
 
 impl Chapter {
     pub fn new(
         title: impl Into<String>,
         time: DateTime<Utc>,
-        story: models::Story,
-        chapter: models::Chapter,
+        story: stry_models::Story,
+        chapter: stry_models::Chapter,
     ) -> Self {
         Self {
             version: VERSION,
@@ -38,5 +35,10 @@ impl Chapter {
             story,
             chapter,
         }
+    }
+
+    #[tracing::instrument(level = "trace", name = "render", skip(self), err)]
+    pub fn into_string(self) -> anyhow::Result<String> {
+        Ok(self.render()?)
     }
 }

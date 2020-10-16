@@ -1,9 +1,6 @@
 use {
     crate::test_utils::setup,
-    stry_common::{
-        models::{List, Origin, Rating, State, Story},
-        test_helpers::{origin, StoryBuilder},
-    },
+    stry_models::{story::StoryBuilder, List, Origin, Rating, State, Story},
     tokio::runtime::Runtime,
 };
 
@@ -19,7 +16,10 @@ pub fn get() -> anyhow::Result<()> {
         Ok(origin)
     }
 
-    assert_eq!(Some(origin("Nb4ynY", "origin 1")), rt.block_on(run())?);
+    assert_eq!(
+        Some(Origin::new_test("Nb4ynY", "origin 1")),
+        rt.block_on(run())?
+    );
 
     Ok(())
 }
@@ -39,7 +39,10 @@ pub fn get_all() -> anyhow::Result<()> {
     assert_eq!(
         Some(List {
             total: 2,
-            items: vec![origin("Nb4ynY", "origin 1"), origin("J2Ej2P", "origin 2"),]
+            items: vec![
+                Origin::new_test("Nb4ynY", "origin 1"),
+                Origin::new_test("J2Ej2P", "origin 2"),
+            ]
         }),
         rt.block_on(run())?,
     );

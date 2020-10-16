@@ -1,9 +1,6 @@
 use {
     crate::test_utils::setup,
-    stry_common::{
-        models::{Author, List, Rating, State, Story},
-        test_helpers::{author, StoryBuilder},
-    },
+    stry_models::{story::StoryBuilder, Author, List, Rating, State, Story},
     tokio::runtime::Runtime,
 };
 
@@ -19,7 +16,10 @@ pub fn get() -> anyhow::Result<()> {
         Ok(author)
     }
 
-    assert_eq!(Some(author("ZqYCf8", "author 1")), rt.block_on(run())?);
+    assert_eq!(
+        Some(Author::new_test("ZqYCf8", "author 1")),
+        rt.block_on(run())?
+    );
 
     Ok(())
 }
@@ -40,9 +40,9 @@ pub fn get_all() -> anyhow::Result<()> {
         Some(List {
             total: 3,
             items: vec![
-                author("ZqYCf8", "author 1"),
-                author("zsGEjQ", "author 2"),
-                author("WbWWRz", "author 3"),
+                Author::new_test("ZqYCf8", "author 1"),
+                Author::new_test("zsGEjQ", "author 2"),
+                Author::new_test("WbWWRz", "author 3"),
             ]
         }),
         rt.block_on(run())?,

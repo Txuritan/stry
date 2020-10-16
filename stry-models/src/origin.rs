@@ -1,8 +1,21 @@
 use {
-    crate::models::{List, Origin},
-    chrono::{DateTime, Utc},
+    crate::{List, Origin},
+    chrono::{TimeZone as _, Utc},
     std::fmt,
 };
+
+impl Origin {
+    pub fn new_test(id: impl Into<String>, name: impl Into<String>) -> Origin {
+        Origin {
+            id: id.into(),
+
+            name: name.into(),
+
+            created: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+            updated: Utc.ymd(2020, 6, 8).and_hms(7, 22, 3),
+        }
+    }
+}
 
 // #[juniper::graphql_object(Context = DataBackend)]
 // impl Origin {

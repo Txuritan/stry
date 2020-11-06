@@ -1,5 +1,8 @@
 use {
-    crate::{pages, utils::wrap},
+    crate::{
+        pages,
+        utils::{self, wrap},
+    },
     chrono::Utc,
     stry_backend::DataBackend,
     warp::{
@@ -12,17 +15,19 @@ use {
     },
 };
 
-#[warp_macros::get("/{_story_id}")]
+#[stry_macros::get("/{_story_id}")]
 pub async fn index(
     #[data] _backend: DataBackend,
+    #[header("Accept-Language")] _languages: String,
     _story_id: String,
 ) -> Result<impl Reply, Rejection> {
     Ok(reply::html("story"))
 }
 
-#[warp_macros::get("/{story_id}/{chapter_page}")]
+#[stry_macros::get("/{story_id}/{chapter_page}")]
 pub async fn chapter(
     #[data] backend: DataBackend,
+    #[header("Accept-Language")] languages: String,
     story_id: String,
     chapter_page: u32,
 ) -> Result<impl Reply, Rejection> {
@@ -34,6 +39,8 @@ pub async fn chapter(
         if chapter_page == 0 {
             chapter_page = 1;
         }
+
+        let user_lang = utils::get_languages(&languages);
 
         match backend.get_story(story_id.clone().into()).await? {
             Some(story) => {
@@ -52,6 +59,7 @@ pub async fn chapter(
                                 chapter_page,
                                 story,
                                 chapter,
+                                user_lang,
                             )
                             .into_string()?;
 
@@ -61,6 +69,7 @@ pub async fn chapter(
                             let rendered = pages::ErrorPage::server_error(
                                 format!("503 server error | {}", story.name),
                                 time,
+                                user_lang,
                             )
                             .into_string()?;
 
@@ -81,8 +90,8 @@ pub async fn chapter(
                 }
             }
             None => {
-                let rendered =
-                    pages::ErrorPage::server_error("404 not found", time).into_string()?;
+                let rendered = pages::ErrorPage::server_error("404 not found", time, user_lang)
+                    .into_string()?;
 
                 Ok(rendered.into_response())
             }

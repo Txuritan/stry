@@ -1,15 +1,14 @@
 use {
-    crate::{readable::Readable, utils::filters},
+    crate::{i18n, pages::Meta, readable::Readable},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    stry_generated_version::{GIT_VERSION, VERSION},
+    unic_langid::LanguageIdentifier,
 };
 
 #[derive(Template)]
 #[template(path = "edit/chapter.html")]
 pub struct Chapter {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     search: Option<String>,
@@ -25,10 +24,10 @@ impl Chapter {
         time: DateTime<Utc>,
         story: stry_models::Story,
         chapter: stry_models::Chapter,
+        user_lang: Vec<LanguageIdentifier>,
     ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: title.into(),
             search: None,
             duration: Utc::now().signed_duration_since(time),

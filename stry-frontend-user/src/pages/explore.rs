@@ -1,5 +1,5 @@
 use {
-    crate::pagination::Pagination,
+    crate::{i18n,pagination::Pagination},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
     stry_common::{models, utils::Readable},

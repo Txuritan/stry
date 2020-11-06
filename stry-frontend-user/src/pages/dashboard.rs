@@ -1,16 +1,17 @@
 use {
+    crate::{i18n, pages::Meta},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
     stry_common::LibraryDetails,
-    stry_generated_version::{BOM, GIT_VERSION, VERSION},
+    stry_generated_version::BOM,
     stry_models::{Worker, WorkerTask},
+    unic_langid::LanguageIdentifier,
 };
 
 #[derive(Template)]
 #[template(path = "dashboard/about.html")]
 pub struct About<'l> {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: &'static str,
     duration: Duration,
@@ -20,10 +21,13 @@ pub struct About<'l> {
 }
 
 impl<'l> About<'l> {
-    pub fn new(time: DateTime<Utc>, details: &'l [LibraryDetails]) -> Self {
+    pub fn new(
+        time: DateTime<Utc>,
+        details: &'l [LibraryDetails],
+        user_lang: Vec<LanguageIdentifier>,
+    ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: "about | dashboard",
             duration: Utc::now().signed_duration_since(time),
             licenses: BOM,
@@ -40,8 +44,7 @@ impl<'l> About<'l> {
 #[derive(Template)]
 #[template(path = "dashboard/database.html")]
 pub struct Database {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     duration: Duration,
@@ -57,8 +60,7 @@ impl Database {
 #[derive(Template)]
 #[template(path = "dashboard/settings.html")]
 pub struct Settings {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     duration: Duration,
@@ -74,8 +76,7 @@ impl Settings {
 #[derive(Template)]
 #[template(path = "dashboard/stats.html")]
 pub struct Stats {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     duration: Duration,
@@ -91,8 +92,7 @@ impl Stats {
 #[derive(Template)]
 #[template(path = "dashboard/tasks.html")]
 pub struct Tasks<'w> {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: &'static str,
     duration: Duration,
@@ -102,10 +102,14 @@ pub struct Tasks<'w> {
 }
 
 impl<'w> Tasks<'w> {
-    pub fn new(time: DateTime<Utc>, workers: &'w [Worker], tasks: &'w [WorkerTask]) -> Self {
+    pub fn new(
+        time: DateTime<Utc>,
+        workers: &'w [Worker],
+        tasks: &'w [WorkerTask],
+        user_lang: Vec<LanguageIdentifier>,
+    ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: "tasks | dashboard",
             duration: Utc::now().signed_duration_since(time),
             workers,

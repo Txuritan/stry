@@ -1,14 +1,120 @@
 use {
     askama::Template,
     chrono::Utc,
-    std::{fmt, future::Future, str::FromStr},
+    fluent::{concurrent::FluentBundle, FluentResource},
+    once_cell::sync::OnceCell,
+    std::{collections::HashMap, fmt, future::Future, str::FromStr},
     stry_models::{Author, Character, Origin, Pairing, Tag, Warning},
+    unic_langid::LanguageIdentifier,
     warp::{
         http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
         hyper::Body,
         Rejection, Reply,
     },
 };
+
+#[macro_export]
+macro_rules! i18n {
+    (@inner , $lang:expr , $message:expr , $args:expr ) => {{
+        $crate::utils::FLUENT.get().map(|fluent| {
+            if $lang.is_empty() {
+                panic!("BUG: User Accept-Language header is empty, there should be at least `en-US`");
+            }
+
+            for lang in &$lang {
+                if !fluent.contains_key(lang) {
+                    continue;
+                }
+
+                let bundle = fluent.get(lang).unwrap_or_else(|| panic!("BUG: Fluent map doesn't contain a bundle but its ID exists, `{}`", lang));
+
+                #[cfg(debug_assertions)]
+                {
+                    if !bundle.has_message($message) {
+                        panic!("Fluent bundle for `{}` does not contain the message `{}`", lang, $message);
+                    }
+                }
+
+                let msg = bundle.get_message($message).unwrap_or_else(|| panic!("BUG: Fluent bundle `{}`, does not contain the message `{}`", lang, $message));
+                let pattern = msg.value.unwrap_or_else(|| panic!("BUG: Fluent message `{}` has no value", $message));
+
+                let mut errors = Vec::new();
+
+                let value = bundle.format_pattern(&pattern, $args, &mut errors);
+
+                if !errors.is_empty() {
+                    let mut error = ::anyhow::anyhow!("Unable to format message pattern");
+
+                    for err in errors {
+                        error = error.context(format!("{:?}", err));
+                    }
+
+                    panic!("{:#?}", error);
+                }
+
+                return value.to_string();
+            }
+
+            unreachable!("BUG: User Accept-Language header is empty, there should be at least `en-US`");
+        }).unwrap()
+    }};
+    ( $lang:expr , $message:expr ) => {{
+        $crate::i18n!(@inner , $lang , $message , None)
+    }};
+    ( $lang:expr , $message:expr , { $( $key:expr => $value:expr ),* } ) => {{
+        let mut args: ::fluent::FluentArgs = ::fluent::FluentArgs::new();
+
+        $(
+            args.add($key, $value.into());
+        )*
+
+        $crate::i18n!(@inner , $lang , $message , Some(&args))
+    }};
+}
+
+pub(crate) static FLUENT: OnceCell<HashMap<LanguageIdentifier, FluentBundle<FluentResource>>> =
+    OnceCell::new();
+
+pub(crate) fn init_fluent() -> anyhow::Result<()> {
+    static LANGS: [(LanguageIdentifier, &str); 1] = [(
+        unic_langid::langid!("en-US"),
+        include_str!("../localization/en-US/main.ftl"),
+    )];
+
+    let mut fluent_map = HashMap::new();
+
+    for (id, data) in LANGS.iter() {
+        let resource = FluentResource::try_new(data.to_string()).map_err(|(_, errs)| {
+            let mut error = anyhow::anyhow!("Failed to make Fluent resource");
+
+            for err in errs {
+                error = error.context(err);
+            }
+
+            error
+        })?;
+
+        let mut bundle = FluentBundle::new(&[id.clone()]);
+
+        bundle.add_resource(resource).map_err(|errs| {
+            let mut error = anyhow::anyhow!("Failed to add Fluent resource to bundle");
+
+            for err in errs {
+                error = error.context(format!("{:?}", err));
+            }
+
+            error
+        })?;
+
+        fluent_map.insert(id.clone(), bundle);
+    }
+
+    FLUENT
+        .set(fluent_map)
+        .map_err(|_| anyhow::anyhow!("Unable to set global Fluent instance"))?;
+
+    Ok(())
+}
 
 pub mod filters {
     use pulldown_cmark::{html, Options, Parser};
@@ -22,6 +128,20 @@ pub mod filters {
 
         Ok(output)
     }
+}
+
+pub fn get_languages(languages: &str) -> Vec<LanguageIdentifier> {
+    let mut user_lang = accept_language::parse(&languages)
+        .into_iter()
+        .map(|lang| lang.parse::<LanguageIdentifier>())
+        .collect::<Result<Vec<LanguageIdentifier>, _>>()
+        .unwrap_or_else(|_| vec![unic_langid::langid!("en-US")]);
+
+    if user_lang.is_empty() {
+        user_lang.push(unic_langid::langid!("en-US"));
+    }
+
+    user_lang
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -177,8 +297,12 @@ where
 
             *res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
 
-            if let Ok(rendered) =
-                crate::pages::ErrorPage::server_error("503 server error", time).render()
+            if let Ok(rendered) = crate::pages::ErrorPage::server_error(
+                "503 server error",
+                time,
+                vec![unic_langid::langid!("en-US")],
+            )
+            .render()
             {
                 *res.body_mut() = Body::from(rendered);
             }

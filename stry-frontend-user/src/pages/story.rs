@@ -1,15 +1,14 @@
 use {
-    crate::{pagination::Pagination, readable::Readable, utils::filters},
+    crate::{i18n, pages::Meta, pagination::Pagination, readable::Readable, utils::filters},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    stry_generated_version::{GIT_VERSION, VERSION},
+    unic_langid::LanguageIdentifier,
 };
 
 #[derive(Template)]
 #[template(path = "story/chapter.html")]
 pub struct Chapter {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     search: Option<String>,
@@ -29,10 +28,10 @@ impl Chapter {
         page: i32,
         story: stry_models::Story,
         chapter: stry_models::Chapter,
+        user_lang: Vec<LanguageIdentifier>,
     ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,

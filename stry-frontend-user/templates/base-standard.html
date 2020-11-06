@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block nav__left %}
-<li class="nav__item"><a href="/explore/authors?page=1">authors</a></li>
+<li class="nav__item"><a href="/explore/authors?page=1">{{ i18n!(self.meta.user_lang, "nav-top-authors") }}</a></li>
 <li class="nav__item"><a href="/explore/origins?page=1">origins</a></li>
 <li class="nav__item"><a href="/explore/warnings?page=1">warnings</a></li>
 <li class="nav__item"><a href="/explore/pairings?page=1">pairings</a></li>

@@ -1,5 +1,9 @@
 use {
-    crate::{models::ChapterForm, pages, utils::wrap},
+    crate::{
+        models::ChapterForm,
+        pages,
+        utils::{self, wrap},
+    },
     chrono::Utc,
     std::borrow::Cow,
     stry_backend::DataBackend,
@@ -13,17 +17,19 @@ use {
     },
 };
 
-#[warp_macros::get("/story/{_story_id}")]
+#[stry_macros::get("/story/{_story_id}")]
 pub async fn story(
     #[data] _backend: DataBackend,
+    #[header("Accept-Language")] _languages: String,
     _story_id: String,
 ) -> Result<impl Reply, Rejection> {
     Ok(reply::html("story"))
 }
 
-#[warp_macros::get("/story/{story_id}/{chapter_page}")]
+#[stry_macros::get("/story/{story_id}/{chapter_page}")]
 pub async fn chapter_get(
     #[data] backend: DataBackend,
+    #[header("Accept-Language")] languages: String,
     story_id: String,
     chapter_page: u32,
 ) -> Result<impl Reply, Rejection> {
@@ -35,6 +41,8 @@ pub async fn chapter_get(
         if chapter_page == 0 {
             chapter_page = 1;
         }
+
+        let user_lang = utils::get_languages(&languages);
 
         match backend.get_story(story_id.clone().into()).await? {
             Some(story) => {
@@ -52,6 +60,7 @@ pub async fn chapter_get(
                                 time,
                                 story,
                                 chapter,
+                                user_lang,
                             )
                             .into_string()?;
 
@@ -61,6 +70,7 @@ pub async fn chapter_get(
                             let rendered = pages::ErrorPage::server_error(
                                 format!("503 server error | {}", story.name),
                                 time,
+                                user_lang,
                             )
                             .into_string()?;
 
@@ -81,8 +91,8 @@ pub async fn chapter_get(
                 }
             }
             None => {
-                let rendered =
-                    pages::ErrorPage::server_error("404 not found", time).into_string()?;
+                let rendered = pages::ErrorPage::server_error("404 not found", time, user_lang)
+                    .into_string()?;
 
                 Ok(rendered.into_response())
             }
@@ -91,7 +101,7 @@ pub async fn chapter_get(
     .await
 }
 
-#[warp_macros::post("/story/{story_id}/{chapter_page}")]
+#[stry_macros::post("/story/{story_id}/{chapter_page}")]
 pub async fn chapter_post(
     #[data] backend: DataBackend,
     story_id: String,

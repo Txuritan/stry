@@ -1,7 +1,7 @@
 use {
     crate::{
         pages::{ErrorPage, ResourceList},
-        utils::{wrap, Items, Resource},
+        utils::{self, wrap, Items, Resource},
     },
     chrono::Utc,
     stry_backend::DataBackend,
@@ -9,9 +9,10 @@ use {
     warp::{Rejection, Reply},
 };
 
-#[warp_macros::get("/explore/{item}")]
+#[stry_macros::get("/explore/{item}")]
 pub async fn explore(
     #[data] backend: DataBackend,
+    #[header("Accept-Language")] languages: String,
     item: Items,
     #[query] paging: Paging,
 ) -> Result<impl Reply, Rejection> {
@@ -23,6 +24,8 @@ pub async fn explore(
         if norm.page_size == Paging::default().page_size {
             norm.page_size = 50;
         }
+
+        let user_lang = utils::get_languages(&languages);
 
         let data: Option<(_, _, Vec<Resource>)> = match item {
             Items::Authors => match backend.all_authors(norm.page, norm.page_size).await? {
@@ -108,15 +111,19 @@ pub async fn explore(
                     paging.page,
                     (count + (norm.page_size - 1)) / norm.page_size,
                     resources,
+                    user_lang,
                 )
                 .into_string()?;
 
                 Ok(rendered)
             }
             None => {
-                let rendered =
-                    ErrorPage::not_found(format!("404 not found | {} | explore", item), time)
-                        .into_string()?;
+                let rendered = ErrorPage::not_found(
+                    format!("404 not found | {} | explore", item),
+                    time,
+                    user_lang,
+                )
+                .into_string()?;
 
                 Ok(rendered)
             }

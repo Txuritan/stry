@@ -99,10 +99,7 @@ pub(crate) fn route(method: Method, path: LitStr, item: ItemFn) -> proc_macro::T
                 colon_token,
                 ty,
             }) => FnArg::Typed(PatType {
-                attrs: attrs
-                    .into_iter()
-                    .partition(is_attr)
-                    .1,
+                attrs: attrs.into_iter().partition(is_attr).1,
                 pat,
                 colon_token,
                 ty,
@@ -133,7 +130,13 @@ pub(crate) fn route(method: Method, path: LitStr, item: ItemFn) -> proc_macro::T
     })
 }
 
-fn build_filter(method: Method, path: &LitStr, item: &ItemFn, asyncness: bool, wrapper_inputs: &[FnArg]) -> Result<TokenStream, TokenStream> {
+fn build_filter(
+    method: Method,
+    path: &LitStr,
+    item: &ItemFn,
+    asyncness: bool,
+    wrapper_inputs: &[FnArg],
+) -> Result<TokenStream, TokenStream> {
     let path_value = path.value();
 
     // Convert additional function attributes to warp filters
@@ -253,11 +256,7 @@ fn clean_inputs(
                 .to_compile_error())
             }
             FnArg::Typed(PatType { attrs, .. }) => {
-                *attrs = attrs
-                    .clone()
-                    .into_iter()
-                    .partition(is_attr)
-                    .1;
+                *attrs = attrs.clone().into_iter().partition(is_attr).1;
             }
         }
     }
@@ -350,7 +349,10 @@ fn build_filters_and_inputs(
             Some(FnParamKind::Data) => {
                 quote::quote! { and(warp::filters::any::any().map(move || #key.clone())) }
             }
-            Some(FnParamKind::Form) | Some(FnParamKind::Header { .. }) | Some(FnParamKind::Json) | Some(FnParamKind::Query) => {
+            Some(FnParamKind::Form)
+            | Some(FnParamKind::Header { .. })
+            | Some(FnParamKind::Json)
+            | Some(FnParamKind::Query) => {
                 let spanned = syn::Error::new_spanned(token, "warp-macros bug: This should not happen, invalid partitioned enum variant: data");
 
                 return Err(spanned.to_compile_error());

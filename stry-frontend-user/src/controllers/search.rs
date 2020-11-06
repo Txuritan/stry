@@ -1,14 +1,18 @@
 use {
-    crate::{pages, utils::wrap},
+    crate::{
+        pages,
+        utils::{self, wrap},
+    },
     chrono::Utc,
     stry_backend::DataBackend,
     stry_models::{Paging, Search},
     warp::{Rejection, Reply},
 };
 
-#[warp_macros::get("/search")]
+#[stry_macros::get("/search")]
 pub async fn index(
     #[data] backend: DataBackend,
+    #[header("Accept-Language")] languages: String,
     #[query] paging: Paging,
     #[query] search: Search,
 ) -> Result<impl Reply, Rejection> {
@@ -16,6 +20,8 @@ pub async fn index(
         let time = Utc::now();
 
         let norm = paging.normalize();
+
+        let user_lang = utils::get_languages(&languages);
 
         match backend
             .search_stories(search.search.clone().into(), norm.page, norm.page_size)
@@ -31,6 +37,7 @@ pub async fn index(
                     paging.page,
                     total / norm.page_size,
                     items,
+                    user_lang,
                 )?;
 
                 let rendered: String = page.into_string()?;

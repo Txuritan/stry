@@ -5,6 +5,7 @@ pub mod story;
 
 use {
     crate::{
+        i18n,
         pagination::Pagination,
         readable::Readable,
         utils::{Resource, WebError},
@@ -12,7 +13,25 @@ use {
     askama::Template,
     chrono::{DateTime, Duration, Utc},
     stry_generated_version::{GIT_VERSION, VERSION},
+    unic_langid::LanguageIdentifier,
 };
+
+pub struct Meta {
+    pub version: &'static str,
+    pub git: &'static str,
+
+    pub user_lang: Vec<LanguageIdentifier>,
+}
+
+impl Meta {
+    pub fn new(user_lang: Vec<LanguageIdentifier>) -> Self {
+        Self {
+            version: VERSION,
+            git: GIT_VERSION,
+            user_lang,
+        }
+    }
+}
 
 #[derive(Template)]
 #[template(path = "error.html")]
@@ -20,8 +39,7 @@ pub struct ErrorPage<T>
 where
     T: std::fmt::Display,
 {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: T,
     search: Option<String>,
@@ -41,10 +59,10 @@ where
         name: &'static str,
         icon: &'static str,
         help: &'static str,
+        user_lang: Vec<LanguageIdentifier>,
     ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
 
             title,
             duration: Utc::now().signed_duration_since(time),
@@ -60,11 +78,11 @@ where
         }
     }
 
-    pub fn not_found(title: T, time: DateTime<Utc>) -> Self {
-        Self::new(title, time, 404, "Not Found", "danger", "")
+    pub fn not_found(title: T, time: DateTime<Utc>, user_lang: Vec<LanguageIdentifier>) -> Self {
+        Self::new(title, time, 404, "Not Found", "danger", "", user_lang)
     }
 
-    pub fn server_error(title: T, time: DateTime<Utc>) -> Self {
+    pub fn server_error(title: T, time: DateTime<Utc>, user_lang: Vec<LanguageIdentifier>) -> Self {
         Self::new(
             title,
             time,
@@ -72,6 +90,7 @@ where
             "Server Error",
             "danger",
             "Check the log for more information",
+            user_lang,
         )
     }
 
@@ -84,8 +103,7 @@ where
 #[derive(Template)]
 #[template(path = "explore.html")]
 pub struct ResourceList {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     search: Option<String>,
@@ -104,10 +122,10 @@ impl ResourceList {
         page: i32,
         pages: i32,
         resources: Vec<Resource>,
+        user_lang: Vec<LanguageIdentifier>,
     ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
@@ -125,8 +143,7 @@ impl ResourceList {
 #[derive(Template)]
 #[template(path = "story_list.html")]
 pub struct StoryList {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     search: Option<String>,
@@ -145,10 +162,10 @@ impl StoryList {
         page: i32,
         pages: i32,
         stories: Vec<stry_models::Story>,
+        user_lang: Vec<LanguageIdentifier>,
     ) -> Self {
         Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
@@ -166,8 +183,7 @@ impl StoryList {
 #[derive(Template)]
 #[template(path = "search.html")]
 pub struct Search {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     search: Option<String>,
@@ -186,6 +202,7 @@ impl Search {
         page: i32,
         pages: i32,
         stories: Vec<stry_models::Story>,
+        user_lang: Vec<LanguageIdentifier>,
     ) -> anyhow::Result<Self> {
         #[derive(serde::Serialize)]
         struct SearchUrl<'s> {
@@ -193,8 +210,7 @@ impl Search {
         }
 
         Ok(Self {
-            version: VERSION,
-            git: GIT_VERSION,
+            meta: Meta::new(user_lang),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             pagination: Pagination::new(

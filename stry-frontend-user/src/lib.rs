@@ -1,10 +1,11 @@
+pub mod utils;
+
 pub mod controllers;
 pub mod models;
 pub mod pages;
 
 pub mod pagination;
 pub mod readable;
-pub mod utils;
 
 use {
     crate::controllers::{dashboard, edit, explore, item, search, story},
@@ -20,6 +21,8 @@ use {
 // const BOM: &str = include_str!("../bom.txt");
 
 pub fn route(backend: DataBackend) -> BoxedFilter<(impl Reply,)> {
+    utils::init_fluent().expect("Unable to initialize Fluent");
+
     let mut headers = HeaderMap::new();
 
     headers.insert(

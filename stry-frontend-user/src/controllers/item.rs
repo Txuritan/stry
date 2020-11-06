@@ -1,7 +1,7 @@
 use {
     crate::{
         pages::{ErrorPage, StoryList},
-        utils::{wrap, Items},
+        utils::{self, wrap, Items},
     },
     anyhow::Context,
     chrono::Utc,
@@ -11,9 +11,10 @@ use {
     warp::{Rejection, Reply},
 };
 
-#[warp_macros::get("/{item}/{id}")]
+#[stry_macros::get("/{item}/{id}")]
 pub async fn item(
     #[data] backend: DataBackend,
+    #[header("Accept-Language")] languages: String,
     item: Items,
     id: String,
     #[query] paging: Paging,
@@ -22,6 +23,8 @@ pub async fn item(
         let time = Utc::now();
 
         let norm = paging.normalize();
+
+        let user_lang = utils::get_languages(&languages);
 
         let id: Cow<'static, str> = id.into();
 
@@ -185,6 +188,7 @@ pub async fn item(
                     paging.page,
                     (total + (norm.page_size - 1)) / norm.page_size,
                     items,
+                    user_lang,
                 )
                 .into_string()
                 .context("Unable to render item page")?;
@@ -192,7 +196,8 @@ pub async fn item(
                 Ok(rendered)
             }
             None => {
-                let rendered = ErrorPage::not_found("404 not found", time).into_string()?;
+                let rendered =
+                    ErrorPage::not_found("404 not found", time, user_lang).into_string()?;
 
                 Ok(rendered)
             }

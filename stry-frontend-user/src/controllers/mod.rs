@@ -7,22 +7,28 @@ pub mod search;
 pub mod story;
 
 use {
-    crate::{pages::StoryList, utils::wrap},
+    crate::{
+        pages::StoryList,
+        utils::{self, wrap},
+    },
     chrono::Utc,
     stry_backend::DataBackend,
     stry_models::Paging,
     warp::{Rejection, Reply},
 };
 
-#[warp_macros::get("/")]
+#[stry_macros::get("/")]
 pub async fn index(
     #[data] backend: DataBackend,
+    #[header("Accept-Language")] languages: String,
     #[query] paging: Paging,
 ) -> Result<impl Reply, Rejection> {
     wrap(move || async move {
         let time = Utc::now();
 
         let norm = paging.normalize();
+
+        let user_lang = utils::get_languages(&languages);
 
         match backend.all_stories(norm.page, paging.page_size).await? {
             Some(list) => {
@@ -35,6 +41,7 @@ pub async fn index(
                     paging.page,
                     (total + (paging.page_size - 1)) / paging.page_size,
                     items,
+                    user_lang,
                 )
                 .into_string()?;
 

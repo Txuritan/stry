@@ -29,7 +29,8 @@ frontend-user = [ "stry-frontend/user" ]
 
 [dependencies]
 stry-backend = { path = "../stry-backend" }
-stry-common = { path = "../stry-common", features = [ "sources" ] }
+stry-common = { path = "../stry-common" }
+stry-config = { path = "../stry-config", features = [ "sources" ] }
 stry-frontend = { path = "../stry-frontend", default-features = false }
 stry-generated-version = { path = "../stry-generated-version" }
 stry-worker = { path = "../stry-worker" }
@@ -41,6 +42,7 @@ ctrlc = "3.1"
 fenn = { git = "https://gitlab.com/Txuritan/fenn" }
 futures = "0.3"
 mimalloc = { version = "0.1", default-features = false }
+openssl-probe = "0.1"
 tokio = { version = "0.2", features = [ "rt-threaded" ] }
 tracing = "0.1"
 tracing-appender = "0.1"

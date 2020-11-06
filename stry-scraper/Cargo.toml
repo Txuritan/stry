@@ -1,5 +1,5 @@
 [package]
-name = "stry-query-builder"
+name = "stry-scraper"
 version = "2.3.0"
 authors = [ "Txuritan <txuritan@protonmail.com>" ]
 edition = "2018"
@@ -10,4 +10,7 @@ workspace = ".."
 
 [dependencies]
 # Crate
-fnv = "1.0"
+anyhow = "1.0"
+html5ever = "0.25"
+markup5ever = "0.10"
+markup5ever_arcdom = "0.1"

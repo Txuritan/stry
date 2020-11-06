@@ -10,6 +10,40 @@ use {
     std::{cell::Ref, collections::HashMap, sync::Arc},
 };
 
+pub fn inner_html(
+    html: &Document,
+    selector: &'static str,
+    name: &'static str,
+) -> anyhow::Result<String> {
+    html.select(selector)
+        .first()
+        .and_then(|sd| sd.inner_html())
+        .ok_or_else(|| anyhow::anyhow!("Sector element for site {} not found: {}", name, selector))
+}
+
+pub fn string(
+    html: &Document,
+    selector: &'static str,
+    name: &'static str,
+) -> anyhow::Result<String> {
+    html.select(selector)
+        .first()
+        .and_then(|sd| sd.text())
+        .ok_or_else(|| anyhow::anyhow!("Sector element for site {} not found: {}", name, selector))
+}
+
+pub fn string_vec(
+    html: &Document,
+    selector: &'static str,
+    name: &'static str,
+) -> anyhow::Result<Vec<String>> {
+    html.select(selector)
+        .into_iter()
+        .map(|ele| ele.text())
+        .collect::<Option<Vec<_>>>()
+        .ok_or_else(|| anyhow::anyhow!("Sector element for site {} not found: {}", name, selector))
+}
+
 pub struct Document {
     doc: ArcDom,
 }

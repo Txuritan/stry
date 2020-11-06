@@ -11,7 +11,7 @@ use {
         story::StoryRow, Author, Character, Entity, List, Origin, Pairing, PairingRow, Square,
         Story, Tag, Warning,
     },
-    stry_search::{SearchParser, SearchValue},
+    stry_search::{SearchParser, Value},
 };
 
 enum Wrap {
@@ -217,7 +217,7 @@ impl SqliteBackend {
                 let total = match tracing::trace_span!("get_count").in_scope(|| {
                     conn.query_one_opt(include_str!("all-count.sql"), rusqlite::params![], |row| {
                         Ok(row
-                            .get(0)
+                            .get::<_, i32>(0)
                             .context("Attempting to get row index 0 for story count")?)
                     })
                 })? {
@@ -275,7 +275,7 @@ impl SqliteBackend {
             move || -> anyhow::Result<Option<List<Story>>> {
                 let search = SearchParser::parse_to_structure(&input)?;
 
-                let (and, not): (Vec<SearchValue<'_>>, Vec<SearchValue<'_>>) =
+                let (and, not): (Vec<Value<'_>>, Vec<Value<'_>>) =
                     search.into_iter().partition(|value| value.is_included());
                 let (mut query, mut params) = query_from_parts(and, not);
 
@@ -340,10 +340,7 @@ impl SqliteBackend {
 }
 
 #[tracing::instrument(level = "debug")]
-fn query_from_parts<'p>(
-    and: Vec<SearchValue<'p>>,
-    not: Vec<SearchValue<'p>>,
-) -> (String, Vec<Wrapper<'p>>) {
+fn query_from_parts<'p>(and: Vec<Value<'p>>, not: Vec<Value<'p>>) -> (String, Vec<Wrapper<'p>>) {
     let (and_empty, and_len) = (and.is_empty(), and.len());
     let (not_empty, not_len) = (not.is_empty(), not.len());
 
@@ -381,27 +378,27 @@ fn query_from_parts<'p>(
 
 #[tracing::instrument(level = "debug")]
 fn query_from_value<'p>(
-    value: SearchValue<'p>,
+    value: Value<'p>,
     query_buff: &mut String,
     param_buff: &mut Vec<Wrapper<'p>>,
     _is_and: bool,
 ) {
     match value {
-        SearchValue::Friends(_, _characters) => {}
-        SearchValue::Pairing(_, _characters) => {}
-        SearchValue::Character(_, name) => {
+        Value::Friends(_, _characters) => {}
+        Value::Pairing(_, _characters) => {}
+        Value::Character(_, name) => {
             query_buff.push_str("SELECT S.Id, S.Updated FROM Story S, StoryCharacter SC WHERE S.Id = SC.StoryId AND SC.CharacterId = (SELECT Id FROM Character WHERE LOWER(Name) LIKE LOWER(?))\n");
             param_buff.push(Wrapper::Cow(name));
         }
-        SearchValue::Fandom(_, name) => {
+        Value::Fandom(_, name) => {
             query_buff.push_str("SELECT S.Id, S.Updated FROM Story S, StoryOrigin SO WHERE S.Id = SO.StoryId AND SO.OriginId = (SELECT Id FROM Origin WHERE LOWER(Name) LIKE LOWER(?))\n");
             param_buff.push(Wrapper::Cow(name));
         }
-        SearchValue::General(_, name) => {
+        Value::General(_, name) => {
             query_buff.push_str("SELECT S.Id, S.Updated FROM Story S, StoryTag ST WHERE S.Id = ST.StoryId AND ST.TagId = (SELECT Id FROM Tag WHERE LOWER(Name) LIKE LOWER(?))\n");
             param_buff.push(Wrapper::Cow(name));
         }
-        SearchValue::Rating(_, rating) => {
+        Value::Rating(_, rating) => {
             query_buff.push_str("SELECT Id, Updated AS StoryId FROM Story WHERE Rating = ?\n");
             param_buff.push(Wrapper::Rating(rating));
         }

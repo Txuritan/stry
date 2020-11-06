@@ -1,8 +1,4 @@
-use {
-    crate::SqliteBackend,
-    rewryte::sqlite::{ConnectionExt, StatementExt},
-    stry_models::WorkerTask,
-};
+use {crate::SqliteBackend, rewryte::sqlite::ConnectionExt, stry_models::WorkerTask};
 
 #[stry_macros::box_async]
 impl SqliteBackend {

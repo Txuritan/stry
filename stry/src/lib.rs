@@ -5,11 +5,13 @@ use {
     fenn::VecExt,
     std::sync::Arc,
     stry_backend::DataBackend,
-    stry_common::config::Config,
+    stry_config::Config,
     tokio::{runtime::Builder, sync::broadcast},
 };
 
 pub fn start(cfg: Config) -> anyhow::Result<()> {
+    openssl_probe::init_ssl_cert_env_vars();
+
     let cfg = Arc::new(cfg);
 
     let (_file_guard, _flame_guard, reg) = setup::logger(cfg.clone())?;

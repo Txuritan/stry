@@ -17,10 +17,8 @@ use {
     bb8::Pool,
     bb8_postgres::PostgresConnectionManager,
     std::sync::Arc,
-    stry_common::{
-        backend::{BackendType, StorageType},
-        LibraryDetails,
-    },
+    stry_common::LibraryDetails,
+    stry_config::{BackendType, StorageType},
     tokio_postgres::NoTls,
 };
 

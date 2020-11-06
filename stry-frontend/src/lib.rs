@@ -1,7 +1,7 @@
 use {
     std::sync::Arc,
     stry_backend::DataBackend,
-    stry_common::config::{Config, Tls},
+    stry_config::{Config, Tls},
     tokio::sync::broadcast::Receiver,
     warp::{Filter, Rejection, Reply},
 };

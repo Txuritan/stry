@@ -16,6 +16,8 @@ openssl-bundled = [ "stry-worker-scraper/openssl-bundled" ]
 # Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
+stry-config = { path = "../stry-config" }
+stry-evermore = { path = "../stry-evermore" }
 stry-worker-scraper = { path = "../stry-worker-scraper" }
 
 # Crate

@@ -1,6 +1,6 @@
 use {
     std::{fs::File, io::BufWriter, sync::Arc},
-    stry_common::config::{Config, LogLevel, LoggingOutput},
+    stry_config::{Config, LogLevel, LoggingOutput},
     tracing::Level,
     tracing_appender::non_blocking::WorkerGuard,
     tracing_flame::FlameLayer,

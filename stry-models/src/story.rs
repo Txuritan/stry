@@ -5,9 +5,11 @@ use {
     },
     anyhow::Context,
     chrono::{DateTime, TimeZone as _, Utc},
-    rewryte::sqlite::FromRow,
     std::fmt,
 };
+
+#[cfg(feature = "sqlite")]
+use rewryte::sqlite::FromRow;
 
 #[rustfmt::skip]
 #[derive(Clone, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -109,6 +111,7 @@ pub struct StoryRow {
     pub words: i32,
 }
 
+#[cfg(feature = "sqlite")]
 impl FromRow for StoryRow {
     fn from_row(row: &rewryte::sqlite::Row<'_>) -> anyhow::Result<Self>
     where

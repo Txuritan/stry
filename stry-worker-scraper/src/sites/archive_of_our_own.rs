@@ -1,13 +1,12 @@
 use {
     crate::{
-        converter,
         models::{Chapter, Details, Language, Rating, State, Story},
-        query::{Document, Element},
-        utils::{self, req, word_count},
+        utils::{req, word_count},
         Uri,
     },
     chrono::{DateTime, NaiveDate, Utc},
     std::{fmt::Write, sync::Arc},
+    stry_scraper::{Document, Element},
 };
 
 const NAME: &str = "archive of our own";
@@ -91,13 +90,15 @@ pub async fn scrape(url: &Uri) -> anyhow::Result<Story> {
 pub fn get_details(html: impl Into<Document>) -> anyhow::Result<Details> {
     let html = html.into();
 
-    let authors = utils::string_vec(&html, STORY_AUTHOR, NAME)?;
-    let origins = utils::string_vec(&html, STORY_ORIGINS, NAME)?;
+    let authors = stry_scraper::string_vec(&html, STORY_AUTHOR, NAME)?;
+    let origins = stry_scraper::string_vec(&html, STORY_ORIGINS, NAME)?;
 
-    let name = utils::string(&html, STORY_NAME, NAME)?.trim().to_string();
-    let summary = converter::parse(utils::inner_html(&html, STORY_SUMMARY, NAME)?)?;
+    let name = stry_scraper::string(&html, STORY_NAME, NAME)?
+        .trim()
+        .to_string();
+    let summary = stry_remark::parse(stry_scraper::inner_html(&html, STORY_SUMMARY, NAME)?)?;
 
-    let chapter_expected = utils::string(&html, STORY_STATS_CHAPTERS, NAME)?;
+    let chapter_expected = stry_scraper::string(&html, STORY_STATS_CHAPTERS, NAME)?;
 
     let chapters: u32 = chapter_expected
         .split('/')
@@ -105,12 +106,12 @@ pub fn get_details(html: impl Into<Document>) -> anyhow::Result<Details> {
         .and_then(|s| s.parse::<u32>().ok())
         .unwrap();
 
-    let language: Language = match utils::string(&html, STORY_STATS_LANGUAGE, NAME)?.trim() {
+    let language: Language = match stry_scraper::string(&html, STORY_STATS_LANGUAGE, NAME)?.trim() {
         "English" => Language::English,
         _ => unreachable!(),
     };
 
-    let rating: Rating = match utils::string(&html, STORY_RATING, NAME)?.trim() {
+    let rating: Rating = match stry_scraper::string(&html, STORY_RATING, NAME)?.trim() {
         "Explicit" => Rating::Explicit,
         "Mature" => Rating::Mature,
         "Teen And Up Audiences" => Rating::Teen,
@@ -132,7 +133,7 @@ pub fn get_details(html: impl Into<Document>) -> anyhow::Result<Details> {
     };
 
     let created: Option<DateTime<Utc>> = NaiveDate::parse_from_str(
-        &utils::string(&html, STORY_STATS_CREATED, NAME)?,
+        &stry_scraper::string(&html, STORY_STATS_CREATED, NAME)?,
         "%Y-%m-%d",
     )
     .map(|date| date.and_hms(0, 0, 0))
@@ -141,7 +142,7 @@ pub fn get_details(html: impl Into<Document>) -> anyhow::Result<Details> {
 
     let updated: Option<DateTime<Utc>> = if state != State::Completed || chapters != 1 {
         NaiveDate::parse_from_str(
-            &utils::string(&html, STORY_STATS_UPDATED, NAME)?,
+            &stry_scraper::string(&html, STORY_STATS_UPDATED, NAME)?,
             "%Y-%m-%d",
         )
         .map(|date| date.and_hms(0, 0, 0))
@@ -187,7 +188,7 @@ pub fn get_chapter(html: impl Into<Document>, chapter: u32) -> anyhow::Result<Ch
         multi
     };
 
-    let content = converter::parse(
+    let content = stry_remark::parse(
         elements
             .into_iter()
             .map(|n| n.html())
@@ -208,8 +209,8 @@ pub fn get_chapter(html: impl Into<Document>, chapter: u32) -> anyhow::Result<Ch
     .replace('“', "\"")
     .replace('”', "\"");
 
-    let name: String = utils::string(&html, MULTIPLE_CHAPTER_NAME, NAME)
-        .or_else(|_| utils::string(&html, SINGLE_CHAPTER_NAME, NAME))
+    let name: String = stry_scraper::string(&html, MULTIPLE_CHAPTER_NAME, NAME)
+        .or_else(|_| stry_scraper::string(&html, SINGLE_CHAPTER_NAME, NAME))
         .map(|title| {
             let mut title = title.trim().to_string();
 

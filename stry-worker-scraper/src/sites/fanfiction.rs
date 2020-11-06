@@ -1,14 +1,13 @@
 use {
     crate::{
-        converter,
         models::{Chapter, Details, Language, Rating, State, Story},
-        query::Document,
-        utils::{self, req, sleep, word_count},
+        utils::{req, sleep, word_count},
         Uri,
     },
     chrono::{TimeZone, Utc},
     fenn::StringExt,
     std::str,
+    stry_scraper::Document,
 };
 
 const NAME: &str = "fanfiction";
@@ -100,9 +99,9 @@ pub async fn scrape(url: &Uri) -> anyhow::Result<Story> {
 pub fn get_details(body: impl Into<Document>) -> anyhow::Result<Details> {
     let html = body.into();
 
-    let name = utils::string(&html, STORY_NAME, NAME)?;
-    let summary = utils::string(&html, STORY_SUMMARY, NAME)?;
-    let details = utils::string(&html, STORY_DETAILS, NAME)?;
+    let name = stry_scraper::string(&html, STORY_NAME, NAME)?;
+    let summary = stry_scraper::string(&html, STORY_SUMMARY, NAME)?;
+    let details = stry_scraper::string(&html, STORY_DETAILS, NAME)?;
 
     let author: String = html
         .select(STORY_AUTHOR)
@@ -148,7 +147,7 @@ pub fn get_details(body: impl Into<Document>) -> anyhow::Result<Details> {
 
     let mut chapters = 1u32;
     let mut language = Language::English;
-    let rating = match utils::string(&html, STORY_DETAILS_RATING, NAME)?
+    let rating = match stry_scraper::string(&html, STORY_DETAILS_RATING, NAME)?
         .as_str()
         .split(' ')
         .map(str::trim)
@@ -259,7 +258,7 @@ pub fn get_details(body: impl Into<Document>) -> anyhow::Result<Details> {
 pub fn get_chapter(body: impl Into<Document>) -> anyhow::Result<Chapter> {
     let html = body.into();
 
-    let mut main = converter::parse(
+    let mut main = stry_remark::parse(
         html.select(CHAPTER_TEXT)
             .first()
             .and_then(|node| node.inner_html())
@@ -276,7 +275,7 @@ pub fn get_chapter(body: impl Into<Document>) -> anyhow::Result<Chapter> {
             .map(|cn| cn.split(' ').skip(1).collect::<Vec<_>>().join(" "))
             .or_else(|| {
                 Some(
-                    utils::string(&html, STORY_NAME, NAME).expect(
+                    stry_scraper::string(&html, STORY_NAME, NAME).expect(
                         "[chapter_name] Unable to use story title as fallback chapter title",
                     ),
                 )

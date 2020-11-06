@@ -1,9 +1,7 @@
 use {
     std::{borrow::Cow, sync::Arc},
-    stry_common::{
-        backend::{BackendType, StorageType},
-        LibraryDetails,
-    },
+    stry_common::LibraryDetails,
+    stry_config::{BackendType, StorageType},
     stry_models::{
         Author, Chapter, Character, List, Origin, Pairing, Story, Tag, Warning, WorkerTask,
     },

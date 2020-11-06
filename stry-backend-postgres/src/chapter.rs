@@ -36,14 +36,14 @@ impl PostgresBackend {
     }
 
     #[allow(clippy::unnecessary_operation, clippy::unit_arg)]
-    #[tracing::instrument(level = "trace", skip(self, pre, main, post), err)]
+    #[tracing::instrument(level = "trace", skip(self, _pre, _main, _post), err)]
     pub async fn update_chapter(
         &self,
         story_id: Cow<'static, str>,
         chapter_number: i32,
-        pre: Cow<'static, str>,
-        main: Cow<'static, str>,
-        post: Cow<'static, str>,
+        _pre: Cow<'static, str>,
+        _main: Cow<'static, str>,
+        _post: Cow<'static, str>,
     ) -> anyhow::Result<()> {
         todo!()
     }

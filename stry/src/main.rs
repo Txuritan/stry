@@ -4,7 +4,7 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 use {
     anyhow::Context,
     clap::{App, Arg},
-    stry_common::config::Config,
+    stry_config::Config,
     stry_generated_version::GIT_VERSION,
 };
 

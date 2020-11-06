@@ -1,15 +1,24 @@
 use {
-    crate::backend::{BackendType, StorageType},
-    std::{
-        fs,
-        io::{self, prelude::*},
-        path::Path,
-        str::FromStr,
-    },
+    anyhow::Context,
+    std::{collections::HashMap, str::FromStr},
 };
 
 #[cfg(feature = "sources")]
-use std::env;
+use std::{
+    env, fs,
+    io::{self, prelude::*},
+    path::Path,
+};
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("Frontend can only be `both`, `api` or `user`, found '{value}'")]
+    InvalidFrontendValue { value: String },
+    #[error("Log level can only be `error`, `warn`, `info`, `debug` or `trace`, found '{value}'")]
+    InvalidLogLevel { value: String },
+    #[error("Worker count can only be a multiple of 4 (up to 32), found '{value}'")]
+    InvalidWorkerCountValue { value: String },
+}
 
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(default)]
@@ -56,6 +65,7 @@ impl Config {
 
         Ok(Self {
             ip: env::var("STRY_SERVER_IP")
+                .context("Unable to get value of environmental variable `STRY_SERVER_IP`")
                 .or_else(|_| {
                     args.value_of("server-ip").map(String::from).ok_or_else(|| {
                         anyhow::anyhow!("No argument named 'server-ip' found in provided args")
@@ -76,6 +86,7 @@ impl Config {
                 })
                 .or_else::<anyhow::Error, _>(|_| Ok(ip))?,
             port: env::var("STRY_SERVER_PORT")
+                .context("Unable to get value of environmental variable `STRY_SERVER_PORT`")
                 .or_else(|_| {
                     args.value_of("server-port")
                         .map(String::from)
@@ -92,7 +103,7 @@ impl Config {
                 })
                 .or_else::<anyhow::Error, _>(|_| Ok(port))?,
             tls: env::var("STRY_TLS")
-                .map_err(anyhow::Error::from)
+                .context("Unable to get value of environmental variable `STRY_TLS`")
                 .and_then(|value| {
                     let cert = env::var("STRY_TLS_CERT")?;
                     let key = env::var("STRY_TLS_KEY")?;
@@ -105,7 +116,7 @@ impl Config {
                 })
                 .or_else::<anyhow::Error, _>(|_| Ok(tls))?,
             frontend: env::var("STRY_FRONTEND")
-                .map_err(anyhow::Error::from)
+                .context("Unable to get value of environmental variable `STRY_FRONTEND`")
                 .and_then(|value| {
                     let frontend = Frontend::from_str(&value)?;
 
@@ -113,7 +124,7 @@ impl Config {
                 })
                 .or_else::<anyhow::Error, _>(|_| Ok(frontend))?,
             workers: env::var("STRY_WORKERS")
-                .map_err(anyhow::Error::from)
+                .context("Unable to get value of environmental variable `STRY_WORKERS`")
                 .and_then(|value| {
                     let workers = FourCount::from_str(&value)?;
 
@@ -175,7 +186,7 @@ impl Frontend {
 }
 
 impl FromStr for Frontend {
-    type Err = anyhow::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let lower = s.to_lowercase();
@@ -184,7 +195,9 @@ impl FromStr for Frontend {
             "both" => Ok(Frontend::Both),
             "api" => Ok(Frontend::Api),
             "user" => Ok(Frontend::User),
-            invalid => anyhow::bail!("Frontend can only be `both`, `api` or `user`: {}", invalid),
+            _ => Err(Error::InvalidFrontendValue {
+                value: s.to_string(),
+            }),
         }
     }
 }
@@ -219,7 +232,7 @@ impl FourCount {
 }
 
 impl FromStr for FourCount {
-    type Err = anyhow::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let lower = s.to_lowercase();
@@ -233,10 +246,9 @@ impl FromStr for FourCount {
             "24" => Ok(FourCount::TwentyFour),
             "28" => Ok(FourCount::TwentyEight),
             "32" => Ok(FourCount::ThirtyTwo),
-            num => anyhow::bail!(
-                "Worker count can only be a multiple of 4 (up to 32), given: {}",
-                num
-            ),
+            _ => Err(Error::InvalidWorkerCountValue {
+                value: s.to_string(),
+            }),
         }
     }
 }
@@ -258,6 +270,7 @@ impl Database {
         let Database { typ, storage } = database;
 
         let typ = env::var("STRY_BACKEND_TYPE")
+            .context("Unable to get value of environmental variable `STRY_BACKEND_TYPE`")
             .or_else(|_| {
                 args.value_of("backend-type")
                     .map(String::from)
@@ -276,6 +289,9 @@ impl Database {
             storage: match typ {
                 BackendType::Postgres => {
                     env::var("STRY_BACKEND_HOST")
+                        .context(
+                            "Unable to get value of environmental variable `STRY_BACKEND_HOST`",
+                        )
                         .map(|host| {
                             let port = env::var("STRY_BACKEND_PORT");
                             let database = env::var("STRY_BACKEND_DATABASE");
@@ -318,6 +334,7 @@ impl Database {
                         .or_else::<anyhow::Error, _>(|_| Ok(storage))?
                 }
                 BackendType::Sqlite => env::var("STRY_BACKEND_FILE")
+                    .context("Unable to get value of environmental variable `STRY_BACKEND_FILE`")
                     .or_else(|_| {
                         args.value_of("backend-file")
                             .map(String::from)
@@ -346,6 +363,37 @@ impl Default for Database {
     }
 }
 
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+pub enum StorageType {
+    File {
+        location: String,
+    },
+    Parts {
+        username: Option<String>,
+        password: Option<String>,
+        host: String,
+        port: Option<String>,
+        database: Option<String>,
+        params: Option<HashMap<String, String>>,
+    },
+}
+
+impl StorageType {
+    pub fn is_file(&self) -> bool {
+        matches!(self, StorageType::File { .. })
+    }
+
+    pub fn is_parts(&self) -> bool {
+        matches!(self, StorageType::Parts { .. })
+    }
+}
+
+#[derive(Clone, Copy, Debug, serde::Deserialize)]
+pub enum BackendType {
+    Postgres,
+    Sqlite,
+}
+
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(default)]
 pub struct Executor {
@@ -366,10 +414,16 @@ impl Executor {
 
         Ok(Self {
             core_threads: env::var("STRY_EXECUTOR_CORE_THREADS")
+                .context(
+                    "Unable to get value of environmental variable `STRY_EXECUTOR_CORE_THREADS`",
+                )
                 .ok()
                 .and_then(|value| value.parse().ok())
                 .or_else(|| core_threads),
             max_threads: env::var("STRY_EXECUTOR_MAX_THREADS")
+                .context(
+                    "Unable to get value of environmental variable `STRY_EXECUTOR_MAX_THREADS`",
+                )
                 .ok()
                 .and_then(|value| value.parse().ok())
                 .or_else(|| max_threads),
@@ -408,16 +462,17 @@ impl Logging {
             thread_ids,
             thread_names,
         } = logging;
-        let (out_dir, out_json, out_prefix) = out.into_parts();
 
         Ok(Self {
             ansi: env::var("STRY_LOGGING_ANSI")
+                .context("Unable to get value of environmental variable `STRY_LOGGING_ANSI`")
                 .map(|value| match &*value {
                     "0" => false,
                     _ => true,
                 })
                 .or_else::<anyhow::Error, _>(|_| Ok(ansi))?,
             flame: env::var("STRY_LOGGING_FLAME")
+                .context("Unable to get value of environmental variable `STRY_LOGGING_FLAME`")
                 .or_else(|_| {
                     args.value_of("tracing-flame")
                         .map(String::from)
@@ -430,6 +485,7 @@ impl Logging {
                 .ok()
                 .or_else(|| flame),
             level: env::var("STRY_LOGGING_LEVEL")
+                .context("Unable to get value of environmental variable `STRY_LOGGING_LEVEL`")
                 .or_else(|_| {
                     args.value_of("tracing-level")
                         .map(String::from)
@@ -439,16 +495,15 @@ impl Logging {
                             )
                         })
                 })
-                .and_then(|value| LogLevel::from_str(&value))
+                .and_then(|value| LogLevel::from_str(&value).map_err(anyhow::Error::from))
                 .or_else::<anyhow::Error, _>(|_| Ok(level))?,
             out: env::var("STRY_LOGGING_OUTPUT")
+                .context("Unable to get value of environmental variable `STRY_LOGGING_OUTPUT`")
                 .map(|output| {
-                    let json = env::var("STRY_LOGGING_JSON")
-                        .map(|value| match &*value {
-                            "0" => false,
-                            _ => true,
-                        })
-                        .unwrap_or_else(|_| out_json);
+                    let json = env::var("STRY_LOGGING_JSON").map(|value| match &*value {
+                        "0" => false,
+                        _ => true,
+                    });
 
                     let directory = env::var("STRY_LOGGING_DIRECTORY").ok();
                     let prefix = env::var("STRY_LOGGING_PREFIX").ok();
@@ -470,34 +525,39 @@ impl Logging {
                 .and_then(
                     |(output, directory, json, prefix)| match &*output.to_lowercase() {
                         "both" => Ok(LoggingOutput::Both {
-                            directory: directory
-                                .or_else(|| out_dir)
-                                .expect("BUG: directory should exists from file"),
-                            json,
+                            directory: directory.ok_or_else(|| {
+                                anyhow::anyhow!("Unable to get logging directory")
+                            })?,
+                            json: json.context("Unable to get logging JSON")?,
                             prefix: prefix
-                                .or_else(|| out_prefix)
-                                .expect("BUG: prefix should exists from file"),
+                                .ok_or_else(|| anyhow::anyhow!("Unable to get logging prefix"))?,
                         }),
                         "file" => Ok(LoggingOutput::File {
-                            directory: directory
-                                .or_else(|| out_dir)
-                                .expect("BUG: directory should exists from file"),
-                            json,
+                            directory: directory.ok_or_else(|| {
+                                anyhow::anyhow!("Unable to get logging directory")
+                            })?,
+                            json: json.context("Unable to get logging JSON")?,
                             prefix: prefix
-                                .or_else(|| out_prefix)
-                                .expect("BUG: prefix should exists from file"),
+                                .ok_or_else(|| anyhow::anyhow!("Unable to get logging prefix"))?,
                         }),
-                        "stdout" => Ok(LoggingOutput::StdOut { json }),
+                        "stdout" => Ok(LoggingOutput::StdOut {
+                            json: json.context("Unable to get logging JSON")?,
+                        }),
                         _ => anyhow::bail!("`{}` is not a valid logging output type", output),
                     },
-                )?,
+                )
+                .or_else::<anyhow::Error, _>(|_| Ok(out))?,
             thread_ids: env::var("STRY_LOGGING_THREAD_IDS")
+                .context("Unable to get value of environmental variable `STRY_LOGGING_THREAD_IDS`")
                 .map(|value| match &*value {
                     "0" => false,
                     _ => true,
                 })
                 .or_else::<anyhow::Error, _>(|_| Ok(thread_ids))?,
             thread_names: env::var("STRY_LOGGING_THREAD_NAMES")
+                .context(
+                    "Unable to get value of environmental variable `STRY_LOGGING_THREAD_NAMES`",
+                )
                 .map(|value| match &*value {
                     "0" => false,
                     _ => true,
@@ -530,7 +590,7 @@ pub enum LogLevel {
 }
 
 impl FromStr for LogLevel {
-    type Err = anyhow::Error;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let lower = s.to_lowercase();
@@ -541,10 +601,9 @@ impl FromStr for LogLevel {
             "info" => Ok(LogLevel::Info),
             "debug" => Ok(LogLevel::Debug),
             "trace" => Ok(LogLevel::Trace),
-            level => anyhow::bail!(
-                "Unknown log level, allowed: [error, warn, info, debug, trace], given: {}",
-                level
-            ),
+            _ => Err(Error::InvalidLogLevel {
+                value: s.to_string(),
+            }),
         }
     }
 }
@@ -564,22 +623,4 @@ pub enum LoggingOutput {
     StdOut {
         json: bool,
     },
-}
-
-impl LoggingOutput {
-    fn into_parts(self) -> (Option<String>, bool, Option<String>) {
-        match self {
-            LoggingOutput::Both {
-                directory,
-                json,
-                prefix,
-            } => (Some(directory), json, Some(prefix)),
-            LoggingOutput::File {
-                directory,
-                json,
-                prefix,
-            } => (Some(directory), json, Some(prefix)),
-            LoggingOutput::StdOut { json } => (None, json, None),
-        }
-    }
 }

@@ -1,5 +1,4 @@
 use {
-    crate::config::FourCount,
     futures::FutureExt,
     std::{
         future::Future,
@@ -8,6 +7,7 @@ use {
             Arc,
         },
     },
+    stry_config::FourCount,
     tracing_futures::Instrument,
 };
 

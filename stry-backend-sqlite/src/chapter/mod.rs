@@ -1,8 +1,5 @@
 use {
-    crate::SqliteBackend,
-    anyhow::Context,
-    rewryte::sqlite::{ConnectionExt, StatementExt},
-    std::borrow::Cow,
+    crate::SqliteBackend, anyhow::Context, rewryte::sqlite::ConnectionExt, std::borrow::Cow,
     stry_models::Chapter,
 };
 

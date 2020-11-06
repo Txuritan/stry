@@ -1,10 +1,9 @@
 use {
     crate::PostgresBackend,
-    anyhow::Context,
     futures::try_join,
-    rewryte::postgres::{ClientExt, FromRow},
+    rewryte::postgres::ClientExt,
     std::borrow::Cow,
-    stry_models::{Author, Entity, List, Story},
+    stry_models::{Author, List, Story},
 };
 
 #[stry_macros::box_async]
@@ -17,8 +16,8 @@ impl PostgresBackend {
     ) -> anyhow::Result<Option<List<Author>>> {
         let conn = self.0.get().await?;
 
-        let pair = crate::params![limit, offset];
-        let empty = crate::params![];
+        let pair = rewryte::postgres_params![limit, offset];
+        let empty = rewryte::postgres_params![];
 
         let (items, total): (Option<Vec<Author>>, Option<i32>) = try_join!(
             conn.type_query_opt(include_str!("all-items.sql"), pair),
@@ -38,7 +37,7 @@ impl PostgresBackend {
         let conn = self.0.get().await?;
 
         let author = conn
-            .type_query_one_opt(include_str!("get-item.sql"), crate::params![id])
+            .type_query_one_opt(include_str!("get-item.sql"), rewryte::postgres_params![id])
             .await?;
 
         Ok(author)
@@ -53,8 +52,8 @@ impl PostgresBackend {
     ) -> anyhow::Result<Option<List<Story>>> {
         let conn = self.0.get().await?;
 
-        let pair = crate::params![limit, offset];
-        let one = crate::params![id];
+        let pair = rewryte::postgres_params![limit, offset];
+        let one = rewryte::postgres_params![id];
 
         let (story_ids, total): (Option<Vec<String>>, Option<i32>) = try_join!(
             conn.type_query_opt(include_str!("stories-items.sql"), pair),

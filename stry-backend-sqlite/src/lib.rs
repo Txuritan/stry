@@ -14,10 +14,8 @@ use {
     crate::utils::SqliteConnectionManager,
     r2d2::Pool,
     std::sync::Arc,
-    stry_common::{
-        backend::{BackendType, StorageType},
-        LibraryDetails,
-    },
+    stry_common::LibraryDetails,
+    stry_config::{BackendType, StorageType},
 };
 
 pub const SCHEMA: &str = rewryte::schema!("sqlite", "../schema.dal");

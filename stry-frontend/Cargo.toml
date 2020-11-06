@@ -18,6 +18,7 @@ user = [ "stry-frontend-user" ]
 # Core
 stry-backend = { path = "../stry-backend" }
 stry-common = { path = "../stry-common" }
+stry-config = { path = "../stry-config" }
 stry-frontend-api = { path = "../stry-frontend-api", optional = true }
 stry-frontend-user = { path = "../stry-frontend-user", optional = true }
 

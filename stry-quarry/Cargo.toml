@@ -1,5 +1,5 @@
 [package]
-name = "stry-common"
+name = "stry-quarry"
 version = "2.3.0"
 authors = [ "Txuritan <txuritan@protonmail.com>" ]
 edition = "2018"
@@ -8,10 +8,12 @@ license = "MIT"
 
 workspace = ".."
 
+[features]
+stry-types = [ "stry-models" ]
+
 [dependencies]
+# Core
+stry-models = { path = "../stry-models", optional = true }
+
 # Crate
-anyhow = "1.0"
-futures = "0.3"
-rand = { version = "0.7" }
-tracing = "0.1"
-tracing-futures = "0.2"
+fnv = "1.0"

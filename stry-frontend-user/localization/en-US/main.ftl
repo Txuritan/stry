@@ -29,6 +29,6 @@ story-info-words = { $words ->
 story-tooltip-rating = rating: { $rating }
 story-tooltip-state = state: { $state }
 story-tooltip-warnings = warnings: { $warnings ->
-        [true]      using
-        [false]     none
+        [zero]      none
+        *[other]    using
     }

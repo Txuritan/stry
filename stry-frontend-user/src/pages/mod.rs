@@ -7,8 +7,7 @@ use {
     crate::{
         i18n,
         pagination::Pagination,
-        readable::Readable,
-        utils::{Identifiers, Resource, WebError},
+        utils::{Identifiers, Resource, WebError, BoolAsNum},
     },
     askama::Template,
     chrono::{DateTime, Duration, Utc},

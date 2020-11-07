@@ -146,6 +146,16 @@ pub fn get_languages(languages: &str) -> Arc<Vec<LanguageIdentifier>> {
     Arc::new(user_lang)
 }
 
+pub trait BoolAsNum: Copy {
+    fn as_u8(self) -> u8;
+}
+
+impl BoolAsNum for bool {
+    fn as_u8(self) -> u8 {
+        if self { 1 } else { 0 }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum Items {
     Authors,

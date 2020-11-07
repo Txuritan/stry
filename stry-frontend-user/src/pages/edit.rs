@@ -1,5 +1,5 @@
 use {
-    crate::{i18n, pages::Meta, readable::Readable, utils::Identifiers},
+    crate::{i18n, pages::Meta, utils::{BoolAsNum, Identifiers}},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
 };

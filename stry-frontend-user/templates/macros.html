@@ -5,7 +5,7 @@
             <div class="media-object__left">
                 <div class="tiles">
                     <div class="tile__top tile__left {{ s.square.rating }}" aria-label="{{ i18n!(self.meta.user_lang, "story-tooltip-rating", { "rating" => s.square.rating.title() }) }}"></div>
-                    <div class="tile__top tile__right {% if s.square.warnings %}background--red{% else %}background--gray{% endif %}" aria-label="{{ i18n!(self.meta.user_lang, "story-tooltip-warnings", { "warnings" => s.square.warnings }) }}"></div>
+                    <div class="tile__top tile__right {% if s.square.warnings %}background--red{% else %}background--gray{% endif %}" aria-label="{{ i18n!(self.meta.user_lang, "story-tooltip-warnings", { "warnings" => s.square.warnings.as_u8() }) }}"></div>
                     <div class="tile__bottom tile__center {{ s.square.state }}" aria-label="{{ i18n!(self.meta.user_lang, "story-tooltip-state", { "state" => s.square.state.title() }) }}"></div>
                 </div>
             </div>

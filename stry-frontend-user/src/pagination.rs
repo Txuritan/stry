@@ -1,6 +1,10 @@
-use {crate::readable::Readable, std::fmt};
+use {
+    crate::{i18n, pages::Meta, readable::Readable},
+    std::fmt,
+};
 
 pub struct Pagination {
+    meta: Meta,
     infix: Option<&'static str>,
     postfix: Option<&'static str>,
     pagers: Vec<Pager>,
@@ -9,6 +13,7 @@ pub struct Pagination {
 
 impl Pagination {
     pub fn new(
+        meta: Meta,
         url: impl Into<String>,
         infix: Option<&'static str>,
         postfix: Option<&'static str>,
@@ -16,6 +21,7 @@ impl Pagination {
         page: u32,
     ) -> Self {
         Self {
+            meta,
             infix,
             postfix,
             pagers: Self::paginate(pages, page),
@@ -26,7 +32,7 @@ impl Pagination {
     fn paginate(pages: u32, page: u32) -> Vec<Pager> {
         let mut buff = Vec::with_capacity(11);
 
-        buff.push(Pager::Priv(page == 1, if page == 1 { 1 } else { page - 1 }));
+        buff.push(Pager::Prev(page == 1, if page == 1 { 1 } else { page - 1 }));
 
         for i in 1..=pages {
             if i == 1 {
@@ -72,7 +78,7 @@ impl fmt::Display for Pagination {
 
         for pager in &self.pagers {
             match pager {
-                Pager::Priv(d, n) => {
+                Pager::Prev(d, n) => {
                     write!(f, r#"<li class="pagination__item"#)?;
                     if *d {
                         write!(f, " pagination__item--disabled")?;
@@ -83,7 +89,11 @@ impl fmt::Display for Pagination {
                     if let Some(postfix) = self.postfix.as_ref() {
                         write!(f, "{}", postfix)?;
                     }
-                    write!(f, r#"">prev</a>"#)?;
+                    write!(
+                        f,
+                        r#"">{}</a>"#,
+                        i18n!(self.meta.user_lang, "nav-pagination-prev")
+                    )?;
 
                     writeln!(f, "</li>")?;
                 }
@@ -110,7 +120,7 @@ impl fmt::Display for Pagination {
 
                 Pager::Next(d, n) => writeln!(
                     f,
-                    r#"<li class="pagination__item{}"><a href="{}{}{}{}">next</a></li>"#,
+                    r#"<li class="pagination__item{}"><a href="{}{}{}{}">{}</a></li>"#,
                     if *d {
                         " pagination__item--disabled"
                     } else {
@@ -124,6 +134,7 @@ impl fmt::Display for Pagination {
                     } else {
                         ""
                     },
+                    i18n!(self.meta.user_lang, "nav-pagination-next"),
                 )?,
             }
         }
@@ -136,7 +147,7 @@ impl fmt::Display for Pagination {
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
 enum Pager {
-    Priv(bool, u32),
+    Prev(bool, u32),
     Num(bool, u32),
     Ellipse,
     Next(bool, u32),

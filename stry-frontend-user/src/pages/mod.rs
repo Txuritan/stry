@@ -8,23 +8,22 @@ use {
         i18n,
         pagination::Pagination,
         readable::Readable,
-        utils::{Resource, WebError},
+        utils::{Identifiers, Resource, WebError},
     },
     askama::Template,
     chrono::{DateTime, Duration, Utc},
     stry_generated_version::{GIT_VERSION, VERSION},
-    unic_langid::LanguageIdentifier,
 };
 
 pub struct Meta {
     pub version: &'static str,
     pub git: &'static str,
 
-    pub user_lang: Vec<LanguageIdentifier>,
+    pub user_lang: Identifiers,
 }
 
 impl Meta {
-    pub fn new(user_lang: Vec<LanguageIdentifier>) -> Self {
+    pub fn new(user_lang: Identifiers) -> Self {
         Self {
             version: VERSION,
             git: GIT_VERSION,
@@ -59,7 +58,7 @@ where
         name: &'static str,
         icon: &'static str,
         help: &'static str,
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> Self {
         Self {
             meta: Meta::new(user_lang),
@@ -78,11 +77,11 @@ where
         }
     }
 
-    pub fn not_found(title: T, time: DateTime<Utc>, user_lang: Vec<LanguageIdentifier>) -> Self {
+    pub fn not_found(title: T, time: DateTime<Utc>, user_lang: Identifiers) -> Self {
         Self::new(title, time, 404, "Not Found", "danger", "", user_lang)
     }
 
-    pub fn server_error(title: T, time: DateTime<Utc>, user_lang: Vec<LanguageIdentifier>) -> Self {
+    pub fn server_error(title: T, time: DateTime<Utc>, user_lang: Identifiers) -> Self {
         Self::new(
             title,
             time,
@@ -122,14 +121,22 @@ impl ResourceList {
         page: i32,
         pages: i32,
         resources: Vec<Resource>,
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> Self {
         Self {
-            meta: Meta::new(user_lang),
+            meta: Meta::new(user_lang.clone()),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
-            pagination: Pagination::new(url, None, None, pages as u32, page as u32).to_string(),
+            pagination: Pagination::new(
+                Meta::new(user_lang),
+                url,
+                None,
+                None,
+                pages as u32,
+                page as u32,
+            )
+            .to_string(),
             resources,
         }
     }
@@ -162,14 +169,22 @@ impl StoryList {
         page: i32,
         pages: i32,
         stories: Vec<stry_models::Story>,
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> Self {
         Self {
-            meta: Meta::new(user_lang),
+            meta: Meta::new(user_lang.clone()),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
-            pagination: Pagination::new(url, None, None, pages as u32, page as u32).to_string(),
+            pagination: Pagination::new(
+                Meta::new(user_lang),
+                url,
+                None,
+                None,
+                pages as u32,
+                page as u32,
+            )
+            .to_string(),
             stories,
         }
     }
@@ -202,7 +217,7 @@ impl Search {
         page: i32,
         pages: i32,
         stories: Vec<stry_models::Story>,
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> anyhow::Result<Self> {
         #[derive(serde::Serialize)]
         struct SearchUrl<'s> {
@@ -210,10 +225,11 @@ impl Search {
         }
 
         Ok(Self {
-            meta: Meta::new(user_lang),
+            meta: Meta::new(user_lang.clone()),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             pagination: Pagination::new(
+                Meta::new(user_lang),
                 format!(
                     "/search/{}",
                     serde_urlencoded::to_string(SearchUrl { search: &search })?

@@ -1,11 +1,10 @@
 use {
-    crate::{i18n, pages::Meta},
+    crate::{i18n, pages::Meta, utils::Identifiers},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
     stry_common::LibraryDetails,
     stry_generated_version::BOM,
     stry_models::{Worker, WorkerTask},
-    unic_langid::LanguageIdentifier,
 };
 
 #[derive(Template)]
@@ -21,11 +20,7 @@ pub struct About<'l> {
 }
 
 impl<'l> About<'l> {
-    pub fn new(
-        time: DateTime<Utc>,
-        details: &'l [LibraryDetails],
-        user_lang: Vec<LanguageIdentifier>,
-    ) -> Self {
+    pub fn new(time: DateTime<Utc>, details: &'l [LibraryDetails], user_lang: Identifiers) -> Self {
         Self {
             meta: Meta::new(user_lang),
             title: "about | dashboard",
@@ -106,7 +101,7 @@ impl<'w> Tasks<'w> {
         time: DateTime<Utc>,
         workers: &'w [Worker],
         tasks: &'w [WorkerTask],
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> Self {
         Self {
             meta: Meta::new(user_lang),

@@ -1,8 +1,13 @@
 use {
-    crate::{i18n, pages::Meta, pagination::Pagination, readable::Readable, utils::filters},
+    crate::{
+        i18n,
+        pages::Meta,
+        pagination::Pagination,
+        readable::Readable,
+        utils::{filters, Identifiers},
+    },
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    unic_langid::LanguageIdentifier,
 };
 
 #[derive(Template)]
@@ -28,14 +33,15 @@ impl Chapter {
         page: i32,
         story: stry_models::Story,
         chapter: stry_models::Chapter,
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> Self {
         Self {
-            meta: Meta::new(user_lang),
+            meta: Meta::new(user_lang.clone()),
             title: title.into(),
             duration: Utc::now().signed_duration_since(time),
             search: None,
             pagination: Pagination::new(
+                Meta::new(user_lang),
                 format!("/story/{}", story.id),
                 Some("/"),
                 Some("#chapter-name"),
@@ -59,8 +65,7 @@ impl Chapter {
 #[derive(Template)]
 #[template(path = "story/index.html")]
 pub struct Index {
-    version: &'static str,
-    git: &'static str,
+    meta: Meta,
 
     title: String,
     search: Option<String>,

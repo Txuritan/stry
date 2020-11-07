@@ -3,7 +3,7 @@ use {
     chrono::Utc,
     fluent::{concurrent::FluentBundle, FluentResource},
     once_cell::sync::OnceCell,
-    std::{collections::HashMap, fmt, future::Future, str::FromStr},
+    std::{collections::HashMap, fmt, future::Future, str::FromStr, sync::Arc},
     stry_models::{Author, Character, Origin, Pairing, Tag, Warning},
     unic_langid::LanguageIdentifier,
     warp::{
@@ -13,6 +13,8 @@ use {
     },
 };
 
+pub type Identifiers = Arc<Vec<LanguageIdentifier>>;
+
 #[macro_export]
 macro_rules! i18n {
     (@inner , $lang:expr , $message:expr , $args:expr ) => {{
@@ -21,7 +23,7 @@ macro_rules! i18n {
                 panic!("BUG: User Accept-Language header is empty, there should be at least `en-US`");
             }
 
-            for lang in &$lang {
+            for lang in $lang.iter() {
                 if !fluent.contains_key(lang) {
                     continue;
                 }
@@ -130,7 +132,7 @@ pub mod filters {
     }
 }
 
-pub fn get_languages(languages: &str) -> Vec<LanguageIdentifier> {
+pub fn get_languages(languages: &str) -> Arc<Vec<LanguageIdentifier>> {
     let mut user_lang = accept_language::parse(&languages)
         .into_iter()
         .map(|lang| lang.parse::<LanguageIdentifier>())
@@ -141,7 +143,7 @@ pub fn get_languages(languages: &str) -> Vec<LanguageIdentifier> {
         user_lang.push(unic_langid::langid!("en-US"));
     }
 
-    user_lang
+    Arc::new(user_lang)
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -300,7 +302,7 @@ where
             if let Ok(rendered) = crate::pages::ErrorPage::server_error(
                 "503 server error",
                 time,
-                vec![unic_langid::langid!("en-US")],
+                Arc::new(vec![unic_langid::langid!("en-US")]),
             )
             .render()
             {

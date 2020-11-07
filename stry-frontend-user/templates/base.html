@@ -53,7 +53,7 @@
         </main>
 
         <footer class="nav">
-            <h1 class="nav__brand"><a href="/">rendered in: {% let dur = duration.num_microseconds() %}{% if dur.is_some() %}{% let val = dur.clone().unwrap() %}{% if val > 1500000 %}{{ duration.num_seconds() }}s{% else if val > 1500 %}{{ duration.num_milliseconds() }}ms{% else %}{{ val }}μs{% endif %}{% else %}{% let val = duration.num_milliseconds() %}{% if val > 1500 %}{{ duration.num_seconds() }}s{% else %}{{ duration.num_milliseconds() }}ms{% endif %}{% endif %}</a></h1>
+            <h1 class="nav__brand"><a href="/">{{ i18n!(self.meta.user_lang, "nav-bottom-rendered-in", { "time" => self.duration.num_milliseconds() }) }}</a></h1>
             <div class="nav__left"></div>
             <ul class="nav__right">
                 <li class="nav__item"><a href="#">v{{ meta.version }}-{{ meta.git }}</a></li>

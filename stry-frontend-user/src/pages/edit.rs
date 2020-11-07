@@ -1,8 +1,7 @@
 use {
-    crate::{i18n, pages::Meta, readable::Readable},
+    crate::{i18n, pages::Meta, readable::Readable, utils::Identifiers},
     askama::Template,
     chrono::{DateTime, Duration, Utc},
-    unic_langid::LanguageIdentifier,
 };
 
 #[derive(Template)]
@@ -24,7 +23,7 @@ impl Chapter {
         time: DateTime<Utc>,
         story: stry_models::Story,
         chapter: stry_models::Chapter,
-        user_lang: Vec<LanguageIdentifier>,
+        user_lang: Identifiers,
     ) -> Self {
         Self {
             meta: Meta::new(user_lang),

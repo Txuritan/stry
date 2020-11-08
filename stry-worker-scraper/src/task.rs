@@ -1,8 +1,7 @@
 use {
     crate::{Site, Sites},
-    std::sync::atomic::Ordering,
     stry_backend::DataBackend,
-    stry_evermore::WorkerData,
+    stry_evermore::Worker,
     stry_models::WorkerSite,
 };
 
@@ -12,7 +11,7 @@ macro_rules! stop {
 
         tokio::time::delay_for(tokio::time::Duration::from_millis(1)).await;
 
-        if $state.stop.load(Ordering::Acquire) {
+        if $state.should_stop() {
             tracing::info!("Received shutdown signal, shutting down");
 
             break $lbl;
@@ -21,12 +20,12 @@ macro_rules! stop {
 }
 
 #[allow(clippy::unit_arg)]
-#[tracing::instrument(skip(state), err)]
-pub async fn task(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
+#[tracing::instrument(skip(worker), err)]
+pub async fn task(worker: Worker<DataBackend>) -> anyhow::Result<()> {
     'l: loop {
-        stop!('l, state);
+        stop!('l, worker);
 
-        let task = match state.backend.get_new_task().await? {
+        let task = match worker.data.get_new_task().await? {
             Some(task) => task,
             None => {
                 // Task check runs every 30 seconds
@@ -38,7 +37,7 @@ pub async fn task(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
 
         // TODO: take ownership of the task
 
-        stop!('l, state);
+        stop!('l, worker);
 
         let site = match task.site {
             WorkerSite::ArchiveOfOurOwn => Sites::ArchiveOfOurOwn,
@@ -47,23 +46,23 @@ pub async fn task(state: WorkerData<DataBackend>) -> anyhow::Result<()> {
 
         let mut init = site.init_from_url(task.url.as_str())?;
 
-        stop!('l, state);
+        stop!('l, worker);
 
         let _details = init.get_details().await?;
 
-        stop!('l, state);
+        stop!('l, worker);
 
         // Get story chapter (loop)
 
-        stop!('l, state);
+        stop!('l, worker);
 
         // Store story chapter (loop)
 
-        stop!('l, state);
+        stop!('l, worker);
 
         // Move story from working
 
-        stop!('l, state);
+        stop!('l, worker);
     }
 
     Ok(())

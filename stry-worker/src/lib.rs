@@ -1,6 +1,11 @@
 use {
-    std::sync::Arc, stry_backend::DataBackend, stry_common::LibraryDetails, stry_config::Config,
-    stry_worker_scraper::task, tokio::sync::broadcast::Receiver,
+    std::sync::Arc,
+    stry_backend::DataBackend,
+    stry_common::LibraryDetails,
+    stry_config::Config,
+    stry_evermore::{Evermore, Worker},
+    stry_worker_scraper::task,
+    tokio::sync::broadcast::Receiver,
 };
 
 pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend) {
@@ -12,11 +17,11 @@ pub async fn start(cfg: Arc<Config>, mut rx: Receiver<()>, backend: DataBackend)
     // )
     // .await;
 
-    stry_evermore::worker(
+    Evermore::new(
         async move { rx.recv().await.expect("Failed to listen for event") },
-        cfg.workers,
-        task::task,
+        cfg.workers.as_count() as u8,
         backend,
+        |data: Worker<DataBackend>| Box::pin(task::task(data)),
     )
     .await;
 }

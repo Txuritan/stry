@@ -2384,6 +2384,7 @@ version = "2.3.0"
 dependencies = [
  "anyhow",
  "futures",
+ "pin-project 1.0.1",
  "stry-config",
  "tracing",
  "tracing-futures",

@@ -1,6 +1,7 @@
 use {crate::PostgresBackend, std::borrow::Cow, stry_models::Chapter};
 
-#[stry_macros::box_async]
+/// Handles any and all queries that deal with a Story's Chapters.
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
     pub async fn get_chapter(

@@ -8,12 +8,15 @@ license = "MIT"
 
 workspace = ".."
 
+[features]
+boxed-futures = [ "stry-macros" ]
+
 [dependencies]
 # Core
 stry-common = { path = "../stry-common" }
 stry-config = { path = "../stry-config" }
 stry-dataloader = { path = "../stry-dataloader" }
-stry-macros = { path = "../stry-macros" }
+stry-macros = { path = "../stry-macros", optional = true }
 stry-models = { path = "../stry-models", features = [ "postgres" ] }
 stry-search = { path = "../stry-search" }
 

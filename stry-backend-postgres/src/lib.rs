@@ -1,5 +1,7 @@
 // TODO: try to pipeline queries
 
+mod utils;
+
 mod author;
 mod chapter;
 mod character;
@@ -9,9 +11,6 @@ mod story;
 mod tag;
 mod warning;
 mod worker;
-
-#[macro_use]
-pub mod utils;
 
 use {
     bb8::Pool,
@@ -27,7 +26,7 @@ pub const SCHEMA: &str = rewryte::schema!("postgresql", "../schema.dal");
 #[derive(Clone, Debug)]
 pub struct PostgresBackend(Pool<PostgresConnectionManager<NoTls>>);
 
-#[stry_macros::box_async]
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl PostgresBackend {
     #[tracing::instrument(skip(_backend, _storage, _details), err)]
     pub async fn init(

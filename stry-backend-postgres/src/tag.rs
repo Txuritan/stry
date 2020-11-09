@@ -4,7 +4,8 @@ use {
     stry_models::{List, Story, Tag},
 };
 
-#[stry_macros::box_async]
+/// Handles any and all queries that deal with Tags and their Stories.
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
     pub async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {

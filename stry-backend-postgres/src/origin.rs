@@ -4,7 +4,8 @@ use {
     stry_models::{List, Origin, Story},
 };
 
-#[stry_macros::box_async]
+/// Handles any and all queries that deal with Origins and their Stories.
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl PostgresBackend {
     #[tracing::instrument(skip(self), err)]
     pub async fn all_origins(

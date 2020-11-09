@@ -3,7 +3,7 @@ use {
     stry_models::Chapter,
 };
 
-#[stry_macros::box_async]
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn get_chapter(

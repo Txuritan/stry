@@ -11,6 +11,8 @@ workspace = ".."
 [features]
 default = [ "postgres", "sqlite" ]
 
+boxed-futures = [ "stry-macros" ]
+
 postgres = [ "stry-backend-postgres" ]
 
 sqlite = [ "stry-backend-sqlite" ]
@@ -22,7 +24,7 @@ stry-backend-postgres = { path = "../stry-backend-postgres", optional = true }
 stry-backend-sqlite = { path = "../stry-backend-sqlite", optional = true }
 stry-common = { path = "../stry-common" }
 stry-config = { path = "../stry-config" }
-stry-macros = { path = "../stry-macros" }
+stry-macros = { path = "../stry-macros", optional = true }
 stry-models = { path = "../stry-models" }
 
 # Crate

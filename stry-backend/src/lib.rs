@@ -37,7 +37,7 @@ enum DataBackendInner {
     Sqlite(stry_backend_sqlite::SqliteBackend),
 }
 
-#[stry_macros::box_async]
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl DataBackend {
     #[tracing::instrument(skip(storage, details), err)]
     pub async fn init(
@@ -70,7 +70,10 @@ impl DataBackend {
             }
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_authors(
         &self,
         offset: i32,
@@ -106,7 +109,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.author_stories(id, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn get_chapter(
         &self,
         story_id: Cow<'static, str>,
@@ -147,7 +153,10 @@ impl DataBackend {
             }
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_characters(
         &self,
         offset: i32,
@@ -185,7 +194,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.character_stories(id, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_origins(
         &self,
         offset: i32,
@@ -221,7 +233,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.origin_stories(id, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_pairings(
         &self,
         offset: i32,
@@ -257,7 +272,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.pairing_stories(id, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_stories(
         &self,
         offset: i32,
@@ -295,7 +313,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.search_stories(input, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_tags(&self, offset: i32, limit: i32) -> anyhow::Result<Option<List<Tag>>> {
         match &self.inner {
             #[cfg(feature = "postgres")]
@@ -327,7 +348,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.tag_stories(id, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn all_warnings(
         &self,
         offset: i32,
@@ -363,7 +387,10 @@ impl DataBackend {
             DataBackendInner::Sqlite(backend) => backend.warning_stories(id, offset, limit).await,
         }
     }
+}
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
+impl DataBackend {
     pub async fn get_new_task(&self) -> anyhow::Result<Option<WorkerTask>> {
         match &self.inner {
             #[cfg(feature = "postgres")]

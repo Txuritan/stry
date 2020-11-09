@@ -5,7 +5,7 @@ use {
     stry_models::{Character, List, Pairing, PairingRow, Story},
 };
 
-#[stry_macros::box_async]
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl SqliteBackend {
     #[tracing::instrument(level = "trace", skip(self), err)]
     pub async fn all_pairings(

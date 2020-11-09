@@ -26,6 +26,7 @@ pub const TEST_DATA: &str = include_str!("test-data.sql");
 #[derive(Clone, Debug)]
 pub struct SqliteBackend(Pool<SqliteConnectionManager>);
 
+#[cfg_attr(feature = "boxed-futures", stry_macros::box_async)]
 impl SqliteBackend {
     #[tracing::instrument(skip(_backend, storage, _details), err)]
     pub async fn init(
